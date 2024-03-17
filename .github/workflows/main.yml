@@ -50,6 +50,7 @@ jobs:
 
   release:
     name: VKDR Release
+    needs: build
     runs-on: ubuntu-latest
     steps:
       #- name: Checkout code
@@ -70,11 +71,14 @@ jobs:
           draft: true
           prerelease: false
       - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./vkdr-${{ matrix.os-name }}-${{ matrix.arch }}
-          asset_name: vkdr-${{ matrix.os-name }}-${{ matrix.arch }}
-          asset_content_type: application/octet-stream
+        run: |
+          for file in *; do
+            if [ -f "$file" ]; then
+              echo "Uploading $file"
+              curl -X POST \
+                   -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+                   -H "Content-Type: application/octet-stream" \
+                   --data-binary @$file \
+                   "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.create_release.outputs.id }}/assets?name=$(basename $file)"
+            fi
+          done
