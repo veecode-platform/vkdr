@@ -11,7 +11,13 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 @Component
-@Command(name = "vkdr", mixinStandardHelpOptions = true, version = "version 1.0",
+@Command(name = "vkdr", mixinStandardHelpOptions = true,
+        version = {
+                "Version 1.0",
+                "Picocli " + picocli.CommandLine.VERSION,
+                "JVM: ${java.version} (${java.vendor} ${java.vm.name} ${java.vm.version})",
+                "OS: ${os.name} ${os.version} ${os.arch}"
+        },
         description = "VKDR cli, your local friendly kubernetes",
         subcommands = {
                 VkdrInfraCommand.class,

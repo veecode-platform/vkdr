@@ -1,12 +1,32 @@
 name: GraalVM Native Image builds
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+    # Sequence of patterns matched against refs/tags
+    #tags:
+    #  - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
 jobs:
   build:
     name: VKDR on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest]
+        include:
+          - os: ubuntu-latest
+            os-name: linux
+            arch: amd64
+          #- os: ubuntu-latest
+          #  os-name: linux
+          #  arch: arm64
+          # macos-12 = osx intel
+          - os: macos-12
+            os-name: osx
+            arch: amd64
+          # macos-14 = osx arm (M1+)
+          - os: macos-14
+            os-name: osx
+            arch: arm64
     steps:
       - uses: actions/checkout@v4
 
@@ -17,13 +37,44 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           native-image-job-reports: 'true'
 
-      - name: Build and run HelloWorld.java
+      - name: Build native binary and run VKDR CLI
         run: |
-          mvn -Pnative native:compile
-          ./target/vkdr --help
+          ./mvnw -Pnative native:compile
+          mv ./target/vkdr ./target/vkdr-${{ matrix.os-name }}-${{ matrix.arch }}
       
-      #- name: Upload binary
-      #  uses: actions/upload-artifact@v2
-      #  with:
-      #    name: helloworld-${{ matrix.os }}
-      #    path: helloworld*
+      - name: Upload binary
+        uses: actions/upload-artifact@v3
+        with:
+          name: vkdr-${{ matrix.os-name }}-${{ matrix.arch }}
+          path: ./target/vkdr-${{ matrix.os-name }}-${{ matrix.arch }}
+
+  release:
+    name: VKDR Release
+    runs-on: ubuntu-latest
+    steps:
+      #- name: Checkout code
+      #  uses: actions/checkout@v2
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: |
+            This is a new release
+            - we are still working on release notes
+          draft: true
+          prerelease: false
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./vkdr-${{ matrix.os-name }}-${{ matrix.arch }}
+          asset_name: vkdr-${{ matrix.os-name }}-${{ matrix.arch }}
+          asset_content_type: application/octet-stream
