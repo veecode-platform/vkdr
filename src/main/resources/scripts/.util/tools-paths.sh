@@ -1,0 +1,4 @@
+VKDR_HOME=~/.vkdr
+VKDR_ARKADE=$VKDR_HOME/bin/arkade
+VKDR_K3D=$VKDR_HOME/bin/k3d
+VKDR_KUBECTL=$VKDR_HOME/bin/kubectl
