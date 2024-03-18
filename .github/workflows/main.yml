@@ -71,7 +71,8 @@ jobs:
       - name: Release version and assets
         uses: softprops/action-gh-release@v2
         with:
-          files: "$GITHUB_WORKSPACE/vkdr-*"
+          files: '**/vkdr-*'
+          token: ${{ secrets.GITHUB_TOKEN }}
 #      - name: Upload Release Asset
 #        run: |
 #          ls -l "$GITHUB_WORKSPACE/*"
