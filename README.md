@@ -33,3 +33,16 @@ Para executar o binário nativo gerado:
 ./target/vkdr
 ```
 
+## Publicar Releases
+
+O pipeline deste projeto irá gerar um novo release com os assets binários
+de cada plataforma suportada sempre que um "tagged push" ocorrer em main.
+
+## Instalando o Java 
+
+Recomendo usar o SDKMAN (https://sdkman.io/install) para instalar 
+a JDK localmente. Para este projeto utilizamos a GraalVM 21:
+
+```
+sdk use java 21.0.2-graalce
+```

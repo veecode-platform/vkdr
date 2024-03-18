@@ -1,0 +1,8 @@
+# -----------------------------------------------------------------------------
+# Kong Enterprise parameters
+# -----------------------------------------------------------------------------
+image:
+  repository: kong/kong-gateway
+enterprise:
+  enabled: true
+  license_secret: "kong-enterprise-license"

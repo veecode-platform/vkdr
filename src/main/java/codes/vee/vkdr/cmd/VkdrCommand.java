@@ -21,7 +21,8 @@ import picocli.CommandLine.Option;
         description = "VKDR cli, your local friendly kubernetes",
         subcommands = {
                 VkdrInfraCommand.class,
-                VkdrInitCommand.class})
+                VkdrInitCommand.class,
+                VkdrKongCommand.class})
 public class VkdrCommand {
 
 }

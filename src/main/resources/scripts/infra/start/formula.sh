@@ -20,7 +20,7 @@ startInfos() {
   boldNotice "Enabled Traefik Ingress Controller: ${VKDR_ENV_TRAEFIK}"
   boldNotice "Ports Used: ${VKDR_ENV_HTTP_PORT}/http :${VKDR_ENV_HTTPS_PORT}/https"
   boldNotice "Kubernetes API: 6443"
-  boldNotice "Local Registry: 6000"
+  #boldNotice "Local Registry: 6000"
   boldNotice "Local Docker Hub Registry Mirror (cache): 6001"
   boldNotice "NodePorts available: 9000-$((VKDR_ENV_NUMBER_NODEPORTS+9000)):30000-$((VKDR_ENV_NUMBER_NODEPORTS+30000))"
   #boldWarn "Using two local unamed Docker Volumes"
@@ -29,16 +29,17 @@ startInfos() {
 
 # Create the local registry and Docker Hub Mirror
 startRegistry() {
-  if ! ${VKDR_K3D} registry list | grep -q "k3d-registry\.localhost"; then
-    ${VKDR_K3D} registry create registry.localhost \
-      -p 6000 -v VKDR-registry:/var/lib/registry
-  else
-    warn "Registry already started, skipping..."
-  fi
+  #if ! ${VKDR_K3D} registry list | grep -q "k3d-registry\.localhost"; then
+  #  ${VKDR_K3D} registry create registry.localhost \
+  #    -p 6000 -v vkdr-registry:/var/lib/registry
+  #else
+  #  warn "Registry already started, skipping..."
+  #fi
 
-  if ! ${VKDR_K3D} registry list | grep -q "k3d-mirror\.localhost"; then
-    ${VKDR_K3D} registry create mirror.localhost -i vertigo/registry-mirror \
-      -p 6001 -v VKDR-mirror-registry:/var/lib/registry
+  if ! ${VKDR_K3D} registry list | grep -q "k3d-docker-io"; then
+    ${VKDR_K3D} registry create docker-io \
+      --proxy-remote-url https://registry-1.docker.io \
+      -p 6001 -v vkdr-mirror-registry:/var/lib/registry
   else
     warn "Mirror already started, skipping..."
   fi
@@ -50,9 +51,13 @@ startCluster() {
     error "Cluster vkdr-local already created."
     return
   fi
+  info "Mirror from $(dirname "$0")/../../.util/configs/mirror-registry.yaml"
+  cat "$(dirname "$0")/../../.util/configs/mirror-registry.yaml"
   $VKDR_K3D cluster create vkdr-local \
     -p "$VKDR_ENV_HTTP_PORT:80@loadbalancer" \
     -p "$VKDR_ENV_HTTPS_PORT:443@loadbalancer" \
+    --registry-use k3d-docker-io:6001  \
+    --registry-config "$(dirname "$0")/../../.util/configs/mirror-registry.yaml" \
     $NODEPORT_FLAG $NODEPORT_VALUE $TRAEFIK_FLAG $TRAEFIK_VALUE
   $VKDR_KUBECTL cluster-info
 }

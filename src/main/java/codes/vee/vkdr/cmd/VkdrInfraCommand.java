@@ -16,8 +16,6 @@ import java.util.concurrent.Callable;
 @Command(name = "infra", mixinStandardHelpOptions = true, exitCodeOnExecutionException = 10,
         description = "start/stop local vkdr infra (k3d-based cluster)")
 class VkdrInfraCommand {
-    @Spec
-    CommandSpec spec;
 
     @Command(name = "down", mixinStandardHelpOptions = true,
             description = "stop local vkdr infra (k3d-based cluster)",
