@@ -51,21 +51,6 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      #- name: Checkout code
-      #  uses: actions/checkout@v2
-#      - name: Create Release
-#        id: create_release
-#        uses: actions/create-release@v1
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
-#        with:
-#          tag_name: ${{ github.ref }}
-#          release_name: Release ${{ github.ref }}
-#          body: |
-#            This is a new release
-#            - we are still working on release notes
-#          draft: true
-#          prerelease: false
       - name: Download all artifacts
         uses: actions/download-artifact@v3
       - name: Release version and assets
@@ -73,16 +58,3 @@ jobs:
         with:
           files: '**/vkdr-*'
           token: ${{ secrets.GITHUB_TOKEN }}
-#      - name: Upload Release Asset
-#        run: |
-#          ls -l "$GITHUB_WORKSPACE/*"
-#          for file in "$GITHUB_WORKSPACE/*"; do
-#            if [ -f "$file" ]; then
-#              echo "Uploading $file"
-#              curl -X POST \
-#                   -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-#                   -H "Content-Type: application/octet-stream" \
-#                   --data-binary @$file \
-#                   "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.create_release.outputs.id }}/assets?name=$(basename $file)"
-#            fi
-#          done

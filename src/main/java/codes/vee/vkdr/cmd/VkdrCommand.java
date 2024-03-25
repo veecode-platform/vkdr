@@ -22,6 +22,7 @@ import picocli.CommandLine.Option;
         subcommands = {
                 VkdrInfraCommand.class,
                 VkdrInitCommand.class,
+                VkdrNginxCommand.class,
                 VkdrKongCommand.class})
 public class VkdrCommand {
 
