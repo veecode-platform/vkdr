@@ -17,6 +17,7 @@ Este projeto usa:
 ## Executar no shell
 
 Para executar a CLI no shell (via Maven):
+
 ```sh
 mvn exec:java -Dexec.mainClass=codes.vee.vkdr.VkdrApplication -Dexec.args="infra up"
 ```
@@ -24,23 +25,32 @@ mvn exec:java -Dexec.mainClass=codes.vee.vkdr.VkdrApplication -Dexec.args="infra
 ## Build nativo
 
 Para compilar o projeto gerando binário nativo:
+
 ```sh
 ./mvnw native:compile -Pnative
 ```
 
 Para executar o binário nativo gerado:
+
 ```sh
 ./target/vkdr
 ```
+
+## Pasta de scripts
+
+Durante o desenvolvimento queremos usar os scripts diretamente na pasta do projeto
+(e não os que residem em `~/.vkdr/scripts`). A variável `VKDR_SCRIPT_HOME` pode
+apontar para a pasta `src/main/resources/scripts` deste projeto, o que fará o `vkdr`
+ignorar o local padrão.
 
 ## Publicar Releases
 
 O pipeline deste projeto irá gerar um novo release com os assets binários
 de cada plataforma suportada sempre que um "tagged push" ocorrer em main.
 
-## Instalando o Java 
+## Instalando o Java
 
-Recomendo usar o SDKMAN (https://sdkman.io/install) para instalar 
+Recomendo usar o SDKMAN (https://sdkman.io/install) para instalar
 a JDK localmente. Para este projeto utilizamos a GraalVM 21:
 
 ```

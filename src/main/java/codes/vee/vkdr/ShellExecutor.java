@@ -12,24 +12,28 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ShellExecutor {
+    private static final Logger logger = LoggerFactory.getLogger(ShellExecutor.class);
 
     public static int executeCommand(String... args) throws IOException, InterruptedException {
         String cmdName = args[0];
         String homeDir = System.getProperty("user.home");
         // VKDR_SCRIPT_HOME = project "scripts" directory during dev
         String envHomeDir = System.getenv("VKDR_SCRIPT_HOME");
-        Path safeBaseDir = (envHomeDir != null) ? Paths.get(envHomeDir) : Paths.get(homeDir).normalize().toAbsolutePath();
-        String scriptHomeDir = (envHomeDir != null) ? envHomeDir : homeDir + File.separator + ".vkdr/scripts";
+        boolean hasEnvHomeDir = envHomeDir != null && !envHomeDir.isEmpty();
+        Path safeBaseDir = hasEnvHomeDir ? Paths.get(envHomeDir) : Paths.get(homeDir).normalize().toAbsolutePath();
+        String scriptHomeDir = hasEnvHomeDir ? envHomeDir : homeDir + File.separator + ".vkdr/scripts";
         String scriptFileName = scriptHomeDir + File.separator + cmdName + File.separator + "formula.sh";
         Path resolvedPath = safeBaseDir.resolve(scriptFileName).normalize().toAbsolutePath();
         if (!resolvedPath.startsWith(safeBaseDir)) {
-            System.err.println("Invalid file access attempt for " + resolvedPath + "!");
+            logger.error("Invalid file access attempt for " + resolvedPath + "!");
             return -1;
         } else {
             // Proceed with file operations, as the path is deemed safe
-            System.out.println("Safe file path: " + resolvedPath);
+            logger.debug("Safe file path: " + resolvedPath);
             args[0] = resolvedPath.toString();
             // You can now safely use resolvedPath for file operations
         }
@@ -44,9 +48,9 @@ public class ShellExecutor {
         // Wait for the process to complete
         int exitVal = process.waitFor();
         if (exitVal == 0) {
-            System.out.println("Script executed successfully.");
+            logger.info("Script executed successfully.");
         } else {
-            System.err.println("Script execution failed.");
+            logger.error("Script execution failed.");
         }
         return exitVal;
     }

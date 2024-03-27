@@ -4,6 +4,7 @@ import java.util.concurrent.Callable;
 
 import codes.vee.vkdr.CommandUtils;
 import codes.vee.vkdr.ScriptsExtractor;
+import org.springframework.boot.SpringBootVersion;
 import org.springframework.stereotype.Component;
 import picocli.CommandLine;
 import picocli.CommandLine.Model.CommandSpec;
@@ -14,6 +15,7 @@ import picocli.CommandLine.Option;
 @Command(name = "vkdr", mixinStandardHelpOptions = true,
         version = {
                 "Version 1.0",
+                "Spring Boot ${springBootVersion}",
                 "Picocli " + picocli.CommandLine.VERSION,
                 "JVM: ${java.version} (${java.vendor} ${java.vm.name} ${java.vm.version})",
                 "OS: ${os.name} ${os.version} ${os.arch}"
