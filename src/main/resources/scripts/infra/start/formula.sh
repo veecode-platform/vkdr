@@ -5,11 +5,13 @@ VKDR_ENV_TRAEFIK=$1
 VKDR_ENV_HTTP_PORT=$2
 VKDR_ENV_HTTPS_PORT=$3
 VKDR_ENV_NUMBER_NODEPORTS=$4
+VKDR_ENV_VOLUMES=$5
 # internal
 NODEPORT_FLAG=""
 NODEPORT_VALUE=""
 TRAEFIK_FLAG=""
 TRAEFIK_VALUE=""
+VOLUMES_ARRAY=()
 
 source "$(dirname "$0")/../../.util/log.sh"
 source "$(dirname "$0")/../../.util/tools-paths.sh"
@@ -58,7 +60,7 @@ startCluster() {
     -p "$VKDR_ENV_HTTPS_PORT:443@loadbalancer" \
     --registry-use k3d-docker-io:6001  \
     --registry-config "$(dirname "$0")/../../.util/configs/mirror-registry.yaml" \
-    $NODEPORT_FLAG $NODEPORT_VALUE $TRAEFIK_FLAG $TRAEFIK_VALUE
+    $NODEPORT_FLAG $NODEPORT_VALUE $TRAEFIK_FLAG $TRAEFIK_VALUE "${VOLUMES_ARRAY[@]}"
   $VKDR_KUBECTL cluster-info
 }
 
@@ -75,7 +77,21 @@ configureCluster() {
   fi
 }
 
+parseVolumes() {
+  local oldIFS="$IFS"
+  local IFS=","
+  for i in $VKDR_ENV_VOLUMES
+  do
+    echo "[$i] extracted"
+    VOLUMES_ARRAY+=("--volume")
+    VOLUMES_ARRAY+=("$i@server:0")
+  done
+  IFS="$oldIFS"
+  echo "${VOLUMES_ARRAY[@]}"
+}
+
 startInfos
 startRegistry
+parseVolumes
 configureCluster
 startCluster
