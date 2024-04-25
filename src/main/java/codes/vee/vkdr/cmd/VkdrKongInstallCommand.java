@@ -10,7 +10,7 @@ import java.util.concurrent.Callable;
         exitCodeOnExecutionException = 21)
 public class VkdrKongInstallCommand implements Callable<Integer> {
 
-    enum KongMode { db, dbless };
+    enum KongMode { dbless, standard, hybrid };
     @CommandLine.Option(names = {"-d","--domain"},
             defaultValue = "localhost",
             description = "DNS domain to use on generated ingress for Admin UI/API (default: localhost)")
@@ -28,8 +28,18 @@ public class VkdrKongInstallCommand implements Callable<Integer> {
 
     @CommandLine.Option(names = {"-e","--enterprise"},
             defaultValue = "false",
-            description = "Kong Gateway runs the enterprise version, if license isn't provided will run in 'free mode' (default: false)")
+            description = "If 'true', Kong Gateway runs the enterprise image version. If license isn't provided Kong will run in 'free mode' (default: false)")
     private boolean enable_enterprise;
+
+    @CommandLine.Option(names = {"-i","--image", "--image_name"},
+    defaultValue = "",
+    description = "Kong image name, defaults to chart default 'kong' if not 'enterprise' or to 'kong/kong-gateway' if 'enterprise' ")
+    private String image_name;
+
+    @CommandLine.Option(names = {"-t","--tag", "--image_tag"},
+    defaultValue = "",
+    description = "Kong image name, defaults to chart default (ex: '3.6')")
+    private String image_tag;
 
     @CommandLine.Option(names = {"-l","--license","--license-file"},
             defaultValue = "",
@@ -38,6 +48,6 @@ public class VkdrKongInstallCommand implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        return ShellExecutor.executeCommand("kong/install", domain, String.valueOf(enable_https), String.valueOf(kong_mode), String.valueOf(enable_enterprise), license);
+        return ShellExecutor.executeCommand("kong/install", domain, String.valueOf(enable_https), String.valueOf(kong_mode), String.valueOf(enable_enterprise), license, image_name, image_tag);
     }
 }

@@ -5,6 +5,8 @@ VKDR_ENV_KONG_SECURE=$2
 VKDR_ENV_KONG_MODE=$3
 VKDR_ENV_KONG_ENTERPRISE=$4
 VKDR_ENV_KONG_LICENSE=$5
+VKDR_ENV_KONG_IMAGE_NAME=$6
+VKDR_ENV_KONG_IMAGE_TAG=$7
 
 source "$(dirname "$0")/../../.util/tools-versions.sh"
 source "$(dirname "$0")/../../.util/tools-paths.sh"
@@ -20,6 +22,8 @@ startInfos() {
   boldNotice "Mode: $VKDR_ENV_KONG_MODE"
   boldNotice "Enterprise: $VKDR_ENV_KONG_ENTERPRISE"
   boldNotice "License file: $VKDR_ENV_KONG_LICENSE"
+  boldNotice "Image name: $VKDR_ENV_KONG_IMAGE"
+  boldNotice "Image tag: $VKDR_ENV_KONG_TAG"
   bold "=============================="
 }
 
@@ -39,19 +43,41 @@ settingKong() {
       if [ "$VKDR_ENV_KONG_ENTERPRISE" = "true" ]; then
         VKDR_KONG_ENT_VALUES="$(dirname "$0")"/../../.util/values/delta-kong-enterprise.yaml
         # merge yq files
-        $VKDR_YQ eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' $VKDR_KONG_VALUES $VKDR_KONG_ENT_VALUES > /tmp/kong-dbless-ent.yaml
-        VKDR_KONG_VALUES=/tmp/kong-dbless-ent.yaml
+        YAML_TMP_FILE=/tmp/kong-dbless-ent.yaml
+        $VKDR_YQ eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' $VKDR_KONG_VALUES $VKDR_KONG_ENT_VALUES > $YAML_TMP_FILE
+        VKDR_KONG_VALUES=$YAML_TMP_FILE
+        # forces enterprise image if not set
+        if [ -z "$VKDR_ENV_KONG_IMAGE_NAME" ]; then
+          VKDR_ENV_KONG_IMAGE_NAME="kong/kong-gateway"
+        fi
       fi
       ;;
     standard)
-      error "standard not yet implemented"
-      exit 1
+      VKDR_KONG_VALUES="$(dirname "$0")"/../../.util/values/kong-standard.yaml
+      if [ "$VKDR_ENV_KONG_ENTERPRISE" = "true" ]; then
+        VKDR_KONG_ENT_VALUES="$(dirname "$0")"/../../.util/values/delta-kong-enterprise.yaml
+        # merge yq files
+        YAML_TMP_FILE=/tmp/kong-standard-ent.yaml
+        $VKDR_YQ eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' $VKDR_KONG_VALUES $VKDR_KONG_ENT_VALUES > $YAML_TMP_FILE
+        VKDR_KONG_VALUES=$YAML_TMP_FILE
+        # forces enterprise image if not set
+        if [ -z "$VKDR_ENV_KONG_IMAGE_NAME" ]; then
+          VKDR_ENV_KONG_IMAGE_NAME="kong/kong-gateway"
+        fi
+      fi
       ;;
     hybrid)
       error "hybrid not yet implemented"
       exit 1
       ;;
     esac
+    # change image name/tag if set
+    if [ -n "$VKDR_ENV_KONG_IMAGE_NAME" ]; then
+      $VKDR_YQ eval ".image.repository = \"$VKDR_ENV_KONG_IMAGE_NAME\"" -i $VKDR_KONG_VALUES
+    fi
+    if [ -n "$VKDR_ENV_KONG_IMAGE_TAG" ]; then
+      $VKDR_YQ eval ".image.tag = \"$VKDR_ENV_KONG_IMAGE_TAG\"" -i $VKDR_KONG_VALUES
+    fi
 }
 
 installKong() {

@@ -1,0 +1,75 @@
+# -----------------------------------------------------------------------------
+# Kong parameters
+env:
+  database: postgres
+  log_level: notice
+  pg_host: "kong-postgresql"
+  pg_user: kong
+  pg_password: kong
+  pg_database: kong
+  pg_port: 5432
+  admin_gui_url: "http://manager.localhost:8000/manager"
+  admin_gui_path: "/manager"
+  admin_gui_api_url: "http://manager.localhost:8000"
+  #proxy_url: "http://localhost:8000"
+image:
+  repository: kong
+  tag: "3.6"
+admin:
+  enabled: true
+  type: ClusterIP
+  http:
+    enabled: true
+    servicePort: 8001
+    containerPort: 8001
+  ingress:
+    enabled: true
+    hostname: manager.localhost
+    ingressClassName: "kong"
+  tls:
+    enabled: false
+manager:
+  enabled: true
+  type: ClusterIP
+  http:
+    enabled: true
+    servicePort: 8002
+    containerPort: 8002
+  ingress:
+    enabled: true
+    hostname: manager.localhost
+    ingressClassName: "kong"
+    path: /manager
+  tls:
+    enabled: false
+proxy:
+  enabled: true
+  type: LoadBalancer
+  http:
+    enabled: true
+    servicePort: 80
+    containerPort: 8000
+  tls:
+    enabled: true
+    servicePort: 443
+    containerPort: 8443
+# -----------------------------------------------------------------------------
+# Ingress Controller parameters
+# -----------------------------------------------------------------------------
+ingressController:
+  enabled: true
+  installCRDs: false
+  ingressClass: kong
+  rbac:
+    create: true
+portal:
+  enabled: false
+portalapi:
+  enabled: false
+
+postgresql:
+  enabled: true
+  auth:
+    username: kong
+    password: kong
+    database: kong
