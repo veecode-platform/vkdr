@@ -7,6 +7,7 @@ VKDR_ENV_KONG_ENTERPRISE=$4
 VKDR_ENV_KONG_LICENSE=$5
 VKDR_ENV_KONG_IMAGE_NAME=$6
 VKDR_ENV_KONG_IMAGE_TAG=$7
+VKDR_ENV_KONG_ENV=$8
 
 source "$(dirname "$0")/../../.util/tools-versions.sh"
 source "$(dirname "$0")/../../.util/tools-paths.sh"
@@ -22,8 +23,9 @@ startInfos() {
   boldNotice "Mode: $VKDR_ENV_KONG_MODE"
   boldNotice "Enterprise: $VKDR_ENV_KONG_ENTERPRISE"
   boldNotice "License file: $VKDR_ENV_KONG_LICENSE"
-  boldNotice "Image name: $VKDR_ENV_KONG_IMAGE"
-  boldNotice "Image tag: $VKDR_ENV_KONG_TAG"
+  boldNotice "Image name: $VKDR_ENV_KONG_IMAGE_NAME"
+  boldNotice "Image tag: $VKDR_ENV_KONG_IMAGE_TAG"
+  boldNotice "Environment: $VKDR_ENV_KONG_ENV"
   bold "=============================="
 }
 
@@ -32,6 +34,7 @@ runFormula() {
   settingKong
   createKongNamespace
   createKongLicenseSecret
+  envKong
   installKong
   postInstallKong
 }
@@ -39,7 +42,8 @@ runFormula() {
 settingKong() {
   case $VKDR_ENV_KONG_MODE in
     dbless)
-      VKDR_KONG_VALUES="$(dirname "$0")"/../../.util/values/kong-dbless.yaml
+      VKDR_KONG_VALUES=/tmp/kong-dbless.yaml
+      cp "$(dirname "$0")"/../../.util/values/kong-dbless.yaml $VKDR_KONG_VALUES
       if [ "$VKDR_ENV_KONG_ENTERPRISE" = "true" ]; then
         VKDR_KONG_ENT_VALUES="$(dirname "$0")"/../../.util/values/delta-kong-enterprise.yaml
         # merge yq files
@@ -53,7 +57,8 @@ settingKong() {
       fi
       ;;
     standard)
-      VKDR_KONG_VALUES="$(dirname "$0")"/../../.util/values/kong-standard.yaml
+      VKDR_KONG_VALUES=/tmp/kong-standard.yaml
+      cp "$(dirname "$0")"/../../.util/values/kong-standard.yaml $VKDR_KONG_VALUES
       if [ "$VKDR_ENV_KONG_ENTERPRISE" = "true" ]; then
         VKDR_KONG_ENT_VALUES="$(dirname "$0")"/../../.util/values/delta-kong-enterprise.yaml
         # merge yq files
@@ -78,6 +83,13 @@ settingKong() {
     if [ -n "$VKDR_ENV_KONG_IMAGE_TAG" ]; then
       $VKDR_YQ eval ".image.tag = \"$VKDR_ENV_KONG_IMAGE_TAG\"" -i $VKDR_KONG_VALUES
     fi
+}
+
+envKong() {
+  # convert JSON to YAML under "env:"
+  debug "envKong: merging kong env"
+  echo $VKDR_ENV_KONG_ENV | yq -p=json > /tmp/kong-env-vars.yaml
+  yq eval '.env *= load("/tmp/kong-env-vars.yaml")' -i $VKDR_KONG_VALUES
 }
 
 installKong() {
