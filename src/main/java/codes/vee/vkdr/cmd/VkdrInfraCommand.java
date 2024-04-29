@@ -27,8 +27,8 @@ class VkdrInfraCommand {
             description = "start local vkdr infra (k3d-based cluster) with options",
             exitCodeOnExecutionException = 12)
     int start(@Option(names = {"--traefik", "--enable_traefik", "--enable-traefik"},
-            defaultValue = "false",
-            description = "enable traefik ingress controller (default: false)")
+                      defaultValue = "false",
+                      description = "enable traefik ingress controller (default: false)")
               boolean enable_traefik,
               @Option(names = {"--http", "--http-port", "--http_port"},
                       defaultValue = "8000",

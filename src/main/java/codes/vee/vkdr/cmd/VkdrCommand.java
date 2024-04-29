@@ -25,7 +25,9 @@ import picocli.CommandLine.Option;
                 VkdrInfraCommand.class,
                 VkdrInitCommand.class,
                 VkdrNginxCommand.class,
-                VkdrKongCommand.class})
+                VkdrPostgresCommand.class,
+                VkdrKongCommand.class,
+                VkdrKeycloakCommand.class})
 public class VkdrCommand {
 
 }

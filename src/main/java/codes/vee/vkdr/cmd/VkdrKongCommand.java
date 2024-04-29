@@ -13,7 +13,7 @@ import java.io.IOException;
 class VkdrKongCommand {
 
     @CommandLine.Command(name = "remove", mixinStandardHelpOptions = true,
-            description = "install Kong Gateway",
+            description = "remove Kong Gateway",
             exitCodeOnExecutionException = 22)
     int remove() throws IOException, InterruptedException {
         return ShellExecutor.executeCommand("kong/remove");

@@ -4,20 +4,20 @@ source "$(dirname "$0")/../../.util/tools-versions.sh"
 source "$(dirname "$0")/../../.util/tools-paths.sh"
 source "$(dirname "$0")/../../.util/log.sh"
 
-KONG_NAMESPACE=vkdr
+KEYCLOAK_NAMESPACE=keycloak
 
 startInfos() {
-  boldInfo "Kong Remove"
+  boldInfo "Keycloak Remove"
   bold "=============================="
 }
 
 runFormula() {
   startInfos
-  removeKong
+  removeKeycloak
 }
 
-removeKong() {
-  helm delete kong -n $KONG_NAMESPACE
+removeKeycloak() {
+  helm delete keycloak -n $KEYCLOAK_NAMESPACE
 }
 
 runFormula

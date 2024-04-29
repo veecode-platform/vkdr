@@ -3,6 +3,9 @@
 - [Introdução](#introdução)
 - [Executar no shell](#executar-no-shell)
 - [Build nativo](#build-nativo)
+- [Pasta de scripts](#pasta-de-scripts)
+- [Publicar Releases](#publicar-releases)
+- [Instalando o Java](#instalando-o-java)
 
 ## Introdução
 
@@ -13,6 +16,13 @@ Este projeto usa:
 - Spring Boot 3.1.9
 - Picoli 4.7.5
 - GraalVM Native Support
+- Shell scripts
+
+Cada uma das ações da CLI é implementada por um script shell que é empacotado dentro do binário final. Escolhemos esta estratégia para iterar mais rapidamente em cada nova fórmula.
+
+Exemplo: o comando `infra start` é implementado pelo script `./infra/start/formula.sh` que reside na pasta `src/main/resources/scripts`. Este script é empacotado no binário final e é executado quando o comando `vkdr infra start` é chamado.
+
+
 
 ## Executar no shell
 
@@ -38,15 +48,17 @@ Para executar o binário nativo gerado:
 
 ## Pasta de scripts
 
-Durante o desenvolvimento queremos usar os scripts diretamente na pasta do projeto
-(e não os que residem em `~/.vkdr/scripts`). A variável `VKDR_SCRIPT_HOME` pode
-apontar para a pasta `src/main/resources/scripts` deste projeto, o que fará o `vkdr`
-ignorar o local padrão.
+Durante o desenvolvimento queremos usar os scripts diretamente na pasta do projeto (e não os que residem em `~/.vkdr/scripts`). A variável `VKDR_SCRIPT_HOME` pode apontar para a pasta `src/main/resources/scripts` deste projeto, o que fará o `vkdr` ignorar o local padrão.
+
+Assim é possível testar mudanças nos scripts sem precisar fazer um build binário. O comando abaixo equivale ao `vkdr kong install -h`:
+
+```sh
+mvn exec:java -Dexec.mainClass=codes.vee.vkdr.VkdrApplication -Dexec.args="kong install -h"
+```
 
 ## Publicar Releases
 
-O pipeline deste projeto irá gerar um novo release com os assets binários
-de cada plataforma suportada sempre que um "tagged push" ocorrer em main.
+O pipeline deste projeto irá gerar um novo release com os assets binários de cada plataforma suportada sempre que um "tagged push" ocorrer em main.
 
 ## Instalando o Java
 

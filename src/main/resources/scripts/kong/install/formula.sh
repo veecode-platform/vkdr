@@ -13,7 +13,7 @@ source "$(dirname "$0")/../../.util/tools-versions.sh"
 source "$(dirname "$0")/../../.util/tools-paths.sh"
 source "$(dirname "$0")/../../.util/log.sh"
 
-KONG_NAMESPACE=kong
+KONG_NAMESPACE=vkdr
 
 startInfos() {
   boldInfo "Kong Install"
@@ -42,6 +42,7 @@ runFormula() {
 settingKong() {
   case $VKDR_ENV_KONG_MODE in
     dbless)
+      debug "Setting Kong to 'dbless' mode"
       VKDR_KONG_VALUES=/tmp/kong-dbless.yaml
       cp "$(dirname "$0")"/../../.util/values/kong-dbless.yaml $VKDR_KONG_VALUES
       if [ "$VKDR_ENV_KONG_ENTERPRISE" = "true" ]; then
@@ -57,6 +58,7 @@ settingKong() {
       fi
       ;;
     standard)
+      debug "Setting Kong to 'standard' mode"
       VKDR_KONG_VALUES=/tmp/kong-standard.yaml
       cp "$(dirname "$0")"/../../.util/values/kong-standard.yaml $VKDR_KONG_VALUES
       if [ "$VKDR_ENV_KONG_ENTERPRISE" = "true" ]; then
@@ -70,9 +72,20 @@ settingKong() {
           VKDR_ENV_KONG_IMAGE_NAME="kong/kong-gateway"
         fi
       fi
+      # if there is a "kong-pg-secret", use those credentials and do not install postgres subchart
+      if kubectl get secrets -n $KONG_NAMESPACE | grep -q "kong-pg-secret" ; then
+        VKDR_KONG_SECRET_VALUES="$(dirname "$0")"/../../.util/values/delta-kong-std-dbsecrets.yaml
+        YAML_TMP_FILE_SECRET=/tmp/kong-secret-std.yaml
+        $VKDR_YQ eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' $VKDR_KONG_VALUES $VKDR_KONG_SECRET_VALUES > $YAML_TMP_FILE_SECRET
+        VKDR_KONG_VALUES=$YAML_TMP_FILE_SECRET
+      fi
       ;;
     hybrid)
       error "hybrid not yet implemented"
+      exit 1
+      ;;
+    *)
+      error "Mode '$VKDR_ENV_KONG_MODE' is invalid! Aborting."
       exit 1
       ;;
     esac
@@ -83,6 +96,9 @@ settingKong() {
     if [ -n "$VKDR_ENV_KONG_IMAGE_TAG" ]; then
       $VKDR_YQ eval ".image.tag = \"$VKDR_ENV_KONG_IMAGE_TAG\"" -i $VKDR_KONG_VALUES
     fi
+    debug "Kong values file is $VKDR_KONG_VALUES"
+    #FILE_DUMP="$(cat $VKDR_KONG_VALUES)"
+    #debug $FILE_DUMP
 }
 
 envKong() {
@@ -114,10 +130,10 @@ createKongLicenseSecret() {
     return
   fi
   if [ -f "$VKDR_ENV_KONG_LICENSE" ]; then
-    info "Creating kong-enterprise-license secret from '$VKDR_ENV_KONG_LICENSE'..."
+    debug "Creating kong-enterprise-license secret from '$VKDR_ENV_KONG_LICENSE'..."
     $VKDR_KUBECTL create secret generic kong-enterprise-license -n $KONG_NAMESPACE --from-file=license="$VKDR_ENV_KONG_LICENSE"
   else
-    info "Creating empty kong-enterprise-license secret..."
+    debug "Creating empty kong-enterprise-license secret..."
     $VKDR_KUBECTL create secret generic kong-enterprise-license -n $KONG_NAMESPACE --from-literal=license=""
   fi
 
@@ -126,6 +142,7 @@ createKongLicenseSecret() {
 }
 
 createKongNamespace() {
+  debug "Create Kong namespace '$KONG_NAMESPACE'"
   echo "
 apiVersion: v1
 kind: Namespace
