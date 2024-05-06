@@ -39,7 +39,7 @@ runFormula() {
   createKongAdminSecret
   createKongSessionConfigSecret
   configDomain
-  #envKong
+  envKong
   installKong
   postInstallKong
 }
@@ -134,8 +134,8 @@ configDomain() {
 
 envKong() {
   # convert JSON to YAML under "env:"
-  debug "envKong: merging kong env"
-  echo $VKDR_ENV_KONG_ENV | yq -p=json > /tmp/kong-env-vars.yaml
+  debug "envKong: merging kong env '$VKDR_ENV_KONG_ENV'"
+  echo $VKDR_ENV_KONG_ENV | yq -p=json -o=yaml > /tmp/kong-env-vars.yaml
   yq eval '.env *= load("/tmp/kong-env-vars.yaml")' -i $VKDR_KONG_VALUES
 }
 

@@ -6,7 +6,8 @@ This formula installs Kong API Gateway on a Kubernetes cluster with several poss
 - [Kong OSS in standard (traditional) mode](#kong-oss-in-standard-traditional-mode)
 - [Kong OSS in standard (traditional) mode with a shared database](#kong-oss-in-standard-traditional-mode-with-a-shared-database)
 - [Kong OSS in standard (traditional) mode with a custom domain (good for remote use)](#kong-oss-in-standard-traditional-mode-with-a-custom-domain-good-for-remote-use)
-- [Kong Enterprise in standard (traditional) mode](#kong-enterprise-in-standard-traditional-mode)
+- [Kong Enterprise in standard (traditional) mode as a secondary Ingress Controller](#kong-enterprise-in-standard-traditional-mode-as-a-secondary-ingress-controller)
+- [Kong custom image in standard (traditional) mode (custom plugins)](#kong-custom-image-in-standard-traditional-mode-custom-plugins)
 
 
 ## Kong OSS in db-less mode
@@ -70,7 +71,7 @@ vkdr kong install -m standard -d mydomain.com -s
 
 Making "manager.mydomain.com" resolve to the public IP address of the hosts is required for this configuration to work.
 
-## Kong Enterprise in standard (traditional) mode
+## Kong Enterprise in standard (traditional) mode as a secondary Ingress Controller
 
 ```sh
 # starts cluster
@@ -86,3 +87,18 @@ vkdr kong install -e -l /full_path/license.json -m standard -p mypassword
 There are two ingress controllers - Traefik as the default in 8000/8001 and Kong in 9000/9001.
 
 If `-l /full_path/license.json` is not provided, Kong will start in "free mode". If both `-e` and `-l` are provided, a valid license will enable Kong RBAC and both Kong Manager and Admin API will require authentication (user "kong_admin", password as informed in `-p`).
+
+## Kong custom image in standard (traditional) mode (custom plugins)
+
+```sh
+# starts cluster
+vkdr infra up
+# starts Kong
+vkdr kong install -m standard -i veecode/kong-cred -t 3.6.0-r2 --env "plugins=bundled,oidc,oidc-acl,mtls-auth,mtls-acl,late-file-log"
+```
+
+- Kong: http://localhost:8000
+- Kong Manager: http://manager.localhost:8000/manager
+- Kong Admin API: http://manager.localhost:8000
+
+The env variable enables plugins on the custom image. The custom image is pulled from Docker Hub.
