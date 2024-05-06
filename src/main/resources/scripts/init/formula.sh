@@ -20,6 +20,7 @@ runFormula() {
   installTool "jq" "$VKDR_TOOLS_JQ"
   #validateYQVersion
   installTool "yq" "$VKDR_TOOLS_YQ"
+  installHelm
   installGlow
 
   #installAWS
@@ -100,14 +101,14 @@ installHelm() {
     info "Installing Helm..."
     # patches download script in order to change BINLOCATION
     curl -fsSL -o /tmp/get_helm0.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
-    sed 's|\/usr\/local\/bin|$\HOME/\.VKDR\/bin|g' /tmp/get_helm0.sh > /tmp/get_helm.sh
+    sed 's|\/usr\/local\/bin|$\HOME/\.vkdr\/bin|g' /tmp/get_helm0.sh > /tmp/get_helm.sh
     chmod +x /tmp/get_helm.sh
     rm /tmp/get_helm0.sh
     /tmp/get_helm.sh --version $VKDR_TOOLS_HELM --no-sudo > /dev/null
     rm /tmp/get_helm.sh
     info "Helm installed!"
   fi
-  installHelmDiff
+  #installHelmDiff
 }
 
 installHelmDiff (){

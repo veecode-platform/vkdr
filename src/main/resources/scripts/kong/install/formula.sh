@@ -78,7 +78,7 @@ settingKong() {
         fi
       fi
       # if there is a "kong-pg-secret", use those credentials and do not install postgres subchart
-      if kubectl get secrets -n $KONG_NAMESPACE | grep -q "kong-pg-secret" ; then
+      if $VKDR_KUBECTL get secrets -n $KONG_NAMESPACE | grep -q "kong-pg-secret" ; then
         VKDR_KONG_SECRET_VALUES="$(dirname "$0")"/../../.util/values/delta-kong-std-dbsecrets.yaml
         YAML_TMP_FILE_SECRET=/tmp/kong-secret-std.yaml
         $VKDR_YQ eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' $VKDR_KONG_VALUES $VKDR_KONG_SECRET_VALUES > $YAML_TMP_FILE_SECRET
@@ -122,6 +122,11 @@ configDomain() {
     $VKDR_YQ -i ".admin.ingress.hostname = \"manager.$VKDR_ENV_KONG_DOMAIN\"" $VKDR_KONG_VALUES
     $VKDR_YQ -i ".env.admin_gui_url = \"$VKDR_PROTOCOL://manager.$VKDR_ENV_KONG_DOMAIN/manager\"" $VKDR_KONG_VALUES
     $VKDR_YQ -i ".env.admin_gui_api_url = \"$VKDR_PROTOCOL://manager.$VKDR_ENV_KONG_DOMAIN\"" $VKDR_KONG_VALUES
+    if [ "$VKDR_PROTOCOL" = "https" ]; then
+      debug "configDomain: setting TLS in $VKDR_KONG_VALUES"
+      $VKDR_YQ -i ".manager.ingress.tls = \"kong-admin-tls\"" $VKDR_KONG_VALUES
+      $VKDR_YQ -i ".admin.ingress.tls = \"kong-admin-tls\"" $VKDR_KONG_VALUES
+    fi
   else
     debug "configDomain: using default 'localhost' domain in $VKDR_KONG_VALUES"
   fi
@@ -151,7 +156,7 @@ createKongSessionConfigSecret() {
     debug "Kong enterprise was not selected, skipping session config secret creation..."
     return
   fi
-  if kubectl get secrets -n $KONG_NAMESPACE | grep -q "kong-session-config" ; then
+  if $VKDR_KUBECTL get secrets -n $KONG_NAMESPACE | grep -q "kong-session-config" ; then
     debug "Kong enterprise session config secret already exists, skipping..."
     return
   fi
@@ -169,7 +174,7 @@ createKongLicenseSecret() {
     debug "Kong enterprise was not selected, skipping license secret creation..."
     return
   fi
-  if kubectl get secrets -n $KONG_NAMESPACE | grep -q "kong-enterprise-license" ; then
+  if $VKDR_KUBECTL get secrets -n $KONG_NAMESPACE | grep -q "kong-enterprise-license" ; then
     debug "Kong enterprise license secret already exists, skipping..."
     return
   fi
@@ -190,7 +195,7 @@ createKongAdminSecret() {
     debug "Kong enterprise was not selected, skipping admin secret creation..."
     return
   fi
-  if kubectl get secrets -n $KONG_NAMESPACE | grep -q "kong-enterprise-superuser-password" ; then
+  if $VKDR_KUBECTL get secrets -n $KONG_NAMESPACE | grep -q "kong-enterprise-superuser-password" ; then
     debug "Kong enterprise admin secret already exists, skipping..."
     return
   fi
@@ -213,7 +218,7 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: $KONG_NAMESPACE
-" | kubectl apply -f -
+" | $VKDR_KUBECTL apply -f -
 }
 
 runFormula

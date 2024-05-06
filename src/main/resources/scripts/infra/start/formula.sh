@@ -5,7 +5,8 @@ VKDR_ENV_TRAEFIK=$1
 VKDR_ENV_HTTP_PORT=$2
 VKDR_ENV_HTTPS_PORT=$3
 VKDR_ENV_NUMBER_NODEPORTS=$4
-VKDR_ENV_VOLUMES=$5
+VKDR_ENV_API_PORT=$5
+VKDR_ENV_VOLUMES=$6
 # internal
 NODEPORT_FLAG=""
 NODEPORT_VALUE=""
@@ -21,7 +22,11 @@ startInfos() {
   boldInfo "VKDR Local Infra Start Routine"
   boldNotice "Enabled Traefik Ingress Controller: ${VKDR_ENV_TRAEFIK}"
   boldNotice "Ports Used: ${VKDR_ENV_HTTP_PORT}/http :${VKDR_ENV_HTTPS_PORT}/https"
-  boldNotice "Kubernetes API: 6443"
+  if [ -z "$VKDR_ENV_API_PORT" ]; then
+    boldNotice "Kubernetes API port: random"
+  else
+    boldNotice "Kubernetes API port: ${VKDR_ENV_API_PORT}"
+  fi
   #boldNotice "Local Registry: 6000"
   boldNotice "Local Docker Hub Registry Mirror (cache): 6001"
   if [ $VKDR_ENV_NUMBER_NODEPORTS -gt 0 ] ; then
@@ -59,7 +64,8 @@ startCluster() {
   fi
   info "Mirror from $(dirname "$0")/../../.util/configs/mirror-registry.yaml"
   cat "$(dirname "$0")/../../.util/configs/mirror-registry.yaml"
-  $VKDR_K3D cluster create vkdr-local \
+  [[ -z "$VKDR_ENV_API_PORT" ]] && API_PORT_FLAG="" || API_PORT_FLAG="--api-port"
+  $VKDR_K3D cluster create vkdr-local $API_PORT_FLAG $VKDR_ENV_API_PORT \
     -p "$VKDR_ENV_HTTP_PORT:80@loadbalancer" \
     -p "$VKDR_ENV_HTTPS_PORT:443@loadbalancer" \
     --registry-use k3d-docker-io:6001  \
