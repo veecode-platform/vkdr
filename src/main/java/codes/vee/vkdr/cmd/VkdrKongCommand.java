@@ -19,4 +19,10 @@ class VkdrKongCommand {
         return ShellExecutor.executeCommand("kong/remove");
     }
 
+    @CommandLine.Command(name = "explain", mixinStandardHelpOptions = true,
+            description = "explain Kong install formulas",
+            exitCodeOnExecutionException = 23)
+    int explain() throws IOException, InterruptedException {
+        return ShellExecutor.explainCommand("kong/explain");
+    }
 }

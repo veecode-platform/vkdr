@@ -24,7 +24,7 @@ startInfos() {
   boldNotice "Kubernetes API: 6443"
   #boldNotice "Local Registry: 6000"
   boldNotice "Local Docker Hub Registry Mirror (cache): 6001"
-  boldNotice "NodePorts available: 9000-$((VKDR_ENV_NUMBER_NODEPORTS+9000)):30000-$((VKDR_ENV_NUMBER_NODEPORTS+30000))"
+  boldNotice "NodePorts available: 9000-$((VKDR_ENV_NUMBER_NODEPORTS+9000-1)):30000-$((VKDR_ENV_NUMBER_NODEPORTS+30000-1))"
   #boldWarn "Using two local unamed Docker Volumes"
   bold "=============================="
 }

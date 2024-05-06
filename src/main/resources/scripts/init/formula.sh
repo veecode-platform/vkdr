@@ -20,6 +20,7 @@ runFormula() {
   installTool "jq" "$VKDR_TOOLS_JQ"
   #validateYQVersion
   installTool "yq" "$VKDR_TOOLS_YQ"
+  installGlow
 
   #installAWS
   #installOkteto
@@ -131,8 +132,18 @@ installDeck() {
     # patches download script in order to change BINLOCATION
     curl -sL https://github.com/kong/deck/releases/download/v"${VKDR_TOOLS_DECK}"/deck_"${VKDR_TOOLS_DECK}"_linux_amd64.tar.gz -o /tmp/deck.tar.gz
     tar -xf /tmp/deck.tar.gz -C /tmp
-    cp /tmp/deck ~/.VKDR/bin
+    cp /tmp/deck ~/.vkdr/bin
     info "Deck installed!"
+  fi
+}
+
+installGlow() {
+  if [[ -f "$VKDR_GLOW" ]]; then
+    notice "Glow already installed. Skipping..."
+  else
+    info "Installing Glow..."
+    "$(dirname "$0")/../.util/download-glow.sh"
+    info "Glow installed!"
   fi
 }
 

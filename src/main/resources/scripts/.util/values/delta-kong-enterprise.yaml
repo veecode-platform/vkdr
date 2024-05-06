@@ -5,4 +5,41 @@ image:
   repository: kong/kong-gateway
 enterprise:
   enabled: true
-  license_secret: "kong-enterprise-license"
+  license_secret: kong-enterprise-license
+  rbac:
+    enabled: true
+    admin_gui_auth: basic-auth
+    session_conf_secret: kong-session-config
+env:
+  proxy_url: "http://localhost:9000"
+  password:
+    valueFrom:
+      secretKeyRef:
+        name: kong-enterprise-superuser-password
+        key: password
+
+ingressController:
+  env:
+    kong_admin_token:
+      valueFrom:
+        secretKeyRef:
+          name: kong-enterprise-superuser-password
+          key: password
+
+admin:
+  ingress:
+    ingressClassName: ""
+manager:
+  ingress:
+    ingressClassName: ""
+proxy:
+  enabled: true
+  type: NodePort
+  http:
+    enabled: true
+    nodePort: 30000
+  tls:
+    enabled: true
+    nodePort: 30001
+  ingress:
+    enabled: false

@@ -1,7 +1,8 @@
 # VKDR - Vertigo Kubernetes Developer Runtime <!-- omit in toc -->
 
 - [Introdução](#introdução)
-- [Executar no shell](#executar-no-shell)
+- [Instalação](#instalação)
+- [Executar no shell via Maven](#executar-no-shell-via-maven)
 - [Build nativo](#build-nativo)
 - [Pasta de scripts](#pasta-de-scripts)
 - [Publicar Releases](#publicar-releases)
@@ -22,9 +23,15 @@ Cada uma das ações da CLI é implementada por um script shell que é empacotad
 
 Exemplo: o comando `infra start` é implementado pelo script `./infra/start/formula.sh` que reside na pasta `src/main/resources/scripts`. Este script é empacotado no binário final e é executado quando o comando `vkdr infra start` é chamado.
 
+## Instalação
 
+Para instalar esta CLI:
 
-## Executar no shell
+```sh
+curl -L get-vkdr.vee.codes | bash
+```
+
+## Executar no shell via Maven
 
 Para executar a CLI no shell (via Maven):
 
@@ -59,6 +66,10 @@ mvn exec:java -Dexec.mainClass=codes.vee.vkdr.VkdrApplication -Dexec.args="kong 
 ## Publicar Releases
 
 O pipeline deste projeto irá gerar um novo release com os assets binários de cada plataforma suportada sempre que um "tagged push" ocorrer em main.
+
+* vkdr-linux-amd64
+* vkdr-osx-amd64
+* vkdr-osx-arm64
 
 ## Instalando o Java
 

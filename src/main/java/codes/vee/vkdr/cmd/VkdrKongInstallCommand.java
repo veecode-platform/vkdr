@@ -49,6 +49,13 @@ public class VkdrKongInstallCommand implements Callable<Integer> {
             description = "Kong license file location, needed for 'enterprise' (falls back to 'free mode')")
     private String license;
 
+    @CommandLine.Option(names = {"-p","--admin", "--admin_password"},
+    defaultValue = "vkdr1234",
+    description = {
+        "Kong admin password (default: 'vkdr1234')",
+        "If 'enterprise' is enabled and 'license' is provided this option will define RBAC admin password."})
+    private String admin_password;
+
     @CommandLine.Option(names = {"--env", "--environment"}, 
         description = {"Kong environment variables, can be used many times in the form '--env key=value'. ",
                         "All entries will become 'KONG_[key]=[value]', with 'key' in uppercase as per helm chart behaviour.",})
@@ -58,6 +65,6 @@ public class VkdrKongInstallCommand implements Callable<Integer> {
     public Integer call() throws Exception {
         Gson gson = new Gson();
         String envJson = gson.toJson(environment);
-        return ShellExecutor.executeCommand("kong/install", domain, String.valueOf(enable_https), String.valueOf(kong_mode), String.valueOf(enable_enterprise), license, image_name, image_tag, envJson);
+        return ShellExecutor.executeCommand("kong/install", domain, String.valueOf(enable_https), String.valueOf(kong_mode), String.valueOf(enable_enterprise), license, image_name, image_tag, admin_password, envJson);
     }
 }

@@ -7,7 +7,8 @@ VKDR_ENV_KONG_ENTERPRISE=$4
 VKDR_ENV_KONG_LICENSE=$5
 VKDR_ENV_KONG_IMAGE_NAME=$6
 VKDR_ENV_KONG_IMAGE_TAG=$7
-VKDR_ENV_KONG_ENV=$8
+VKDR_ENV_KONG_PASSWORD=$8
+VKDR_ENV_KONG_ENV=$9
 
 source "$(dirname "$0")/../../.util/tools-versions.sh"
 source "$(dirname "$0")/../../.util/tools-paths.sh"
@@ -25,6 +26,7 @@ startInfos() {
   boldNotice "License file: $VKDR_ENV_KONG_LICENSE"
   boldNotice "Image name: $VKDR_ENV_KONG_IMAGE_NAME"
   boldNotice "Image tag: $VKDR_ENV_KONG_IMAGE_TAG"
+  boldNotice "Admin password: $VKDR_ENV_KONG_PASSWORD"
   boldNotice "Environment: $VKDR_ENV_KONG_ENV"
   bold "=============================="
 }
@@ -34,7 +36,9 @@ runFormula() {
   settingKong
   createKongNamespace
   createKongLicenseSecret
-  envKong
+  createKongAdminSecret
+  createKongSessionConfigSecret
+  #envKong
   installKong
   postInstallKong
 }
@@ -120,9 +124,27 @@ postInstallKong() {
   info "Kong install finished!"
 }
 
+createKongSessionConfigSecret() {
+  if [ "$VKDR_ENV_KONG_ENTERPRISE" = "false" ]; then
+    debug "Kong enterprise was not selected, skipping session config secret creation..."
+    return
+  fi
+  if kubectl get secrets -n $KONG_NAMESPACE | grep -q "kong-session-config" ; then
+    debug "Kong enterprise session config secret already exists, skipping..."
+    return
+  fi
+  debug "Creating kong-session-config secret from random value (requires 'pwgen')..."
+  ADMIN_COOKIE_SECRET=$(pwgen 15 1)
+  echo '{"cookie_name":"admin_session","cookie_samesite":"Strict","secret":"'$ADMIN_COOKIE_SECRET'","cookie_secure":false,"storage":"kong"}' > /tmp/admin_gui_session_conf
+  $VKDR_KUBECTL create secret generic kong-session-config -n $KONG_NAMESPACE --from-file=admin_gui_session_conf=/tmp/admin_gui_session_conf
+
+  RESULT=$?
+  debug "Create Kong enterprise license secret status = $RESULT"  
+}
+
 createKongLicenseSecret() {
   if [ "$VKDR_ENV_KONG_ENTERPRISE" = "false" ]; then
-    debug "Kong enterprise was not selected, skipping secret creation..."
+    debug "Kong enterprise was not selected, skipping license secret creation..."
     return
   fi
   if kubectl get secrets -n $KONG_NAMESPACE | grep -q "kong-enterprise-license" ; then
@@ -138,7 +160,28 @@ createKongLicenseSecret() {
   fi
 
   RESULT=$?
-  debug "Create Kong enterprise secret status = $RESULT"
+  debug "Create Kong enterprise license secret status = $RESULT"
+}
+
+createKongAdminSecret() {
+  if [ "$VKDR_ENV_KONG_ENTERPRISE" = "false" ]; then
+    debug "Kong enterprise was not selected, skipping admin secret creation..."
+    return
+  fi
+  if kubectl get secrets -n $KONG_NAMESPACE | grep -q "kong-enterprise-superuser-password" ; then
+    debug "Kong enterprise admin secret already exists, skipping..."
+    return
+  fi
+  if [ -n "$VKDR_ENV_KONG_PASSWORD" ]; then
+    debug "Creating kong-enterprise-superuser-password secret from '$VKDR_ENV_KONG_PASSWORD'..."
+    $VKDR_KUBECTL create secret generic kong-enterprise-superuser-password -n $KONG_NAMESPACE --from-literal=password="$VKDR_ENV_KONG_PASSWORD"
+  else
+    debug "Creating random kong-enterprise-superuser-password secret (requires 'pwgen')..."
+    $VKDR_KUBECTL create secret generic kong-enterprise-superuser-password -n $KONG_NAMESPACE --from-literal=password="$(pwgen 15 -1)"
+  fi
+
+  RESULT=$?
+  debug "Create Kong enterprise admin secret status = $RESULT"
 }
 
 createKongNamespace() {
