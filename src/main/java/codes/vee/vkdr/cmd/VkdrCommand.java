@@ -1,15 +1,7 @@
 package codes.vee.vkdr.cmd;
 
-import java.util.concurrent.Callable;
-
-import codes.vee.vkdr.CommandUtils;
-import codes.vee.vkdr.ScriptsExtractor;
-import org.springframework.boot.SpringBootVersion;
 import org.springframework.stereotype.Component;
-import picocli.CommandLine;
-import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Command;
-import picocli.CommandLine.Option;
 
 @Component
 @Command(name = "vkdr", mixinStandardHelpOptions = true,
@@ -20,7 +12,7 @@ import picocli.CommandLine.Option;
                 "JVM: ${java.version} (${java.vendor} ${java.vm.name} ${java.vm.version})",
                 "OS: ${os.name} ${os.version} ${os.arch}"
         },
-        description = "VKDR cli, your local friendly kubernetes",
+        description = "VKDR cli, your friendly local kubernetes",
         subcommands = {
                 VkdrInfraCommand.class,
                 VkdrInitCommand.class,

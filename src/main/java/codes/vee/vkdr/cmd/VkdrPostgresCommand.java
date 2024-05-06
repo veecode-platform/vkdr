@@ -21,5 +21,11 @@ class VkdrPostgresCommand {
                 boolean delete_storage) throws IOException, InterruptedException {
         return ShellExecutor.executeCommand("postgres/remove", String.valueOf(delete_storage));
     }
+    @CommandLine.Command(name = "explain", mixinStandardHelpOptions = true,
+            description = "explain Postgres install formulas",
+            exitCodeOnExecutionException = 53)
+    int explain() throws IOException, InterruptedException {
+        return ShellExecutor.explainCommand("postgres/explain");
+    }
 
 }

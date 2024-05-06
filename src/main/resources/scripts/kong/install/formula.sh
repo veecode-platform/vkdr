@@ -38,6 +38,7 @@ runFormula() {
   createKongLicenseSecret
   createKongAdminSecret
   createKongSessionConfigSecret
+  configDomain
   #envKong
   installKong
   postInstallKong
@@ -103,6 +104,27 @@ settingKong() {
     debug "Kong values file is $VKDR_KONG_VALUES"
     #FILE_DUMP="$(cat $VKDR_KONG_VALUES)"
     #debug $FILE_DUMP
+}
+
+configDomain() {
+  # change domain under VKDR_KONG_VALUES
+  # - manager.ingress.hostname
+  # - admin.ingress.hostname
+  # - env.admin_gui_url
+  # - env.admin_gui_api_url
+  VKDR_PROTOCOL="http"
+  if [ "true" = "$VKDR_ENV_KONG_SECURE" ]; then
+    VKDR_PROTOCOL="https"
+  fi
+  if [ "$VKDR_ENV_KONG_DOMAIN" != "localhost" ]; then
+    debug "configDomain: setting domain to $VKDR_ENV_KONG_DOMAIN in $VKDR_KONG_VALUES"
+    $VKDR_YQ -i ".manager.ingress.hostname = \"manager.$VKDR_ENV_KONG_DOMAIN\"" $VKDR_KONG_VALUES
+    $VKDR_YQ -i ".admin.ingress.hostname = \"manager.$VKDR_ENV_KONG_DOMAIN\"" $VKDR_KONG_VALUES
+    $VKDR_YQ -i ".env.admin_gui_url = \"$VKDR_PROTOCOL://manager.$VKDR_ENV_KONG_DOMAIN/manager\"" $VKDR_KONG_VALUES
+    $VKDR_YQ -i ".env.admin_gui_api_url = \"$VKDR_PROTOCOL://manager.$VKDR_ENV_KONG_DOMAIN\"" $VKDR_KONG_VALUES
+  else
+    debug "configDomain: using default 'localhost' domain in $VKDR_KONG_VALUES"
+  fi
 }
 
 envKong() {
