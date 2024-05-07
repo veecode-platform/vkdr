@@ -49,6 +49,11 @@ proxy:
     enabled: true
     servicePort: 80
     containerPort: 8000
+  ingress:
+    enabled: false
+    hostname: api.localhost
+    ingressClassName: "kong"
+    path: /
   tls:
     enabled: true
     servicePort: 443

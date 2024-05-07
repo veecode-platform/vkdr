@@ -8,7 +8,9 @@ VKDR_ENV_KONG_LICENSE=$5
 VKDR_ENV_KONG_IMAGE_NAME=$6
 VKDR_ENV_KONG_IMAGE_TAG=$7
 VKDR_ENV_KONG_PASSWORD=$8
-VKDR_ENV_KONG_ENV=$9
+VKDR_ENV_KONG_API_INGRESS=$9
+VKDR_ENV_KONG_DEFAULT_INGRESS_CONTROLLER=${10}
+VKDR_ENV_KONG_ENV=${11}
 
 source "$(dirname "$0")/../../.util/tools-versions.sh"
 source "$(dirname "$0")/../../.util/tools-paths.sh"
@@ -27,6 +29,8 @@ startInfos() {
   boldNotice "Image name: $VKDR_ENV_KONG_IMAGE_NAME"
   boldNotice "Image tag: $VKDR_ENV_KONG_IMAGE_TAG"
   boldNotice "Admin password: $VKDR_ENV_KONG_PASSWORD"
+  boldNotice "API Ingress: $VKDR_ENV_KONG_API_INGRESS"
+  boldNotice "Default Ingress Controller: $VKDR_ENV_KONG_DEFAULT_INGRESS_CONTROLLER"
   boldNotice "Environment: $VKDR_ENV_KONG_ENV"
   bold "=============================="
 }
@@ -39,6 +43,8 @@ runFormula() {
   createKongAdminSecret
   createKongSessionConfigSecret
   configDomain
+  configApiDomain
+  configDefaultIngressController
   envKong
   installKong
   postInstallKong
@@ -106,6 +112,35 @@ settingKong() {
     #debug $FILE_DUMP
 }
 
+configDefaultIngressController() {
+  if [ "true" = "$VKDR_ENV_KONG_DEFAULT_INGRESS_CONTROLLER" ]; then
+    debug "configDefaultIngressController: configuring Kong as default ingress controller in $VKDR_KONG_VALUES"
+    $VKDR_YQ eval '.ingressController.ingressClassAnnotations += { "ingressclass.kubernetes.io/is-default-class": "true" }' -i $VKDR_KONG_VALUES
+  fi  
+}
+
+configApiDomain() {
+  # change domain under VKDR_KONG_VALUES
+  # - proxy.ingress.enabled
+  # - proxy.ingress.hostname
+  # - proxy.ingress.tls
+  VKDR_PROTOCOL="http"
+  if [ "true" = "$VKDR_ENV_KONG_SECURE" ]; then
+    VKDR_PROTOCOL="https"
+  fi
+  if [ "$VKDR_ENV_KONG_API_INGRESS" = "true" ]; then
+    debug "configApiDomain: setting gateway domain to 'api.$VKDR_ENV_KONG_DOMAIN' in $VKDR_KONG_VALUES"
+    $VKDR_YQ -i ".proxy.ingress.enabled = \"true\"" $VKDR_KONG_VALUES
+    $VKDR_YQ -i ".proxy.ingress.hostname = \"api.$VKDR_ENV_KONG_DOMAIN\"" $VKDR_KONG_VALUES
+    if [ "$VKDR_PROTOCOL" = "https" ]; then
+      debug "configApiDomain: setting gateway TLS in $VKDR_KONG_VALUES"
+      $VKDR_YQ -i ".proxy.ingress.tls = \"kong-api-tls\"" $VKDR_KONG_VALUES
+    fi
+  else
+    debug "configApiDomain: not using gateway API ingress, skipping domain change"
+  fi
+}
+
 configDomain() {
   # change domain under VKDR_KONG_VALUES
   # - manager.ingress.hostname
@@ -117,18 +152,18 @@ configDomain() {
     VKDR_PROTOCOL="https"
   fi
   if [ "$VKDR_ENV_KONG_DOMAIN" != "localhost" ]; then
-    debug "configDomain: setting domain to $VKDR_ENV_KONG_DOMAIN in $VKDR_KONG_VALUES"
+    debug "configDomain: setting manager domain to $VKDR_ENV_KONG_DOMAIN in $VKDR_KONG_VALUES"
     $VKDR_YQ -i ".manager.ingress.hostname = \"manager.$VKDR_ENV_KONG_DOMAIN\"" $VKDR_KONG_VALUES
     $VKDR_YQ -i ".admin.ingress.hostname = \"manager.$VKDR_ENV_KONG_DOMAIN\"" $VKDR_KONG_VALUES
     $VKDR_YQ -i ".env.admin_gui_url = \"$VKDR_PROTOCOL://manager.$VKDR_ENV_KONG_DOMAIN/manager\"" $VKDR_KONG_VALUES
     $VKDR_YQ -i ".env.admin_gui_api_url = \"$VKDR_PROTOCOL://manager.$VKDR_ENV_KONG_DOMAIN\"" $VKDR_KONG_VALUES
     if [ "$VKDR_PROTOCOL" = "https" ]; then
-      debug "configDomain: setting TLS in $VKDR_KONG_VALUES"
+      debug "configDomain: setting manager TLS in $VKDR_KONG_VALUES"
       $VKDR_YQ -i ".manager.ingress.tls = \"kong-admin-tls\"" $VKDR_KONG_VALUES
       $VKDR_YQ -i ".admin.ingress.tls = \"kong-admin-tls\"" $VKDR_KONG_VALUES
     fi
   else
-    debug "configDomain: using default 'localhost' domain in $VKDR_KONG_VALUES"
+    debug "configDomain: using manager default 'localhost' domain in $VKDR_KONG_VALUES"
   fi
 }
 
