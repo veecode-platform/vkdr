@@ -55,6 +55,9 @@ curl -L $URL -o "/tmp/$FILE"
 
 # Optional: Add instructions to decompress the file if needed
 echo "Decompressing $FILE..."
-tar -xzf "/tmp/$FILE" -C $VKDR_HOME/bin/
+mkdir -p /tmp/glow-tmp
+tar -xzf "/tmp/$FILE" -C /tmp/glow-tmp
+mv /tmp/glow-tmp/glow $VKDR_HOME/bin/
+rm -Rf /tmp/glow-tmp
 
 echo "Download and decompression complete."
