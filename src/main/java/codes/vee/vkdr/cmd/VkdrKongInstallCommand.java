@@ -64,11 +64,19 @@ public class VkdrKongInstallCommand implements Callable<Integer> {
     private boolean api_ingress;
 
     @CommandLine.Option(names = {"--default-ic","--default_ingress_controller"},
-    defaultValue = "false",
-    description = {
+        defaultValue = "false",
+        description = {
             "Makes Kong the cluster's default ingress controller (default: false)",
             "This affects ingress objects without an 'ingressClassName' field."})
     private boolean default_ingress_controller;
+
+    @CommandLine.Option(names = {"--use-nodeport","--use_nodeport"},
+        defaultValue = "false",
+        description = {
+            "Kong will by type 'NodePort' instead of 'LoadBalancer' (default: false)",
+            "In this case Kong will use ports 30000-30001 (should be bound to 9000-9001 in the host)",
+            "Important: this requires '--nodeports=2' to be set in 'infra start'."})
+    private boolean use_nodeport;
 
     @CommandLine.Option(names = {"--env", "--environment"}, 
         description = {
@@ -80,6 +88,6 @@ public class VkdrKongInstallCommand implements Callable<Integer> {
     public Integer call() throws Exception {
         Gson gson = new Gson();
         String envJson = gson.toJson(environment);
-        return ShellExecutor.executeCommand("kong/install", domain, String.valueOf(enable_https), String.valueOf(kong_mode), String.valueOf(enable_enterprise), license, image_name, image_tag, admin_password, String.valueOf(api_ingress), String.valueOf(default_ingress_controller), envJson);
+        return ShellExecutor.executeCommand("kong/install", domain, String.valueOf(enable_https), String.valueOf(kong_mode), String.valueOf(enable_enterprise), license, image_name, image_tag, admin_password, String.valueOf(api_ingress), String.valueOf(default_ingress_controller), String.valueOf(use_nodeport), envJson);
     }
 }

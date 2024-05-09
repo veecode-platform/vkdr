@@ -10,7 +10,8 @@ VKDR_ENV_KONG_IMAGE_TAG=$7
 VKDR_ENV_KONG_PASSWORD=$8
 VKDR_ENV_KONG_API_INGRESS=$9
 VKDR_ENV_KONG_DEFAULT_INGRESS_CONTROLLER=${10}
-VKDR_ENV_KONG_ENV=${11}
+VKDR_ENV_KONG_USE_NODEPORT=${11}
+VKDR_ENV_KONG_ENV=${12}
 
 source "$(dirname "$0")/../../.util/tools-versions.sh"
 source "$(dirname "$0")/../../.util/tools-paths.sh"
@@ -44,6 +45,7 @@ runFormula() {
   createKongSessionConfigSecret
   configDomain
   configApiDomain
+  configUseNodePort
   configDefaultIngressController
   envKong
   installKong
@@ -119,6 +121,13 @@ configDefaultIngressController() {
   fi  
 }
 
+configUseNodePort() {
+  if [ "true" = "$VKDR_ENV_KONG_USE_NODEPORT" ]; then
+    debug "configUseNodePort: configuring Kong to use NodePort instead of LoadBalancer in $VKDR_KONG_VALUES"
+    $VKDR_YQ eval '.proxy.type = "NodePort"' -i $VKDR_KONG_VALUES
+  fi
+}
+
 configApiDomain() {
   # change domain under VKDR_KONG_VALUES
   # - proxy.ingress.enabled
@@ -132,7 +141,8 @@ configApiDomain() {
     debug "configApiDomain: setting gateway domain to 'api.$VKDR_ENV_KONG_DOMAIN' in $VKDR_KONG_VALUES"
     $VKDR_YQ -i ".proxy.ingress.enabled = \"true\"" $VKDR_KONG_VALUES
     $VKDR_YQ -i ".proxy.ingress.hostname = \"api.$VKDR_ENV_KONG_DOMAIN\"" $VKDR_KONG_VALUES
-    if [ "$VKDR_PROTOCOL" = "https" ]; then
+    #$VKDR_YQ -i ".proxy.tls.overrideServiceTargetPort = 80" $VKDR_KONG_VALUES
+    if [ "$VKDR_PROTOCOL" = "https" ] && [ "$VKDR_ENV_KONG_DOMAIN" != "localhost" ]; then
       debug "configApiDomain: setting gateway TLS in $VKDR_KONG_VALUES"
       $VKDR_YQ -i ".proxy.ingress.tls = \"kong-api-tls\"" $VKDR_KONG_VALUES
     fi
@@ -183,6 +193,12 @@ installKong() {
 }
 
 postInstallKong() {
+  # patching very very very special case, must check later
+  if [ "$VKDR_ENV_KONG_API_INGRESS" = "true" ]; then
+    debug "postInstallKong: patching ingress for special case (careful, not sure here)"
+    kubectl patch ingress -n $KONG_NAMESPACE kong-kong-proxy \
+      --type='json' -p='[{"op": "replace", "path": "/spec/rules/0/http/paths/0/backend/service/port/number", "value": 80}]'
+  fi
   info "Kong install finished!"
 }
 

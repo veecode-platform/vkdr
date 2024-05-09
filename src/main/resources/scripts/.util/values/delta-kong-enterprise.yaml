@@ -11,7 +11,7 @@ enterprise:
     admin_gui_auth: basic-auth
     session_conf_secret: kong-session-config
 env:
-  proxy_url: "http://localhost:9000"
+  #proxy_url: "http://localhost:9000"
   password:
     valueFrom:
       secretKeyRef:
@@ -32,14 +32,14 @@ admin:
 manager:
   ingress:
     ingressClassName: ""
-proxy:
-  enabled: true
-  type: NodePort
-  http:
-    enabled: true
-    nodePort: 30000
-  tls:
-    enabled: true
-    nodePort: 30001
-  ingress:
-    enabled: false
+#proxy:
+#  enabled: true
+#  type: NodePort
+#  http:
+#    enabled: true
+#    nodePort: 30000
+#  tls:
+#    enabled: true
+#    nodePort: 30001
+#  ingress:
+#    enabled: false

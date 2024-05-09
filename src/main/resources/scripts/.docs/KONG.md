@@ -7,6 +7,7 @@ This formula installs Kong API Gateway on a Kubernetes cluster with several poss
 - [Kong OSS in standard (traditional) mode with a shared database](#kong-oss-in-standard-traditional-mode-with-a-shared-database)
 - [Kong OSS in standard (traditional) mode with a custom domain (good for remote use)](#kong-oss-in-standard-traditional-mode-with-a-custom-domain-good-for-remote-use)
 - [Kong Enterprise in standard (traditional) mode as a secondary Ingress Controller](#kong-enterprise-in-standard-traditional-mode-as-a-secondary-ingress-controller)
+- [Kong Enterprise in standard (traditional) mode with custom domain](#kong-enterprise-in-standard-traditional-mode-with-custom-domain)
 - [Kong custom image in standard (traditional) mode (custom plugins)](#kong-custom-image-in-standard-traditional-mode-custom-plugins)
 
 
@@ -69,24 +70,35 @@ vkdr kong install -m standard -d mydomain.com -s
 - Kong Manager: https://manager.mydomain.com/manager
 - Kong Admin API: https://manager.mydomain.com
 
-Making "manager.mydomain.com" resolve to the public IP address of the hosts is required for this configuration to work.
+Making "manager.mydomain.com" resolve to the public IP address of the host is required for this configuration to work.
+
+Please notice that the `-d` domain flag is a suffix for "manager.DOMAIN" endpoints for Kong Manager and Admin API, **but when using this flag you are expected to use ports 80/443 as per above.** The `-s` flag will generate tls ingresses that will result in self-signed certificates (default behaviour).
 
 ## Kong Enterprise in standard (traditional) mode as a secondary Ingress Controller
 
 ```sh
 # starts cluster
-vkdr infra start --traefik --nodeports=2
+vkdr infra start --traefik --nodeports=2 # nodeports 30000/30001 exposed as 9000/9001
 # starts Kong
-vkdr kong install -e -l /full_path/license.json -m standard -p mypassword
+vkdr kong install -e -l /full_path/license.json -m standard -p mypassword --use-nodeport
 ```
 
-- Kong: http://localhost:9000
+- Kong: http://localhost:8000
 - Kong Manager: http://manager.localhost:8000/manager
 - Kong Admin API: http://manager.localhost:8000
 
-There are two ingress controllers - Traefik as the default in 8000/8001 and Kong in 9000/9001.
+There are two ingress controllers in this example - Traefik as the default in 8000/8001 and Kong in 9000/9001. The `--use-nodeport` flag in `vkdr` starts Kong in nodeports 30000/30001 (exposed as 9000/9001). This addresses the common need to split Manager/Admin API trafic from the default gateway ports.
 
-If `-l /full_path/license.json` is not provided, Kong will start in "free mode". If both `-e` and `-l` are provided, a valid license will enable Kong RBAC and both Kong Manager and Admin API will require authentication (user "kong_admin", password as informed in `-p`).
+If `-l /full_path/license.json` is not provided together with `-e` then Kong will start in "free mode". If both `-e` and `-l` are provided, a valid license will enable Kong RBAC and both Kong Manager and Admin API will require authentication (user "kong_admin", password as informed in `-p`).
+
+## Kong Enterprise in standard (traditional) mode with custom domain
+
+```sh
+# starts cluster
+vkdr infra start --http 80 --https 443
+# starts Kong
+vkdr kong install -e -l /full_path/license.json -m standard -p mypassword --default-ic -d mydomain.com -s
+```
 
 ## Kong custom image in standard (traditional) mode (custom plugins)
 
