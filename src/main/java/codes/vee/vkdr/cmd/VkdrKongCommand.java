@@ -10,7 +10,7 @@ import java.io.IOException;
 @CommandLine.Command(name = "kong", mixinStandardHelpOptions = true, exitCodeOnExecutionException = 20,
         description = "install/remove Kong Gateway",
         subcommands = {VkdrKongInstallCommand.class})
-class VkdrKongCommand {
+public class VkdrKongCommand {
 
     @CommandLine.Command(name = "remove", mixinStandardHelpOptions = true,
             description = "remove Kong Gateway",

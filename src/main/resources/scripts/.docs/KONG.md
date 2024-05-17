@@ -100,13 +100,19 @@ vkdr infra start --http 80 --https 443
 vkdr kong install -e -l /full_path/license.json -m standard -p mypassword --default-ic -d mydomain.com -s
 ```
 
+- Kong: http://localhost and https://localhost (self-signed) 
+- Kong Manager: https://manager.mydomain.com/manager
+- Kong Admin API: https://manager.mydomain.com
+
+Kong is the default ingress controller of the cluster. Both `-e` and `-l` enable RBAC (user "kong_admin").
+
 ## Kong custom image in standard (traditional) mode (custom plugins)
 
 ```sh
 # starts cluster
 vkdr infra up
 # starts Kong
-vkdr kong install -m standard -i veecode/kong-cred -t 3.6.0-r2 --env "plugins=bundled,oidc,oidc-acl,mtls-auth,mtls-acl,late-file-log"
+vkdr kong install -m standard -i veecode/kong-cred -t 3.6.1-r1 --env "plugins=bundled,oidc,oidc-acl,mtls-auth,mtls-acl,late-file-log"
 ```
 
 - Kong: http://localhost:8000

@@ -1,0 +1,24 @@
+# keycloak default values
+
+auth:
+  adminUser: admin
+  adminPassword: admin
+
+proxy: edge
+
+extraEnvVars:
+  - name: KC_HOSTNAME_STRICT
+    value: "false"
+  - name: KC_PROXY_HEADERS
+    value: "forwarded"
+
+ingress:
+  enabled: true
+  hostname: auth.localhost
+
+postgresql:
+  enabled: true
+  auth:
+    username: keycloak
+    password: keycloak
+    database: keycloak

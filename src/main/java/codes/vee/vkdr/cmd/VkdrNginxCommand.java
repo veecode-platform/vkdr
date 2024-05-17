@@ -16,9 +16,16 @@ class VkdrNginxCommand  {
             description = "install nginx ingress controller",
             exitCodeOnExecutionException = 31)
     static class NginxInstallCommand implements Callable<Integer> {
+        @CommandLine.Option(names = {"--default-ic","--default_ingress_controller"},
+                defaultValue = "false",
+                description = {
+                        "Makes nginx the cluster's default ingress controller (default: false)",
+                        "This affects ingress objects without an 'ingressClassName' field."})
+        private boolean default_ingress_controller;
+
         @Override
         public Integer call() throws IOException, InterruptedException {
-            return ShellExecutor.executeCommand("nginx/install");
+            return ShellExecutor.executeCommand("nginx/install", String.valueOf(default_ingress_controller));
         }
     }
     @CommandLine.Command(name = "remove", mixinStandardHelpOptions = true,

@@ -1,5 +1,6 @@
 package codes.vee.vkdr.cmd;
 
+import codes.vee.vkdr.cmd.keycloak.VkdrKeycloakCommand;
 import org.springframework.stereotype.Component;
 import picocli.CommandLine.Command;
 
@@ -19,6 +20,7 @@ import picocli.CommandLine.Command;
                 VkdrNginxCommand.class,
                 VkdrPostgresCommand.class,
                 VkdrKongCommand.class,
+                VkdrDevPortalCommand.class,
                 VkdrKeycloakCommand.class})
 public class VkdrCommand {
 

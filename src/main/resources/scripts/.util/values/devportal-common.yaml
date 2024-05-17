@@ -1,0 +1,54 @@
+replicas: 1
+image:
+  repository: veecode/devportal-bundle
+  tag: latest
+  pullPolicy: IfNotPresent
+
+environment: development
+
+service:
+  enabled: true
+  name: devportal
+  type: ClusterIP
+  containerPort: 7007
+
+ingress:
+  enabled: true
+  host: devportal.localhost
+
+appConfig:
+  title: Devportal
+  app:
+    baseUrl: devportal.localhost
+  backend:
+    baseUrl: devportal.localhost
+    secret: 56616a93-ac28-42ab-929d-6ec1fc008c54
+  database:
+    client: better-sqlite3
+
+auth:
+  providers:
+    github:
+      clientId: <github-client-id>
+      clientSecret: <github-client-secret>
+
+integrations:
+  github:
+    token: <github-token>
+
+catalog:
+  providers:
+    github:
+      organization: <github-organization> # string
+      catalogPath: /catalog-info.yaml # string
+      filters:
+        branch: main # Optional. Uses `master` as default
+        repository: <repository-name> #suggestion devportal-catalog
+        validateLocationsExist: true
+
+platform:
+  guest:
+    enabled: true
+  apiManagement:
+    enabled: false
+    readOnlyMode: false
