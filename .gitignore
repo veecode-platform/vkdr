@@ -35,3 +35,5 @@ build/
 ## Mac
 **/.DS_Store
 
+# mvn versions
+pom.xml.versionsBackup
