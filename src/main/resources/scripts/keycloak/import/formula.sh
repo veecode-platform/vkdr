@@ -22,7 +22,7 @@ runFormula() {
 }
 
 import() {
-  debug "Keycloak import realm"
+  debug "TODO: Keycloak import realm"
 }
 
 postImport() {

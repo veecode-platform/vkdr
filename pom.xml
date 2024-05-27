@@ -5,12 +5,13 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.1.9</version>
+		<version>3.3.0</version>
+		<!-- <version>3.1.9</version> -->
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>codes.vee</groupId>
 	<artifactId>vkdr</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.17-SNAPSHOT</version>
 	<name>vkdr</name>
 	<description>VKDR CLI Project</description>
 	<properties>
@@ -20,18 +21,20 @@
 		<dependency>
 			<groupId>info.picocli</groupId>
 			<artifactId>picocli-spring-boot-starter</artifactId>
-			<version>4.7.5</version>
+			<version>4.7.6</version>
 		</dependency>
+		<!-- abaixo importante para native -->
 		<dependency>
 			<groupId>info.picocli</groupId>
 			<artifactId>picocli-codegen</artifactId>
-			<version>4.7.5</version>
+			<version>4.7.6</version>
 			<optional>true</optional>
 		</dependency>
+		<!-- acima importante para native -->
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
-			<version>2.10.1</version>
+			<version>2.11.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -77,6 +80,11 @@
 						</goals>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>versions-maven-plugin</artifactId>
+				<version>2.16.2</version> <!-- Use the latest version -->
 			</plugin>
 		</plugins>
 	</build>

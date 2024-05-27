@@ -1,11 +1,9 @@
 package codes.vee.vkdr.cmd;
 
 import codes.vee.vkdr.ShellExecutor;
-import com.google.gson.Gson;
 import org.springframework.stereotype.Component;
 import picocli.CommandLine;
 
-import java.io.IOException;
 import java.util.concurrent.Callable;
 
 @Component
