@@ -1,7 +1,8 @@
 # Define the version
 VERSION=$(shell mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
 RELEASE_VERSION=$(shell echo $(VERSION) | sed 's/-SNAPSHOT//')
-NEXT_VERSION=$(shell echo $(RELEASE_VERSION) | awk -F. -v OFS=. '{$(NF)++; print $0"-SNAPSHOT"}')
+#NEXT_VERSION=$(shell echo $(RELEASE_VERSION) | awk -F. -v OFS=. '{$(NF)++; print $0"-SNAPSHOT"}')
+NEXT_VERSION=$(shell echo $(RELEASE_VERSION) | awk -F. '{print $$1"."$$2"."$$3+1"-SNAPSHOT"}')
 
 # Targets
 .PHONY: release bump
@@ -23,6 +24,7 @@ git-tag:
 
 # Bump to the next snapshot version
 bump-version:
+	#echo "Next version: $(NEXT_VERSION)"
 	mvn versions:set -DnewVersion=$(NEXT_VERSION)
 	mvn versions:commit
 	git commit -am "Bump version to $(NEXT_VERSION)"
