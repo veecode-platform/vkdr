@@ -11,7 +11,8 @@ enterprise:
     admin_gui_auth: basic-auth
     session_conf_secret: kong-session-config
 env:
-  #proxy_url: "http://localhost:9000"
+  admin_gui_url: "http://manager.localhost/manager"
+  admin_gui_api_url: "http://manager.localhost"
   password:
     valueFrom:
       secretKeyRef:

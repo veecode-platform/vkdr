@@ -71,14 +71,25 @@ O pipeline deste projeto irá gerar um novo release com os assets binários de c
 * vkdr-osx-amd64
 * vkdr-osx-arm64
 
-Para fazer um tagged push:
+Para fazer um tagged push e gerar um release manualmente:
 
 ```shell
 git tag -a v1.0.x -m "v1.0.x"
 git push --tags
 ```
 
-TODO: alguma forma menos manual para gerar release.
+Para gerar release por automação definimos a versão na forma tradicional do Maven (x.y.z-SNAPSHOT) e o `Makefile` possui uma task que automatiza a task inteira (inclusive o "bump" de versão):
+
+```shell
+make release
+```
+
+Para uma versão na POM definida como "x.y.z-SNAPSHOT" será feito:
+
+- Commit de versão "x.y.z"
+- Tag "vx.y.z" ("v" como prefixo)
+- Push (com a tag), o que dispara o pipeline da release no Github
+- Commit/push de versão "x.y.z+1-SNAPSHOT"
 
 ## Instalando o Java
 

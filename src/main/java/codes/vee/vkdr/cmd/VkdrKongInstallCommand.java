@@ -78,16 +78,29 @@ public class VkdrKongInstallCommand implements Callable<Integer> {
             "Important: this requires '--nodeports=2' to be set in 'infra start'."})
     private boolean use_nodeport;
 
+    @CommandLine.Option(names = {"--oidc","--admin-oidc","--admin_oidc"},
+            defaultValue = "false",
+            description = {
+                    "Kong Admin API/UI will use OIDC authentication (default: false)",
+                    "Assumes Keycloak is installed and a 'vkdr' realm contains a 'kong-admin' OpenID Connect client.",
+                    "OIDC auth data will be exported from 'vkdr' realm to generate Kong admin GUI auth."})
+    private boolean admin_oidc;
+
+    @CommandLine.Option(names = {"--log-level", "--log_level"},
+            defaultValue = "notice",
+            description = "Kong log level")
+    private String log_level;
+
     @CommandLine.Option(names = {"--env", "--environment"}, 
         description = {
                 "Kong environment variables, can be used many times in the form '--env key=value'. ",
-                "All entries will become 'KONG_[key]=[value]', with 'key' in uppercase as per helm chart behaviour.",})
+                "All entries will become 'KONG_[key]=[value]', with 'key' in uppercase as per helm chart behaviour."})
     private Map<String,String> environment = new HashMap<String,String>();
 
     @Override
     public Integer call() throws Exception {
         Gson gson = new Gson();
         String envJson = gson.toJson(environment);
-        return ShellExecutor.executeCommand("kong/install", domain, String.valueOf(enable_https), String.valueOf(kong_mode), String.valueOf(enable_enterprise), license, image_name, image_tag, admin_password, String.valueOf(api_ingress), String.valueOf(default_ingress_controller), String.valueOf(use_nodeport), envJson);
+        return ShellExecutor.executeCommand("kong/install", domain, String.valueOf(enable_https), String.valueOf(kong_mode), String.valueOf(enable_enterprise), license, image_name, image_tag, admin_password, String.valueOf(api_ingress), String.valueOf(default_ingress_controller), String.valueOf(use_nodeport), String.valueOf(admin_oidc), log_level, envJson);
     }
 }

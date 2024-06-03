@@ -11,7 +11,9 @@ VKDR_ENV_KONG_PASSWORD=$8
 VKDR_ENV_KONG_API_INGRESS=$9
 VKDR_ENV_KONG_DEFAULT_INGRESS_CONTROLLER=${10}
 VKDR_ENV_KONG_USE_NODEPORT=${11}
-VKDR_ENV_KONG_ENV=${12}
+VKDR_ENV_KONG_ADMIN_OIDC=${12}
+VKDR_ENV_KONG_LOG_LEVEL=${13}
+VKDR_ENV_KONG_ENV=${14}
 
 source "$(dirname "$0")/../../.util/tools-versions.sh"
 source "$(dirname "$0")/../../.util/tools-paths.sh"
@@ -32,6 +34,8 @@ startInfos() {
   boldNotice "Admin password: $VKDR_ENV_KONG_PASSWORD"
   boldNotice "API Ingress: $VKDR_ENV_KONG_API_INGRESS"
   boldNotice "Default Ingress Controller: $VKDR_ENV_KONG_DEFAULT_INGRESS_CONTROLLER"
+  boldNotice "Admin GUI OIDC: $VKDR_ENV_KONG_ADMIN_OIDC"
+  boldNotice "Log level: $VKDR_ENV_KONG_LOG_LEVEL"
   boldNotice "Environment: $VKDR_ENV_KONG_ENV"
   bold "=============================="
 }
@@ -47,6 +51,8 @@ runFormula() {
   configApiDomain
   configUseNodePort
   configDefaultIngressController
+  configAdminOIDC
+  configLogLevel
   envKong
   installKong
   postInstallKong
@@ -112,6 +118,23 @@ settingKong() {
     debug "Kong values file is $VKDR_KONG_VALUES"
     #FILE_DUMP="$(cat $VKDR_KONG_VALUES)"
     #debug $FILE_DUMP
+}
+
+configAdminOIDC() {
+  if [ "true" = "$VKDR_ENV_KONG_ADMIN_OIDC" ]; then
+    debug "configAdminOIDC: configuring OIDC for Admin UI/API in $VKDR_KONG_VALUES"
+    $VKDR_YQ eval '.enterprise.rbac.admin_gui_auth = "openid-connect"' -i $VKDR_KONG_VALUES
+    $VKDR_YQ eval '.enterprise.rbac.admin_gui_auth_conf_secret = "kong-admin-oidc"' -i $VKDR_KONG_VALUES
+    debug "configAdminOIDC: (re)creating 'kong-admin-oidc' secret for OIDC"
+    # MUST become a one-liner
+    jq '.' -c "$(dirname "$0")/../../.util/values/admin_gui_auth_conf" > /tmp/admin_gui_auth_conf
+    $VKDR_KUBECTL delete secret kong-admin-oidc -n $KONG_NAMESPACE
+    $VKDR_KUBECTL create secret generic kong-admin-oidc "--from-file=/tmp/admin_gui_auth_conf" -n $KONG_NAMESPACE
+  fi
+}
+
+configLogLevel() {
+  $VKDR_YQ eval ".env.log_level = \"$VKDR_ENV_KONG_LOG_LEVEL\"" -i $VKDR_KONG_VALUES
 }
 
 configDefaultIngressController() {

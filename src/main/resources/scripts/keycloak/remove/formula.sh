@@ -4,7 +4,7 @@ source "$(dirname "$0")/../../.util/tools-versions.sh"
 source "$(dirname "$0")/../../.util/tools-paths.sh"
 source "$(dirname "$0")/../../.util/log.sh"
 
-KEYCLOAK_NAMESPACE=keycloak
+KEYCLOAK_NAMESPACE=vkdr
 
 startInfos() {
   boldInfo "Keycloak Remove"

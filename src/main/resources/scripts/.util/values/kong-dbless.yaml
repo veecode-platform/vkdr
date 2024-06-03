@@ -6,10 +6,9 @@ env:
   admin_gui_url: "http://manager.localhost:8000/manager"
   admin_gui_path: "/manager"
   admin_gui_api_url: "http://manager.localhost:8000"
-  #proxy_url: "http://localhost:8000"
 image:
   repository: kong
-  tag: "3.6"
+  tag: "3.7"
 admin:
   enabled: true
   type: ClusterIP

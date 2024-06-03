@@ -16,9 +16,14 @@ public class  VkdrKeycloakImportCommand implements Callable<Integer> {
             description = "Realm import file")
     private String import_file;
 
+    @CommandLine.Option(names = {"-a","--admin", "--admin_password"},
+            defaultValue = "",
+            description = "Admin password")
+    private String admin_password;
+
     @Override
     public Integer call() throws Exception {
-        return ShellExecutor.executeCommand("keycloak/import");
+        return ShellExecutor.executeCommand("keycloak/import", import_file, admin_password);
     }
 
 }

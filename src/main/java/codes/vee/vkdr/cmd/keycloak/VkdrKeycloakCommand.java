@@ -9,7 +9,10 @@ import java.io.IOException;
 @Component
 @CommandLine.Command(name = "keycloak", mixinStandardHelpOptions = true, exitCodeOnExecutionException = 40,
         description = "install/remove Keycloak",
-        subcommands = {VkdrKeycloakInstallCommand.class, VkdrKeycloakImportCommand.class})
+        subcommands = {
+                VkdrKeycloakInstallCommand.class,
+                VkdrKeycloakImportCommand.class,
+                VkdrKeycloakExportCommand.class})
 public class VkdrKeycloakCommand {
 
     @CommandLine.Command(name = "remove", mixinStandardHelpOptions = true,

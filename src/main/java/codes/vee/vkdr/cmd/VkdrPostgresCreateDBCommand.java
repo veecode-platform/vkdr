@@ -34,8 +34,13 @@ public class VkdrPostgresCreateDBCommand implements Callable<Integer> {
     description = "Store password in secret")
     private boolean store_secret;
 
+    @CommandLine.Option(names = {"--drop", "--drop-database", "--drop_database"},
+            defaultValue = "false",
+            description = "Drop (destroy) database if it exists")
+    private boolean drop_database;
+
     @Override
     public Integer call() throws Exception {
-        return ShellExecutor.executeCommand("postgres/createdb", database_name, admin_password, user_name, password, String.valueOf(store_secret));
+        return ShellExecutor.executeCommand("postgres/createdb", database_name, admin_password, user_name, password, String.valueOf(store_secret), String.valueOf(drop_database));
     }
 }
