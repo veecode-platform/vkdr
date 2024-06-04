@@ -128,6 +128,19 @@ configAdminOIDC() {
     debug "configAdminOIDC: (re)creating 'kong-admin-oidc' secret for OIDC"
     # MUST become a one-liner
     jq '.' -c "$(dirname "$0")/../../.util/values/admin_gui_auth_conf" > /tmp/admin_gui_auth_conf
+    # fix domain and secure for "http://auth.localhost" and "http://manager.localhost" references
+    debug "configAdminOIDC: fixing 'http://auth.localhost' and 'http://manager.localhost' references in /tmp/admin_gui_auth_conf"
+    VKDR_PROTOCOL="http"
+    if [ "true" = "$VKDR_ENV_KONG_SECURE" ]; then
+      VKDR_PROTOCOL="https"
+      jq '.session_cookie_secure = true' /tmp/admin_gui_auth_conf > /tmp/admin_gui_auth_conf.tmp
+      mv /tmp/admin_gui_auth_conf.tmp /tmp/admin_gui_auth_conf
+    fi
+    MANAGER_URL="$VKDR_PROTOCOL://manager.$VKDR_ENV_KONG_DOMAIN"
+    AUTH_URL="$VKDR_PROTOCOL://auth.$VKDR_ENV_KONG_DOMAIN"
+    sed -i.bak1 's|http://auth.localhost|'"$AUTH_URL"'|g' /tmp/admin_gui_auth_conf
+    sed -i.bak2 's|http://manager.localhost|'"$MANAGER_URL"'|g' /tmp/admin_gui_auth_conf
+
     $VKDR_KUBECTL delete secret kong-admin-oidc -n $KONG_NAMESPACE
     $VKDR_KUBECTL create secret generic kong-admin-oidc "--from-file=/tmp/admin_gui_auth_conf" -n $KONG_NAMESPACE
   fi
@@ -193,7 +206,11 @@ configDomain() {
     if [ "$VKDR_PROTOCOL" = "https" ]; then
       debug "configDomain: setting manager TLS in $VKDR_KONG_VALUES"
       $VKDR_YQ -i ".manager.ingress.tls = \"kong-admin-tls\"" $VKDR_KONG_VALUES
+      $VKDR_YQ -i ".manager.ingress.annotations.\"konghq.com/protocols\" = \"https\"" $VKDR_KONG_VALUES
+      $VKDR_YQ -i ".manager.ingress.annotations.\"konghq.com/https-redirect-status-code\" = \"301\"" $VKDR_KONG_VALUES
       $VKDR_YQ -i ".admin.ingress.tls = \"kong-admin-tls\"" $VKDR_KONG_VALUES
+      $VKDR_YQ -i ".admin.ingress.annotations.\"konghq.com/https-redirect-status-code\" = \"301\"" $VKDR_KONG_VALUES
+      $VKDR_YQ -i ".admin.ingress.annotations.\"konghq.com/protocols\" = \"https\"" $VKDR_KONG_VALUES
     fi
   else
     debug "configDomain: using manager default 'localhost' domain in $VKDR_KONG_VALUES"

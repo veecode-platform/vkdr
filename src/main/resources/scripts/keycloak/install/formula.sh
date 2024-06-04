@@ -45,10 +45,24 @@ configure() {
 }
 
 configDomain() {
-  if [ "$VKDR_ENV_KONG_DOMAIN" != "localhost" ]; then
+  VKDR_PROTOCOL="http"
+  if [ "true" = "$VKDR_ENV_KEYCLOAK_SECURE" ]; then
+    VKDR_PROTOCOL="https"
+  fi
+  if [ "$VKDR_ENV_KEYCLOAK_DOMAIN" != "localhost" ]; then
     debug "configDomain: setting keycloak hostname to 'auth.$VKDR_ENV_KEYCLOAK_DOMAIN' in $VKDR_KEYCLOAK_VALUES"
     $VKDR_YQ eval ".ingress.hostname = \"auth.$VKDR_ENV_KEYCLOAK_DOMAIN\"" -i $VKDR_KEYCLOAK_VALUES
   fi
+  if [ "$VKDR_ENV_KEYCLOAK_SECURE" = "true" ]; then
+    debug "configDomain: setting keycloak ingress TLS in $VKDR_KEYCLOAK_VALUES"
+    $VKDR_YQ eval ".ingress.tls = true" -i $VKDR_KEYCLOAK_VALUES
+    $VKDR_YQ -i ".ingress.annotations.\"konghq.com/protocols\" = \"https\"" $VKDR_KEYCLOAK_VALUES
+    $VKDR_YQ -i ".ingress.annotations.\"konghq.com/https-redirect-status-code\" = \"301\"" $VKDR_KEYCLOAK_VALUES
+  fi
+  export NEW_HOSTNAME="$VKDR_PROTOCOL://auth.$VKDR_ENV_KEYCLOAK_DOMAIN"
+  debug "configDomain: fixing KC_HOSTNAME_URL to $NEW_HOSTNAME"
+  yq e '( .extraEnvVars[] | select(.name == "KC_HOSTNAME_URL") ).value = env(NEW_HOSTNAME)' -i $VKDR_KEYCLOAK_VALUES
+
 }
 
 install() {

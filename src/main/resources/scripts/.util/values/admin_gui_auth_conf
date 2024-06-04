@@ -14,9 +14,9 @@
      "logout_redirect_uri": ["http://manager.localhost/manager"],
      "scopes": ["profile", "email", "offline_access"],
      "authenticated_groups_claim": ["realm_access.roles"],
-     "auth_methods": ["authorization_code", "bearer"],
      "admin_auto_create_rbac_token_disabled": false,
      "admin_auto_create": true,
+     "display_errors": true,
      "session_cookie_secure": false,
      "session_cookie_same_site": "Strict"
 }

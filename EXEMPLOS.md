@@ -89,6 +89,20 @@ Pré-requisitos:
 - Arquivo de licença do Kong
 
 ```sh
+vkdr infra start --http 80 --https 443
+vkdr postgres install
+vkdr postgres createdb -d kong -u kong -p kongpwd -s --drop
+vkdr kong install -e -l /full_path/license.json -m standard --default-ic -d localdomain -s
+vkdr postgres createdb -d keycloak -u keycloak -p keycloakpwd -s
+vkdr keycloak install -d localdomain -s
+vkdr keycloak import -f $(pwd)/samples/realm-export.json
+# testar ambos no browser antes de ligar OIDC
+vkdr kong install -e -l /full_path/license.json -m standard --oidc --default-ic -d localdomain -s
+```
+
+
+
+```sh
 vkdr infra start --http 80 --https 443 --traefik --nodeports=2
 vkdr postgres install
 vkdr postgres createdb -d keycloak -u keycloak -p keycloakpwd -s
