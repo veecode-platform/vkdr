@@ -252,7 +252,7 @@ createKongSessionConfigSecret() {
     return
   fi
   debug "Creating kong-session-config secret from random value (requires 'pwgen')..."
-  ADMIN_COOKIE_SECRET=$(pwgen 15 1)
+  ADMIN_COOKIE_SECRET=$(head -c 64 /dev/urandom | LC_CTYPE=C tr -dc 'a-zA-Z0-9!@#$%^&*()_+-=[]{}|;:,.<>?' | head -c 16)
   echo '{"cookie_name":"admin_session","cookie_samesite":"Strict","secret":"'$ADMIN_COOKIE_SECRET'","cookie_secure":false,"storage":"kong"}' > /tmp/admin_gui_session_conf
   $VKDR_KUBECTL create secret generic kong-session-config -n $KONG_NAMESPACE --from-file=admin_gui_session_conf=/tmp/admin_gui_session_conf
 
