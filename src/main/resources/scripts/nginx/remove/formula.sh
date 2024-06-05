@@ -15,7 +15,7 @@ runFormula() {
 }
 
 removeKong() {
-  helm delete ingress-nginx
+  $VKDR_HELM delete ingress-nginx
 }
 
 runFormula

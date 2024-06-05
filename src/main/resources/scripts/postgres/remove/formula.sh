@@ -23,10 +23,10 @@ runFormula() {
 
 remove() {
   boldInfo "Removing postgres..."
-  helm delete postgres -n $POSTGRES_NAMESPACE
+  $VKDR_HELM delete postgres -n $POSTGRES_NAMESPACE
   if [ "$VKDR_ENV_POSTGRES_DELETE_STORAGE" = "true" ]; then
     boldInfo "Deleting postgres PVC..."
-    kubectl delete pvc -n $POSTGRES_NAMESPACE "data-postgres-postgresql-0"
+    $VKDR_KUBECTL delete pvc -n $POSTGRES_NAMESPACE "data-postgres-postgresql-0"
   fi
 }
 

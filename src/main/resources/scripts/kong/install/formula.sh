@@ -236,7 +236,7 @@ postInstallKong() {
   # patching very very very special case, must check later
   if [ "$VKDR_ENV_KONG_API_INGRESS" = "true" ]; then
     debug "postInstallKong: patching ingress for special case (careful, not sure here)"
-    kubectl patch ingress -n $KONG_NAMESPACE kong-kong-proxy \
+    $VKDR_KUBECTL patch ingress -n $KONG_NAMESPACE kong-kong-proxy \
       --type='json' -p='[{"op": "replace", "path": "/spec/rules/0/http/paths/0/backend/service/port/number", "value": 80}]'
   fi
   info "Kong install finished!"

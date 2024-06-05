@@ -61,16 +61,16 @@ configDomain() {
   fi
   export NEW_HOSTNAME="$VKDR_PROTOCOL://auth.$VKDR_ENV_KEYCLOAK_DOMAIN"
   debug "configDomain: fixing KC_HOSTNAME_URL to $NEW_HOSTNAME"
-  yq e '( .extraEnvVars[] | select(.name == "KC_HOSTNAME_URL") ).value = env(NEW_HOSTNAME)' -i $VKDR_KEYCLOAK_VALUES
+  $VKDR_YQ e '( .extraEnvVars[] | select(.name == "KC_HOSTNAME_URL") ).value = env(NEW_HOSTNAME)' -i $VKDR_KEYCLOAK_VALUES
 
 }
 
 install() {
   debug "Keycloak install: add/update helm repo"
-  helm repo add bitnami https://charts.bitnami.com/bitnami
-  helm repo update
+  $VKDR_HELM repo add bitnami https://charts.bitnami.com/bitnami
+  $VKDR_HELM repo update
   debug "install: installing Keycloak"
-  helm upgrade -i keycloak bitnami/keycloak \
+  $VKDR_HELM upgrade -i keycloak bitnami/keycloak \
     -n $KEYCLOAK_NAMESPACE --version 21.2.1 --values $VKDR_KEYCLOAK_VALUES
 }
 
@@ -84,7 +84,7 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: $KEYCLOAK_NAMESPACE
-" | kubectl apply -f -
+" | $VKDR_KUBECTL apply -f -
 }
 
 runFormula

@@ -17,7 +17,7 @@ runFormula() {
 }
 
 removeKeycloak() {
-  helm delete keycloak -n $KEYCLOAK_NAMESPACE
+  $VKDR_HELM delete keycloak -n $KEYCLOAK_NAMESPACE
 }
 
 runFormula

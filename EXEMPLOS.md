@@ -91,7 +91,7 @@ Pré-requisitos:
 ```sh
 vkdr infra start --http 80 --https 443
 vkdr postgres install
-vkdr postgres createdb -d kong -u kong -p kongpwd -s --drop
+vkdr postgres createdb -d kong -u kong -p kongpwd -s
 vkdr kong install -e -l /full_path/license.json -m standard --default-ic -d localdomain -s
 vkdr postgres createdb -d keycloak -u keycloak -p keycloakpwd -s
 vkdr keycloak install -d localdomain -s

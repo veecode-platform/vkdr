@@ -17,7 +17,7 @@ runFormula() {
 }
 
 removeKong() {
-  helm delete kong -n $KONG_NAMESPACE
+  $VKDR_HELM delete kong -n $KONG_NAMESPACE
 }
 
 runFormula
