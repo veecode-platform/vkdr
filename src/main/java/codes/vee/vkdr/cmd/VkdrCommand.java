@@ -1,10 +1,9 @@
 package codes.vee.vkdr.cmd;
 
 import codes.vee.vkdr.cmd.keycloak.VkdrKeycloakCommand;
+import codes.vee.vkdr.cmd.whoami.VkdrWhoamiCommand;
 import org.springframework.stereotype.Component;
 import picocli.CommandLine.Command;
-import org.springframework.beans.factory.annotation.Value;
-import picocli.CommandLine.IVersionProvider;
 
 @Component
 @Command(name = "vkdr", mixinStandardHelpOptions = true,
@@ -27,6 +26,7 @@ import picocli.CommandLine.IVersionProvider;
                 VkdrKongCommand.class,
                 VkdrDevPortalCommand.class,
                 VkdrKeycloakCommand.class,
+                VkdrWhoamiCommand.class,
                 VkdrUpgrade.class})
 public class VkdrCommand {
 

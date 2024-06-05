@@ -1,0 +1,10 @@
+ingress:
+  enabled: true
+  hosts:
+    - host: whoami.localhost
+      paths:
+        - /
+  tls:
+    - secretName: whoami-tls
+      hosts:
+        - whoami.localhost

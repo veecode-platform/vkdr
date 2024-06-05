@@ -13,7 +13,8 @@ VKDR_ENV_KONG_DEFAULT_INGRESS_CONTROLLER=${10}
 VKDR_ENV_KONG_USE_NODEPORT=${11}
 VKDR_ENV_KONG_ADMIN_OIDC=${12}
 VKDR_ENV_KONG_LOG_LEVEL=${13}
-VKDR_ENV_KONG_ENV=${14}
+VKDR_ENV_KONG_ENABLE_ACME=${14}
+VKDR_ENV_KONG_ENV=${15}
 
 source "$(dirname "$0")/../../.util/tools-versions.sh"
 source "$(dirname "$0")/../../.util/tools-paths.sh"
@@ -36,6 +37,7 @@ startInfos() {
   boldNotice "Default Ingress Controller: $VKDR_ENV_KONG_DEFAULT_INGRESS_CONTROLLER"
   boldNotice "Admin GUI OIDC: $VKDR_ENV_KONG_ADMIN_OIDC"
   boldNotice "Log level: $VKDR_ENV_KONG_LOG_LEVEL"
+  boldNotice "Enable ACME: $VKDR_ENV_KONG_ENABLE_ACME"
   boldNotice "Environment: $VKDR_ENV_KONG_ENV"
   bold "=============================="
 }
@@ -55,7 +57,17 @@ runFormula() {
   configLogLevel
   envKong
   installKong
+  enableACME
   postInstallKong
+}
+
+enableACME() {
+  if [ "$VKDR_ENV_KONG_ENABLE_ACME" != "true" ]; then
+    return
+  fi
+  # deploy ACME plugin
+  $VKDR_KUBECTL apply -f "$(dirname "$0")"/../../.util/values/acme-staging.yaml -n $VKDR_KONG_NAMESPACE
+  # if https is enabled, deploy ACME ingress fix
 }
 
 settingKong() {
