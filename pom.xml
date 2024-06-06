@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>codes.vee</groupId>
 	<artifactId>vkdr</artifactId>
-	<version>0.1.24</version>
+	<version>0.1.25-SNAPSHOT</version>
 	<name>vkdr</name>
 	<description>VKDR CLI Project</description>
 	<properties>
