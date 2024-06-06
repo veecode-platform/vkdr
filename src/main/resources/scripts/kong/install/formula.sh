@@ -66,7 +66,8 @@ enableACME() {
     return
   fi
   # deploy ACME plugin
-  $VKDR_KUBECTL apply -f "$(dirname "$0")"/../../.util/values/acme-staging.yaml -n $VKDR_KONG_NAMESPACE
+  debug "enableACME: Deploying ACME global plugin..."
+  $VKDR_KUBECTL apply -f "$(dirname "$0")/../../.util/values/acme-staging.yaml" -n "$KONG_NAMESPACE"
   # if https is enabled, deploy ACME ingress fix
 }
 
@@ -75,9 +76,9 @@ settingKong() {
     dbless)
       debug "Setting Kong to 'dbless' mode"
       VKDR_KONG_VALUES=/tmp/kong-dbless.yaml
-      cp "$(dirname "$0")"/../../.util/values/kong-dbless.yaml $VKDR_KONG_VALUES
+      cp "$(dirname "$0")/../../.util/values/kong-dbless.yaml" $VKDR_KONG_VALUES
       if [ "$VKDR_ENV_KONG_ENTERPRISE" = "true" ]; then
-        VKDR_KONG_ENT_VALUES="$(dirname "$0")"/../../.util/values/delta-kong-enterprise.yaml
+        VKDR_KONG_ENT_VALUES="$(dirname "$0")/../../.util/values/delta-kong-enterprise.yaml"
         # merge yq files
         YAML_TMP_FILE=/tmp/kong-dbless-ent.yaml
         $VKDR_YQ eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' $VKDR_KONG_VALUES $VKDR_KONG_ENT_VALUES > $YAML_TMP_FILE
@@ -91,9 +92,9 @@ settingKong() {
     standard)
       debug "Setting Kong to 'standard' mode"
       VKDR_KONG_VALUES=/tmp/kong-standard.yaml
-      cp "$(dirname "$0")"/../../.util/values/kong-standard.yaml $VKDR_KONG_VALUES
+      cp "$(dirname "$0")/../../.util/values/kong-standard.yaml" $VKDR_KONG_VALUES
       if [ "$VKDR_ENV_KONG_ENTERPRISE" = "true" ]; then
-        VKDR_KONG_ENT_VALUES="$(dirname "$0")"/../../.util/values/delta-kong-enterprise.yaml
+        VKDR_KONG_ENT_VALUES="$(dirname "$0")/../../.util/values/delta-kong-enterprise.yaml"
         # merge yq files
         YAML_TMP_FILE=/tmp/kong-standard-ent.yaml
         $VKDR_YQ eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' $VKDR_KONG_VALUES $VKDR_KONG_ENT_VALUES > $YAML_TMP_FILE
