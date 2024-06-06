@@ -78,8 +78,10 @@ enableACME() {
     debug "enableACME: Deploying ACME global plugin (custom server)..."
     error "TODO: Not implemented yet..."
   fi
-  debug "enableACME: Deploying ACME ingress fix..."
-  $VKDR_KUBECTL apply -f "$(dirname "$0")/../../.util/values/acme-ingress-fix.yaml" -n "$KONG_NAMESPACE"
+  debug "enableACME: Deploying ACME ingress 'dummy-acme' fix..."
+  cp "$(dirname "$0")/../../.util/values/acme-ingress-fix.yaml" /tmp/acme-ingress-fix.yaml
+  sed -i.bak "s|host: manager.*|host: manager.$VKDR_ENV_KONG_DOMAIN|g" /tmp/acme-ingress-fix.yaml
+  $VKDR_KUBECTL apply -f /tmp/acme-ingress-fix.yaml -n "$KONG_NAMESPACE"
 }
 
 settingKong() {
