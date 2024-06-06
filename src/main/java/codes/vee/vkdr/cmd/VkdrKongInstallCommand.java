@@ -98,6 +98,13 @@ public class VkdrKongInstallCommand implements Callable<Integer> {
                     "This will also generate a special ingress for ACME resolution if '--secure' is set."})
     private boolean enable_acme;
 
+    @CommandLine.Option(names = {"--acme-server","--acme_server"},
+            defaultValue = "staging",
+            description = {
+                    "Choose ACME server for ACME global plugin (default: staging)",
+                    "Choices are 'staging', 'production' or (TODO) a full ACME server URL."})
+    private String acme_server;
+
     @CommandLine.Option(names = {"--env", "--environment"}, 
         description = {
                 "Kong environment variables, can be used many times in the form '--env key=value'. ",
@@ -108,6 +115,6 @@ public class VkdrKongInstallCommand implements Callable<Integer> {
     public Integer call() throws Exception {
         Gson gson = new Gson();
         String envJson = gson.toJson(environment);
-        return ShellExecutor.executeCommand("kong/install", domain, String.valueOf(enable_https), String.valueOf(kong_mode), String.valueOf(enable_enterprise), license, image_name, image_tag, admin_password, String.valueOf(api_ingress), String.valueOf(default_ingress_controller), String.valueOf(use_nodeport), String.valueOf(admin_oidc), log_level, String.valueOf(enable_acme), envJson);
+        return ShellExecutor.executeCommand("kong/install", domain, String.valueOf(enable_https), String.valueOf(kong_mode), String.valueOf(enable_enterprise), license, image_name, image_tag, admin_password, String.valueOf(api_ingress), String.valueOf(default_ingress_controller), String.valueOf(use_nodeport), String.valueOf(admin_oidc), log_level, String.valueOf(enable_acme), acme_server, envJson);
     }
 }

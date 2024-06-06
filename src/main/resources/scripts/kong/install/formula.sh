@@ -14,7 +14,8 @@ VKDR_ENV_KONG_USE_NODEPORT=${11}
 VKDR_ENV_KONG_ADMIN_OIDC=${12}
 VKDR_ENV_KONG_LOG_LEVEL=${13}
 VKDR_ENV_KONG_ENABLE_ACME=${14}
-VKDR_ENV_KONG_ENV=${15}
+VKDR_ENV_KONG_ACME_SERVER=${15}
+VKDR_ENV_KONG_ENV=${16}
 
 source "$(dirname "$0")/../../.util/tools-versions.sh"
 source "$(dirname "$0")/../../.util/tools-paths.sh"
@@ -38,6 +39,7 @@ startInfos() {
   boldNotice "Admin GUI OIDC: $VKDR_ENV_KONG_ADMIN_OIDC"
   boldNotice "Log level: $VKDR_ENV_KONG_LOG_LEVEL"
   boldNotice "Enable ACME: $VKDR_ENV_KONG_ENABLE_ACME"
+  boldNotice "ACME Server: $VKDR_ENV_KONG_ACME_SERVER"
   boldNotice "Environment: $VKDR_ENV_KONG_ENV"
   bold "=============================="
 }
@@ -66,9 +68,16 @@ enableACME() {
     return
   fi
   # deploy ACME plugin
-  debug "enableACME: Deploying ACME global plugin..."
-  $VKDR_KUBECTL apply -f "$(dirname "$0")/../../.util/values/acme-staging.yaml" -n "$KONG_NAMESPACE"
-  # if https is enabled, deploy ACME ingress fix
+  if [ "$VKDR_ENV_KONG_ACME_SERVER" = "staging" ]; then
+    debug "enableACME: Deploying ACME global plugin (staging)..."
+    $VKDR_KUBECTL apply -f "$(dirname "$0")/../../.util/values/acme-staging.yaml" -n "$KONG_NAMESPACE"
+  elif [ "$VKDR_ENV_KONG_ACME_SERVER" = "production" ]; then
+    debug "enableACME: Deploying ACME global plugin (production)..."
+    $VKDR_KUBECTL apply -f "$(dirname "$0")/../../.util/values/acme-production.yaml" -n "$KONG_NAMESPACE"
+  else
+    debug "enableACME: Deploying ACME global plugin (custom server)..."
+    error "TODO: Not implemented yet..."
+  fi
   debug "enableACME: Deploying ACME ingress fix..."
   $VKDR_KUBECTL apply -f "$(dirname "$0")/../../.util/values/acme-ingress-fix.yaml" -n "$KONG_NAMESPACE"
 }
@@ -142,13 +151,13 @@ configAdminOIDC() {
     $VKDR_YQ eval '.enterprise.rbac.admin_gui_auth_conf_secret = "kong-admin-oidc"' -i $VKDR_KONG_VALUES
     debug "configAdminOIDC: (re)creating 'kong-admin-oidc' secret for OIDC"
     # MUST become a one-liner
-    jq '.' -c "$(dirname "$0")/../../.util/values/admin_gui_auth_conf" > /tmp/admin_gui_auth_conf
+    $VKDR_JQ '.' -c "$(dirname "$0")/../../.util/values/admin_gui_auth_conf" > /tmp/admin_gui_auth_conf
     # fix domain and secure for "http://auth.localhost" and "http://manager.localhost" references
     debug "configAdminOIDC: fixing 'http://auth.localhost' and 'http://manager.localhost' references in /tmp/admin_gui_auth_conf"
     VKDR_PROTOCOL="http"
     if [ "true" = "$VKDR_ENV_KONG_SECURE" ]; then
       VKDR_PROTOCOL="https"
-      jq '.session_cookie_secure = true' /tmp/admin_gui_auth_conf > /tmp/admin_gui_auth_conf.tmp
+      $VKDR_JQ '.session_cookie_secure = true' /tmp/admin_gui_auth_conf > /tmp/admin_gui_auth_conf.tmp
       mv /tmp/admin_gui_auth_conf.tmp /tmp/admin_gui_auth_conf
     fi
     MANAGER_URL="$VKDR_PROTOCOL://manager.$VKDR_ENV_KONG_DOMAIN"
