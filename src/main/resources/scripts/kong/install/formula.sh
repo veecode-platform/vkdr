@@ -69,6 +69,8 @@ enableACME() {
   debug "enableACME: Deploying ACME global plugin..."
   $VKDR_KUBECTL apply -f "$(dirname "$0")/../../.util/values/acme-staging.yaml" -n "$KONG_NAMESPACE"
   # if https is enabled, deploy ACME ingress fix
+  debug "enableACME: Deploying ACME ingress fix..."
+  $VKDR_KUBECTL apply -f "$(dirname "$0")/../../.util/values/acme-ingress-fix.yaml" -n "$KONG_NAMESPACE"
 }
 
 settingKong() {
