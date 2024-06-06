@@ -219,13 +219,16 @@ configDomain() {
     $VKDR_YQ -i ".env.admin_gui_url = \"$VKDR_PROTOCOL://manager.$VKDR_ENV_KONG_DOMAIN/manager\"" $VKDR_KONG_VALUES
     $VKDR_YQ -i ".env.admin_gui_api_url = \"$VKDR_PROTOCOL://manager.$VKDR_ENV_KONG_DOMAIN\"" $VKDR_KONG_VALUES
     if [ "$VKDR_PROTOCOL" = "https" ]; then
-      debug "configDomain: setting manager TLS in $VKDR_KONG_VALUES"
-      $VKDR_YQ -i ".manager.ingress.tls = \"kong-admin-tls\"" $VKDR_KONG_VALUES
+      debug "configDomain: forcing https for manager/admin in $VKDR_KONG_VALUES"
       $VKDR_YQ -i ".manager.ingress.annotations.\"konghq.com/protocols\" = \"https\"" $VKDR_KONG_VALUES
       $VKDR_YQ -i ".manager.ingress.annotations.\"konghq.com/https-redirect-status-code\" = \"301\"" $VKDR_KONG_VALUES
-      $VKDR_YQ -i ".admin.ingress.tls = \"kong-admin-tls\"" $VKDR_KONG_VALUES
       $VKDR_YQ -i ".admin.ingress.annotations.\"konghq.com/https-redirect-status-code\" = \"301\"" $VKDR_KONG_VALUES
       $VKDR_YQ -i ".admin.ingress.annotations.\"konghq.com/protocols\" = \"https\"" $VKDR_KONG_VALUES
+      # no TLS if using ACME plugin
+      if [ "$VKDR_ENV_KONG_ENABLE_ACME" != "true" ]; then
+        $VKDR_YQ -i ".manager.ingress.tls = \"kong-admin-tls\"" $VKDR_KONG_VALUES
+        $VKDR_YQ -i ".admin.ingress.tls = \"kong-admin-tls\"" $VKDR_KONG_VALUES
+      fi
     fi
   else
     debug "configDomain: using manager default 'localhost' domain in $VKDR_KONG_VALUES"
