@@ -8,6 +8,7 @@ VKDR_ENV_KEYCLOAK_ADMIN_PASSWORD=$4
 source "$(dirname "$0")/../../.util/tools-versions.sh"
 source "$(dirname "$0")/../../.util/tools-paths.sh"
 source "$(dirname "$0")/../../.util/log.sh"
+source "$(dirname "$0")/../../.util/ingress-tools.sh"
 
 KEYCLOAK_NAMESPACE=vkdr
 
@@ -54,15 +55,21 @@ configDomain() {
     $VKDR_YQ eval ".ingress.hostname = \"auth.$VKDR_ENV_KEYCLOAK_DOMAIN\"" -i $VKDR_KEYCLOAK_VALUES
   fi
   if [ "$VKDR_ENV_KEYCLOAK_SECURE" = "true" ]; then
-    debug "configDomain: setting keycloak ingress TLS in $VKDR_KEYCLOAK_VALUES"
-    $VKDR_YQ eval ".ingress.tls = true" -i $VKDR_KEYCLOAK_VALUES
+    debug "configDomain: forcing HTTPS with ingress annotations"
+    # forces https on Kong
     $VKDR_YQ -i ".ingress.annotations.\"konghq.com/protocols\" = \"https\"" $VKDR_KEYCLOAK_VALUES
     $VKDR_YQ -i ".ingress.annotations.\"konghq.com/https-redirect-status-code\" = \"301\"" $VKDR_KEYCLOAK_VALUES
+    # should not enable TLS if using ACME plugin
+    if detectACMEPlugin; then
+      debug "configDomain: will not enable ingress TLS in $VKDR_KEYCLOAK_VALUES as ACME plugin is used"
+    else
+      debug "configDomain: setting keycloak ingress TLS in $VKDR_KEYCLOAK_VALUES"
+      $VKDR_YQ eval ".ingress.tls = true" -i $VKDR_KEYCLOAK_VALUES
+    fi
   fi
   export NEW_HOSTNAME="$VKDR_PROTOCOL://auth.$VKDR_ENV_KEYCLOAK_DOMAIN"
   debug "configDomain: fixing KC_HOSTNAME_URL to $NEW_HOSTNAME"
   $VKDR_YQ e '( .extraEnvVars[] | select(.name == "KC_HOSTNAME_URL") ).value = env(NEW_HOSTNAME)' -i $VKDR_KEYCLOAK_VALUES
-
 }
 
 install() {

@@ -94,7 +94,7 @@ settingKong() {
         VKDR_KONG_ENT_VALUES="$(dirname "$0")/../../.util/values/delta-kong-enterprise.yaml"
         # merge yq files
         YAML_TMP_FILE=/tmp/kong-dbless-ent.yaml
-        $VKDR_YQ eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' $VKDR_KONG_VALUES $VKDR_KONG_ENT_VALUES > $YAML_TMP_FILE
+        $VKDR_YQ eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' "$VKDR_KONG_VALUES" "$VKDR_KONG_ENT_VALUES" > "$YAML_TMP_FILE"
         VKDR_KONG_VALUES=$YAML_TMP_FILE
         # forces enterprise image if not set
         if [ -z "$VKDR_ENV_KONG_IMAGE_NAME" ]; then
@@ -110,7 +110,7 @@ settingKong() {
         VKDR_KONG_ENT_VALUES="$(dirname "$0")/../../.util/values/delta-kong-enterprise.yaml"
         # merge yq files
         YAML_TMP_FILE=/tmp/kong-standard-ent.yaml
-        $VKDR_YQ eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' $VKDR_KONG_VALUES $VKDR_KONG_ENT_VALUES > $YAML_TMP_FILE
+        $VKDR_YQ eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' "$VKDR_KONG_VALUES" "$VKDR_KONG_ENT_VALUES" > "$YAML_TMP_FILE"
         VKDR_KONG_VALUES=$YAML_TMP_FILE
         # forces enterprise image if not set
         if [ -z "$VKDR_ENV_KONG_IMAGE_NAME" ]; then
@@ -121,7 +121,7 @@ settingKong() {
       if $VKDR_KUBECTL get secrets -n $KONG_NAMESPACE | grep -q "kong-pg-secret" ; then
         VKDR_KONG_SECRET_VALUES="$(dirname "$0")"/../../.util/values/delta-kong-std-dbsecrets.yaml
         YAML_TMP_FILE_SECRET=/tmp/kong-secret-std.yaml
-        $VKDR_YQ eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' $VKDR_KONG_VALUES $VKDR_KONG_SECRET_VALUES > $YAML_TMP_FILE_SECRET
+        $VKDR_YQ eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' "$VKDR_KONG_VALUES" "$VKDR_KONG_SECRET_VALUES" > "$YAML_TMP_FILE_SECRET"
         VKDR_KONG_VALUES=$YAML_TMP_FILE_SECRET
       fi
       ;;
@@ -249,8 +249,8 @@ configDomain() {
 envKong() {
   # convert JSON to YAML under "env:"
   debug "envKong: merging kong env '$VKDR_ENV_KONG_ENV'"
-  echo $VKDR_ENV_KONG_ENV | $VKDR_YQ -p=json -o=yaml > /tmp/kong-env-vars.yaml
-  $VKDR_YQ eval '.env *= load("/tmp/kong-env-vars.yaml")' -i $VKDR_KONG_VALUES
+  echo "$VKDR_ENV_KONG_ENV" | $VKDR_YQ -p=json -o=yaml > /tmp/kong-env-vars.yaml
+  $VKDR_YQ eval '.env *= load("/tmp/kong-env-vars.yaml")' -i "$VKDR_KONG_VALUES"
 }
 
 installKong() {
@@ -283,7 +283,7 @@ createKongSessionConfigSecret() {
   debug "Creating kong-session-config secret from random value..."
   ADMIN_COOKIE_SECRET=$(head -c 64 /dev/urandom | LC_CTYPE=C tr -dc 'a-zA-Z0-9!@#$%^&*()_+-=[]{}|;:,.<>?' | head -c 16)
   ADMIN_COOKIE_SECURE=${VKDR_ENV_KONG_SECURE:-false}
-  echo '{"cookie_name":"admin_session","cookie_samesite":"Strict","secret":"'$ADMIN_COOKIE_SECRET'","cookie_secure":'$ADMIN_COOKIE_SECURE',"storage":"kong"}' > /tmp/admin_gui_session_conf
+  echo '{"cookie_name":"admin_session","cookie_samesite":"Strict","secret":"'"$ADMIN_COOKIE_SECRET"'","cookie_secure":'"$ADMIN_COOKIE_SECURE"',"storage":"kong"}' > /tmp/admin_gui_session_conf
   $VKDR_KUBECTL create secret generic kong-session-config -n $KONG_NAMESPACE --from-file=admin_gui_session_conf=/tmp/admin_gui_session_conf
 
   RESULT=$?

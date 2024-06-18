@@ -96,7 +96,8 @@ vkdr kong install -e -l /full_path/license.json -m standard --default-ic -d loca
 vkdr postgres createdb -d keycloak -u keycloak -p keycloakpwd -s
 vkdr keycloak install -d localdomain -s
 vkdr keycloak import -f $(pwd)/samples/realm-export.json
-# testar ambos no browser antes de ligar OIDC
+# ajustar realm, import incompleto
+# testar ambos kong e keycloak no browser antes de ligar OIDC
 vkdr kong install -e -l /full_path/license.json -m standard --oidc --default-ic -d localdomain -s
 ```
 

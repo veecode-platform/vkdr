@@ -31,7 +31,9 @@ public class VkdrKongInstallCommand implements Callable<Integer> {
 
     @CommandLine.Option(names = {"-e","--enterprise"},
         defaultValue = "false",
-        description = "If 'true', Kong Gateway runs the enterprise image version. If license isn't provided Kong will run in 'free mode' (default: false)")
+        description = {
+            "If 'true', Kong Gateway runs the enterprise image version. If license isn't provided Kong will run in 'free mode' (default: false)",
+            "Important: using '-e' changes the ingressClass used by Manager and Admin API from 'kong' to an empty string (meaning the cluster's default)."})
     private boolean enable_enterprise;
 
     @CommandLine.Option(names = {"-i","--image", "--image_name"},

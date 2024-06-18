@@ -91,6 +91,8 @@ There are two ingress controllers in this example - Traefik as the default in 80
 
 If `-l /full_path/license.json` is not provided together with `-e` then Kong will start in "free mode". If both `-e` and `-l` are provided, a valid license will enable Kong RBAC and both Kong Manager and Admin API will require authentication (user "kong_admin", password as informed in `-p`).
 
+**Important**: using "-e" changes the ingressClass used by Manager and Admin API from "kong" to an empty string "" (meaning the cluster's default).
+
 ## Kong Enterprise in standard (traditional) mode with custom domain
 
 ```sh
@@ -104,7 +106,7 @@ vkdr kong install -e -l /full_path/license.json -m standard -p mypassword --defa
 - Kong Manager: https://manager.mydomain.com/manager
 - Kong Admin API: https://manager.mydomain.com
 
-Kong is the default ingress controller of the cluster. Both `-e` and `-l` enable RBAC (user "kong_admin").
+Kong is the default (and only) ingress controller of the cluster. Both `-e` and `-l` enable RBAC (user "kong_admin").
 
 ## Kong custom image in standard (traditional) mode (custom plugins)
 

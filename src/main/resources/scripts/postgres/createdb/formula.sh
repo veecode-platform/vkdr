@@ -67,7 +67,7 @@ createDB() {
 saveSecret() {
   if [ "$VKDR_ENV_POSTGRES_STORE_SECRET" = "true" ]; then
     boldInfo "Storing secret in '$VKDR_ENV_POSTGRES_USER_NAME-pg-secret'..."
-    $VKDR_KUBECTL delete secret "$VKDR_ENV_POSTGRES_USER_NAME-pg-secret" -n "$POSTGRES_NAMESPACE"
+    $VKDR_KUBECTL delete secret "$VKDR_ENV_POSTGRES_USER_NAME-pg-secret" -n "$POSTGRES_NAMESPACE" --ignore-not-found=true
     $VKDR_KUBECTL create secret generic "$VKDR_ENV_POSTGRES_USER_NAME-pg-secret" -n "$POSTGRES_NAMESPACE" \
       --from-literal=password="$VKDR_ENV_POSTGRES_PASSWORD" \
       --from-literal=user="$VKDR_ENV_POSTGRES_USER_NAME" \

@@ -97,7 +97,15 @@ parseVolumes() {
     VOLUMES_ARRAY+=("$i@server:0")
   done
   IFS="$oldIFS"
-  echo "${VOLUMES_ARRAY[@]}"
+  debug "parseVolumes: ${VOLUMES_ARRAY[@]}"
+}
+
+postStart() {
+  boldInfo "K3D cluster 'vkdr-local' started"
+  debug "postStart: patching 'localdomain' wildcard in coredns (needed for oidc)"
+  $VKDR_KUBECTL apply -f "$(dirname "$0")/../../.util/configs/rewrite-coredns.yaml"
+  $VKDR_KUBECTL -n kube-system rollout restart deployment coredns
+  debug "postStart: patching 'localdomain' in coredns done, you can 'nslookup xxx.localdomain' from any pod to test it."
 }
 
 startInfos
@@ -105,3 +113,4 @@ startRegistry
 parseVolumes
 configureCluster
 startCluster
+postStart
