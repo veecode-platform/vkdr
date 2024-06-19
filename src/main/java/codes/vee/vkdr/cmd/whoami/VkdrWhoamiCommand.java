@@ -1,14 +1,9 @@
 package codes.vee.vkdr.cmd.whoami;
 
 import codes.vee.vkdr.cmd.VkdrCommand;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
-import picocli.CommandLine.Option;
-
-import java.io.IOException;
 
 @Component
 @Command(name = "whoami", mixinStandardHelpOptions = true, exitCodeOnExecutionException = 90,

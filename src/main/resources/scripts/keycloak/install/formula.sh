@@ -62,6 +62,7 @@ configDomain() {
     # should not enable TLS if using ACME plugin
     if detectACMEPlugin; then
       debug "configDomain: will not enable ingress TLS in $VKDR_KEYCLOAK_VALUES as ACME plugin is used"
+      addHostToACMEIngress "auth.$VKDR_ENV_KEYCLOAK_DOMAIN"
     else
       debug "configDomain: setting keycloak ingress TLS in $VKDR_KEYCLOAK_VALUES"
       $VKDR_YQ eval ".ingress.tls = true" -i $VKDR_KEYCLOAK_VALUES

@@ -1,7 +1,6 @@
 package codes.vee.vkdr.cmd.whoami;
 
 import codes.vee.vkdr.ShellExecutor;
-import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
