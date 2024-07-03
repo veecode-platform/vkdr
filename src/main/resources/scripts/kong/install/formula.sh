@@ -15,7 +15,8 @@ VKDR_ENV_KONG_ADMIN_OIDC=${12}
 VKDR_ENV_KONG_LOG_LEVEL=${13}
 VKDR_ENV_KONG_ENABLE_ACME=${14}
 VKDR_ENV_KONG_ACME_SERVER=${15}
-VKDR_ENV_KONG_ENV=${16}
+VKDR_ENV_KONG_PROXY_TLS_SECRET=${16}
+VKDR_ENV_KONG_ENV=${17}
 
 source "$(dirname "$0")/../../.util/tools-versions.sh"
 source "$(dirname "$0")/../../.util/tools-paths.sh"
@@ -40,6 +41,7 @@ startInfos() {
   boldNotice "Log level: $VKDR_ENV_KONG_LOG_LEVEL"
   boldNotice "Enable ACME: $VKDR_ENV_KONG_ENABLE_ACME"
   boldNotice "ACME Server: $VKDR_ENV_KONG_ACME_SERVER"
+  boldNotice "Proxy TLS Secret: $VKDR_ENV_KONG_PROXY_TLS_SECRET"
   boldNotice "Environment: $VKDR_ENV_KONG_ENV"
   bold "=============================="
 }
@@ -57,6 +59,7 @@ runFormula() {
   configDefaultIngressController
   configAdminOIDC
   configLogLevel
+  configProxyTLSSecret
   envKong
   installKong
   enableACME
@@ -82,6 +85,22 @@ enableACME() {
   cp "$(dirname "$0")/../../.util/values/acme-ingress-fix.yaml" /tmp/acme-ingress-fix.yaml
   sed -i.bak "s|host: manager.*|host: manager.$VKDR_ENV_KONG_DOMAIN|g" /tmp/acme-ingress-fix.yaml
   $VKDR_KUBECTL apply -f /tmp/acme-ingress-fix.yaml -n "$KONG_NAMESPACE"
+}
+
+configProxyTLSSecret() {
+  if [ -z "$VKDR_ENV_KONG_PROXY_TLS_SECRET" ]; then
+      return
+  fi
+  debug "configProxyTLSSecret: using secret $VKDR_ENV_KONG_PROXY_TLS_SECRET"
+  if ! $VKDR_KUBECTL get secret -n "$KONG_NAMESPACE" "$VKDR_ENV_KONG_PROXY_TLS_SECRET" > /dev/null 2>&1; then echo OI;
+    error "configTLSSecret: secret $VKDR_ENV_KONG_PROXY_TLS_SECRET not found, aborting."
+    return
+  fi
+  export VKDR_ENV_KONG_PROXY_TLS_SECRET
+  $VKDR_YQ eval '.secretVolumes += [env(VKDR_ENV_KONG_PROXY_TLS_SECRET)]' -i "$VKDR_KONG_VALUES"
+  $VKDR_YQ eval '.env.ssl_cert = "/etc/secrets/\(env(VKDR_ENV_KONG_PROXY_TLS_SECRET))/tls.crt"' -i "$VKDR_KONG_VALUES"
+  $VKDR_YQ eval '.env.ssl_cert_key = "/etc/secrets/\(env(VKDR_ENV_KONG_PROXY_TLS_SECRET))/tls.key"' -i "$VKDR_KONG_VALUES"
+  debug "configProxyTLSSecret: patched proxy tls secret into $VKDR_KONG_VALUES"
 }
 
 settingKong() {
