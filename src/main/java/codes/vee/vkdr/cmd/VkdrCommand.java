@@ -2,6 +2,7 @@ package codes.vee.vkdr.cmd;
 
 import codes.vee.vkdr.cmd.keycloak.VkdrKeycloakCommand;
 import codes.vee.vkdr.cmd.whoami.VkdrWhoamiCommand;
+import codes.vee.vkdr.cmd.vault.VkdrVaultCommand;
 import org.springframework.stereotype.Component;
 import picocli.CommandLine.Command;
 
@@ -27,6 +28,7 @@ import picocli.CommandLine.Command;
                 VkdrDevPortalCommand.class,
                 VkdrKeycloakCommand.class,
                 VkdrWhoamiCommand.class,
+                VkdrVaultCommand.class,
                 VkdrUpgrade.class})
 public class VkdrCommand {
 

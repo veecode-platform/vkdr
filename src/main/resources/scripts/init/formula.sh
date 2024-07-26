@@ -22,6 +22,7 @@ runFormula() {
   installTool "yq" "$VKDR_TOOLS_YQ"
   installHelm
   installGlow
+  installTool "vault" "$VKDR_TOOLS_VAULT"
 
   #installAWS
   #installOkteto
