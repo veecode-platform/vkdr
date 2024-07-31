@@ -1,5 +1,6 @@
 package codes.vee.vkdr.cmd;
 
+import codes.vee.vkdr.cmd.devportal.VkdrDevPortalCommand;
 import codes.vee.vkdr.cmd.keycloak.VkdrKeycloakCommand;
 import codes.vee.vkdr.cmd.whoami.VkdrWhoamiCommand;
 import codes.vee.vkdr.cmd.vault.VkdrVaultCommand;

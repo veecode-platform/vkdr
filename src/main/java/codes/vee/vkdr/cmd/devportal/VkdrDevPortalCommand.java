@@ -1,4 +1,4 @@
-package codes.vee.vkdr.cmd;
+package codes.vee.vkdr.cmd.devportal;
 
 import codes.vee.vkdr.ShellExecutor;
 import org.springframework.stereotype.Component;
@@ -10,7 +10,7 @@ import java.io.IOException;
 @CommandLine.Command(name = "devportal", mixinStandardHelpOptions = true, exitCodeOnExecutionException = 60,
         description = "install/remove VeeCode DevPortal (a free Backstage distro)",
         subcommands = {VkdrDevPortalInstallCommand.class})
-class VkdrDevPortalCommand {
+public class VkdrDevPortalCommand {
 
     @CommandLine.Command(name = "remove", mixinStandardHelpOptions = true,
             description = "remove VeeCode DevPortal",
