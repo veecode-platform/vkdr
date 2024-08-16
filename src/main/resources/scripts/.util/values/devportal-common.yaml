@@ -1,7 +1,7 @@
 replicas: 1
 image:
-  repository: andrevtg/devportal-bundle
-  tag: magalu
+  # repository: andrevtg/devportal-bundle
+  # tag: magalu
   #pullPolicy: Always
   pullPolicy: IfNotPresent
 
@@ -12,9 +12,9 @@ ingress:
   host: devportal.localhost
   className: kong
   annotations:
-    konghq.com/https-redirect-status-code: "308"
+    # konghq.com/https-redirect-status-code: "308"
     konghq.com/preserve-host: "true"
-    konghq.com/protocols: "https"
+    # konghq.com/protocols: "https"
     konghq.com/strip-path: "false"
   #tls:
   #  secretName: devportal-secret
@@ -50,18 +50,19 @@ integrations:
     apiBaseUrl: https://api.github.com/
     token: <github-token>
 
-catalog:
-  providers:
-    github:
-      organization: veecode-magalu # string
-      catalogPath: /catalog-info.yaml # string
-      filters:
-        branch: main # Optional. Uses `master` as default
-        #repository: catalog #suggestion devportal-catalog
-        validateLocationsExist: true
-  locations:
-    - type: url
-      target: https://github.com/veecode-magalu/catalog/blob/main/catalog-info.yaml
+# catalog:
+#   providers:
+#     github:
+#       organization: veecode-platform # string
+#       catalogPath: /catalog-info.yaml # string
+#       filters:
+#         branch: main # Optional. Uses `master` as default
+#         repository: catalog #suggestion devportal-catalog
+#         validateLocationsExist: true
+
+locations:
+  - type: url
+    target: https://github.com/veecode-platform/vkdr-catalog/blob/main/catalog-info.yaml
 
 platform:
   guest:
