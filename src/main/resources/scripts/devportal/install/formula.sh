@@ -26,7 +26,7 @@ startInfos() {
 installDevPortal() {
   debug "installDevPortal: add/update helm repo"
   helm repo add veecode-platform https://veecode-platform.github.io/public-charts/
-  helm repo update
+  helm repo update veecode-platform
   debug "installDevPortal: installing DevPortal (beta)"
   VKDR_PROTOCOL=http
   if [[ "$VKDR_ENV_DEVPORTAL_SECURE" == "true" ]]; then VKDR_PROTOCOL=https; fi

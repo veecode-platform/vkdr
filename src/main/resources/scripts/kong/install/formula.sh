@@ -275,7 +275,7 @@ envKong() {
 installKong() {
   debug "installKong: add/update helm repo"
   $VKDR_HELM repo add kong https://charts.konghq.com
-  $VKDR_HELM repo update
+  $VKDR_HELM repo update kong
   debug "installKong: installing kong"
   $VKDR_HELM upgrade -i kong kong/kong -n $KONG_NAMESPACE --values $VKDR_KONG_VALUES
 }
