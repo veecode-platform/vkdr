@@ -34,11 +34,11 @@ installDevPortal() {
     veecode-platform/devportal --create-namespace -n platform \
     -f "$VKDR_DEVPORTAL_VALUES" \
     --set "ingress.host=devportal.${VKDR_ENV_DEVPORTAL_DOMAIN}" \
-    --set "appConfig.app.baseUrl=${VKDR_PROTOCOL}://devportal.${VKDR_ENV_DEVPORTAL_DOMAIN}" \
-    --set "appConfig.backend.baseUrl=${VKDR_PROTOCOL}://devportal.${VKDR_ENV_DEVPORTAL_DOMAIN}" \
-    --set "integrations.github.token=${GITHUB_TOKEN}" \
-    --set "auth.providers.github.clientId=${GITHUB_CLIENT_ID}" \
-    --set "auth.providers.github.clientSecret=${GITHUB_CLIENT_SECRET}"
+    --set "appConfig.app.baseUrl=${VKDR_PROTOCOL}://devportal.${VKDR_ENV_DEVPORTAL_DOMAIN}:8000" \
+    --set "appConfig.backend.baseUrl=${VKDR_PROTOCOL}://devportal.${VKDR_ENV_DEVPORTAL_DOMAIN}:8000" \
+    --set "integrations.github.token=${VKDR_ENV_DEVPORTAL_GITHUB_TOKEN}" \
+    --set "auth.providers.github.clientId=${VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_ID}" \
+    --set "auth.providers.github.clientSecret=${VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_SECRET}"
 }
 
 runFormula() {
