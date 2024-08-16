@@ -52,7 +52,7 @@ configDomain() {
 install() {
   debug "install: add/update helm repo"
   $VKDR_HELM repo add cowboysysop https://cowboysysop.github.io/charts/
-  $VKDR_HELM repo update
+  $VKDR_HELM repo update cowboysysop
   debug "install: installing whoami"
   $VKDR_HELM upgrade -i whoami cowboysysop/whoami -n $WHOAMI_NAMESPACE --values $VKDR_TMP_VALUES
 }
