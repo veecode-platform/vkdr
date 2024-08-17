@@ -21,8 +21,12 @@ VKDR_ENV_KONG_ENV=${17}
 source "$(dirname "$0")/../../.util/tools-versions.sh"
 source "$(dirname "$0")/../../.util/tools-paths.sh"
 source "$(dirname "$0")/../../.util/log.sh"
+source "$(dirname "$0")/../../.util/ingress-tools.sh"
 
 KONG_NAMESPACE=vkdr
+# port values override by detectClusterPorts
+VKDR_HTTP_PORT=8000
+VKDR_HTTPS_PORT=8001
 
 startInfos() {
   boldInfo "Kong Install"
@@ -44,9 +48,13 @@ startInfos() {
   boldNotice "Proxy TLS Secret: $VKDR_ENV_KONG_PROXY_TLS_SECRET"
   boldNotice "Environment: $VKDR_ENV_KONG_ENV"
   bold "=============================="
+  boldNotice "Cluster LB HTTP port: $VKDR_HTTP_PORT"
+  boldNotice "Cluster LB HTTPS port: $VKDR_HTTPS_PORT"
+  bold "=============================="
 }
 
 runFormula() {
+  detectClusterPorts
   startInfos
   settingKong
   createKongNamespace
@@ -238,30 +246,34 @@ configDomain() {
   # - admin.ingress.hostname
   # - env.admin_gui_url
   # - env.admin_gui_api_url
-  VKDR_PROTOCOL="http"
+  VKDR_MANAGER_PORT=""
   if [ "true" = "$VKDR_ENV_KONG_SECURE" ]; then
     VKDR_PROTOCOL="https"
-  fi
-  if [ "$VKDR_ENV_KONG_DOMAIN" != "localhost" ]; then
-    debug "configDomain: setting manager domain to $VKDR_ENV_KONG_DOMAIN in $VKDR_KONG_VALUES"
-    $VKDR_YQ -i ".manager.ingress.hostname = \"manager.$VKDR_ENV_KONG_DOMAIN\"" $VKDR_KONG_VALUES
-    $VKDR_YQ -i ".admin.ingress.hostname = \"manager.$VKDR_ENV_KONG_DOMAIN\"" $VKDR_KONG_VALUES
-    $VKDR_YQ -i ".env.admin_gui_url = \"$VKDR_PROTOCOL://manager.$VKDR_ENV_KONG_DOMAIN/manager\"" $VKDR_KONG_VALUES
-    $VKDR_YQ -i ".env.admin_gui_api_url = \"$VKDR_PROTOCOL://manager.$VKDR_ENV_KONG_DOMAIN\"" $VKDR_KONG_VALUES
-    if [ "$VKDR_PROTOCOL" = "https" ]; then
-      debug "configDomain: forcing https for manager/admin in $VKDR_KONG_VALUES"
-      $VKDR_YQ -i ".manager.ingress.annotations.\"konghq.com/protocols\" = \"https\"" $VKDR_KONG_VALUES
-      $VKDR_YQ -i ".manager.ingress.annotations.\"konghq.com/https-redirect-status-code\" = \"301\"" $VKDR_KONG_VALUES
-      $VKDR_YQ -i ".admin.ingress.annotations.\"konghq.com/https-redirect-status-code\" = \"301\"" $VKDR_KONG_VALUES
-      $VKDR_YQ -i ".admin.ingress.annotations.\"konghq.com/protocols\" = \"https\"" $VKDR_KONG_VALUES
-      # no TLS if using ACME plugin
-      if [ "$VKDR_ENV_KONG_ENABLE_ACME" != "true" ]; then
-        $VKDR_YQ -i ".manager.ingress.tls = \"kong-admin-tls\"" $VKDR_KONG_VALUES
-        $VKDR_YQ -i ".admin.ingress.tls = \"kong-admin-tls\"" $VKDR_KONG_VALUES
-      fi
+    if [ "$VKDR_HTTPS_PORT" != "443" ]; then
+      VKDR_MANAGER_PORT=":$VKDR_HTTPS_PORT"
     fi
   else
-    debug "configDomain: using manager default 'localhost' domain in $VKDR_KONG_VALUES"
+    VKDR_PROTOCOL="http"
+    if [ "$VKDR_HTTP_PORT" != "80" ]; then
+      VKDR_MANAGER_PORT=":$VKDR_HTTP_PORT"
+    fi
+  fi
+  debug "configDomain: setting manager domain to $VKDR_ENV_KONG_DOMAIN in $VKDR_KONG_VALUES"
+  $VKDR_YQ -i ".manager.ingress.hostname = \"manager.$VKDR_ENV_KONG_DOMAIN\"" $VKDR_KONG_VALUES
+  $VKDR_YQ -i ".admin.ingress.hostname = \"manager.$VKDR_ENV_KONG_DOMAIN\"" $VKDR_KONG_VALUES
+  $VKDR_YQ -i ".env.admin_gui_url = \"$VKDR_PROTOCOL://manager.${VKDR_ENV_KONG_DOMAIN}${VKDR_MANAGER_PORT}/manager\"" $VKDR_KONG_VALUES
+  $VKDR_YQ -i ".env.admin_gui_api_url = \"$VKDR_PROTOCOL://manager.${VKDR_ENV_KONG_DOMAIN}${VKDR_MANAGER_PORT}\"" $VKDR_KONG_VALUES
+  if [ "$VKDR_PROTOCOL" = "https" ]; then
+    debug "configDomain: forcing https for manager/admin in $VKDR_KONG_VALUES"
+    $VKDR_YQ -i ".manager.ingress.annotations.\"konghq.com/protocols\" = \"https\"" $VKDR_KONG_VALUES
+    $VKDR_YQ -i ".manager.ingress.annotations.\"konghq.com/https-redirect-status-code\" = \"301\"" $VKDR_KONG_VALUES
+    $VKDR_YQ -i ".admin.ingress.annotations.\"konghq.com/https-redirect-status-code\" = \"301\"" $VKDR_KONG_VALUES
+    $VKDR_YQ -i ".admin.ingress.annotations.\"konghq.com/protocols\" = \"https\"" $VKDR_KONG_VALUES
+    # no TLS if using ACME plugin
+    if [ "$VKDR_ENV_KONG_ENABLE_ACME" != "true" ]; then
+      $VKDR_YQ -i ".manager.ingress.tls = \"kong-admin-tls\"" $VKDR_KONG_VALUES
+      $VKDR_YQ -i ".admin.ingress.tls = \"kong-admin-tls\"" $VKDR_KONG_VALUES
+    fi
   fi
 }
 

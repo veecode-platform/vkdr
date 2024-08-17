@@ -42,3 +42,17 @@ detectACMEPlugin() {
   debug "detectACMEPlugin: ACME plugin NOT detected"
   return 1
 }
+
+getClusterPortsJson() {
+  MAPPINGS="$($VKDR_K3D cluster list -o json | jq '.[] | select(.name == "vkdr-local") | .nodes.[].portMappings')"
+  HTTP_PORT="$(echo "$MAPPINGS" | $VKDR_JQ -r '.["80/tcp"][0].HostPort' | head -n 1)"
+  HTTPS_PORT="$(echo "$MAPPINGS" | $VKDR_JQ -r '.["443/tcp"][0].HostPort' | head -n 1)"
+  echo "{ \"http\": \"$HTTP_PORT\", \"https\": \"$HTTPS_PORT\" }"
+}
+
+detectClusterPorts() {
+  JSON=$(getClusterPortsJson)
+  if [ -z "$JSON" ]; then return 1; fi
+  export VKDR_HTTP_PORT=$(echo "$JSON" | $VKDR_JQ -r '.http')
+  export VKDR_HTTPS_PORT=$(echo "$JSON" | $VKDR_JQ -r '.https')
+}

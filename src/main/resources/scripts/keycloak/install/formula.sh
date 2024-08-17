@@ -11,6 +11,9 @@ source "$(dirname "$0")/../../.util/log.sh"
 source "$(dirname "$0")/../../.util/ingress-tools.sh"
 
 KEYCLOAK_NAMESPACE=vkdr
+# port values override by detectClusterPorts
+VKDR_HTTP_PORT=8000
+VKDR_HTTPS_PORT=8001
 
 startInfos() {
   boldInfo "Keycloak Install"
@@ -20,9 +23,13 @@ startInfos() {
   boldNotice "Admin User: $VKDR_ENV_KEYCLOAK_ADMIN_USER"
   boldNotice "Admin Password: $VKDR_ENV_KEYCLOAK_ADMIN_PASSWORD"
   bold "=============================="
+  boldNotice "Cluster LB HTTP port: $VKDR_HTTP_PORT"
+  boldNotice "Cluster LB HTTPS port: $VKDR_HTTPS_PORT"
+  bold "=============================="
 }
 
 runFormula() {
+  detectClusterPorts
   startInfos
   configure
   configDomain
@@ -46,10 +53,18 @@ configure() {
 }
 
 configDomain() {
-  VKDR_PROTOCOL="http"
-  if [ "true" = "$VKDR_ENV_KEYCLOAK_SECURE" ]; then
-    VKDR_PROTOCOL="https"
-  fi
+  VKDR_KEYCLOAK_PORT=""
+    if [ "true" = "$VKDR_ENV_KEYCLOAK_SECURE" ]; then
+      VKDR_PROTOCOL="https"
+      if [ "$VKDR_HTTPS_PORT" != "443" ]; then
+        VKDR_KEYCLOAK_PORT=":$VKDR_HTTPS_PORT"
+      fi
+    else
+      VKDR_PROTOCOL="http"
+      if [ "$VKDR_HTTP_PORT" != "80" ]; then
+        VKDR_KEYCLOAK_PORT=":$VKDR_HTTP_PORT"
+      fi
+    fi
   if [ "$VKDR_ENV_KEYCLOAK_DOMAIN" != "localhost" ]; then
     debug "configDomain: setting keycloak hostname to 'auth.$VKDR_ENV_KEYCLOAK_DOMAIN' in $VKDR_KEYCLOAK_VALUES"
     $VKDR_YQ eval ".ingress.hostname = \"auth.$VKDR_ENV_KEYCLOAK_DOMAIN\"" -i $VKDR_KEYCLOAK_VALUES
@@ -68,7 +83,7 @@ configDomain() {
       $VKDR_YQ eval ".ingress.tls = true" -i $VKDR_KEYCLOAK_VALUES
     fi
   fi
-  export NEW_HOSTNAME="$VKDR_PROTOCOL://auth.$VKDR_ENV_KEYCLOAK_DOMAIN"
+  export NEW_HOSTNAME="$VKDR_PROTOCOL://auth.${VKDR_ENV_KEYCLOAK_DOMAIN}${VKDR_KEYCLOAK_PORT}"
   debug "configDomain: fixing KC_HOSTNAME_URL to $NEW_HOSTNAME"
   $VKDR_YQ e '( .extraEnvVars[] | select(.name == "KC_HOSTNAME_URL") ).value = env(NEW_HOSTNAME)' -i $VKDR_KEYCLOAK_VALUES
 }
@@ -76,7 +91,7 @@ configDomain() {
 install() {
   debug "Keycloak install: add/update helm repo"
   $VKDR_HELM repo add bitnami https://charts.bitnami.com/bitnami
-  $VKDR_HELM repo update
+  $VKDR_HELM repo update bitnami
   debug "install: installing Keycloak"
   $VKDR_HELM upgrade -i keycloak bitnami/keycloak \
     -n $KEYCLOAK_NAMESPACE --version 21.2.1 --values $VKDR_KEYCLOAK_VALUES
