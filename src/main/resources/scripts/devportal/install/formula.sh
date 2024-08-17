@@ -32,8 +32,8 @@ startInfos() {
 
 installDevPortal() {
   debug "installDevPortal: add/update helm repo"
-  helm repo add veecode-platform https://veecode-platform.github.io/public-charts/
-  helm repo update veecode-platform
+  $VKDR_HELM repo add veecode-platform https://veecode-platform.github.io/public-charts/
+  $VKDR_HELM repo update veecode-platform
   debug "installDevPortal: installing DevPortal (beta)"
   #VKDR_PROTOCOL=http
   #if [[ "$VKDR_ENV_DEVPORTAL_SECURE" == "true" ]]; then VKDR_PROTOCOL=https; fi
@@ -49,7 +49,7 @@ installDevPortal() {
         VKDR_DEVPORTAL_PORT=":$VKDR_HTTP_PORT"
       fi
     fi
-  helm upgrade platform-devportal --install --wait --timeout 10m \
+  $VKDR_HELM upgrade platform-devportal --install --wait --timeout 10m \
     veecode-platform/devportal --create-namespace -n platform \
     -f "$VKDR_DEVPORTAL_VALUES" \
     --set "ingress.host=devportal.${VKDR_ENV_DEVPORTAL_DOMAIN}" \
@@ -60,9 +60,23 @@ installDevPortal() {
     --set "auth.providers.github.clientSecret=${VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_SECRET}"
 }
 
+checkForKong() {
+  # check if kong is installed
+  if $VKDR_HELM list -n vkdr | grep -q "^kong"; then
+    debug "checkForKong: Kong already installed."
+    return 0;
+  fi
+  debug "checkForKong: Kong not found, will install it as default ingress controller:"
+  debug "checkForKong: running 'vkdr kong install --default-ic'"
+  (
+    vkdr kong install --default-ic
+  )
+}
+
 runFormula() {
   detectClusterPorts
   startInfos
+  checkForKong
   installDevPortal
 }
 

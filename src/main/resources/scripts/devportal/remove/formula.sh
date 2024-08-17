@@ -4,7 +4,7 @@ source "$(dirname "$0")/../../.util/tools-versions.sh"
 source "$(dirname "$0")/../../.util/tools-paths.sh"
 source "$(dirname "$0")/../../.util/log.sh"
 
-VKDR_NAMESPACE=vkdr
+VKDR_NAMESPACE=platform
 
 startInfos() {
   boldInfo "DevPortal Remove"
@@ -17,7 +17,7 @@ runFormula() {
 }
 
 remove() {
-  helm delete devportal -n $VKDR_NAMESPACE
+  helm delete platform-devportal -n $VKDR_NAMESPACE
 }
 
 runFormula
