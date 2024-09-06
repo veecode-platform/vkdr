@@ -99,3 +99,17 @@ a JDK localmente. Para este projeto utilizamos a GraalVM 21:
 ```shell
 sdk use java 21.0.2-graalce
 ```
+
+## Atualizando dependências
+
+Verificar dependências com:
+
+```shell
+mvn versions:display-dependency-updates
+```
+
+Verificar plugins com:
+
+```shell
+mvn versions:display-plugin-updates
+```

@@ -19,10 +19,15 @@ startInfos() {
 installNginx() {
   debug "installNginx: add/update helm repo"
   $VKDR_HELM repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-  $VKDR_HELM repo update
-  debug "installNginx: installing nginx"
-  $VKDR_HELM upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
-    --set "controller.ingressClassResource.default=$VKDR_ENV_NGINX_DEFAULT"
+  $VKDR_HELM repo update ingress-nginx
+  if [ "true" = "$VKDR_ENV_NGINX_DEFAULT" ]; then
+    debug "installNginx: installing nginx as **default** ingress controller"
+    $VKDR_HELM upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
+      --set "controller.ingressClassResource.default=$VKDR_ENV_NGINX_DEFAULT"
+  else
+    debug "installNginx: installing nginx ingress controller"
+    $VKDR_HELM upgrade --install ingress-nginx ingress-nginx/ingress-nginx
+  fi
 }
 
 runFormula() {

@@ -8,6 +8,7 @@ VKDR_ENV_VAULT_DEV_ROOT_TOKEN=$4
 source "$(dirname "$0")/../../.util/tools-versions.sh"
 source "$(dirname "$0")/../../.util/tools-paths.sh"
 source "$(dirname "$0")/../../.util/log.sh"
+source "$(dirname "$0")/../../.util/ingress-tools.sh"
 
 VAULT_NAMESPACE=vkdr
 
@@ -33,12 +34,11 @@ runFormula() {
 installVault() {
   debug "installVault: add/update helm repo"
   $VKDR_HELM repo add hashicorp https://helm.releases.hashicorp.com
-  $VKDR_HELM repo update
+  $VKDR_HELM repo update hashicorp
   debug "installVault: installing vault"
   $VKDR_HELM upgrade --install vault hashicorp/vault \
     -n $VAULT_NAMESPACE --values $VKDR_VAULT_VALUES
 }
-
 
 settings() {
   VKDR_VAULT_VALUES=/tmp/vault.yaml

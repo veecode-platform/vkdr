@@ -18,4 +18,11 @@ public class VkdrVaultCommand {
     int remove()throws IOException, InterruptedException {
         return ShellExecutor.executeCommand("vault/remove");
     }
+
+    @CommandLine.Command(name = "explain", mixinStandardHelpOptions = true,
+            description = "explain Vault install formulas",
+            exitCodeOnExecutionException = 23)
+    int explain() throws IOException, InterruptedException {
+        return ShellExecutor.explainCommand("vault/explain");
+    }
 }
