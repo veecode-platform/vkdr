@@ -6,6 +6,7 @@ source "$(dirname "$0")/../../.util/log.sh"
 
 VAULT_NAMESPACE=vkdr
 VAULT_STATUS="none"
+VAULT_DEV_MODE="false"
 
 startInfos() {
   boldInfo "Vault Install"
@@ -29,12 +30,15 @@ initVault() {
     uninitialized)
       doInitVault
       doUnsealVault
+      doEnableEngines
       ;;
     sealed)
       doUnsealVault
+      doEnableEngines
       ;;
     *)
       debug "initVault: vault is already initialized and unsealed"
+      doEnableEngines
       ;;
   esac
 }
@@ -46,8 +50,8 @@ doInitVault () {
       -key-threshold=1 \
       -format=json > /tmp/cluster-keys.json
   debug "initVault: vault initialized, saving unseal keys and root token into 'vault-keys' secret."
-  UNSEAL_KEY=$(cat /tmp/cluster-keys.json | jq -r ".unseal_keys_b64[0]")
-  ROOT_TOKEN=$(cat /tmp/cluster-keys.json | jq -r ".root_token")
+  UNSEAL_KEY=$(cat /tmp/cluster-keys.json | $VKDR_JQ -r ".unseal_keys_b64[0]")
+  ROOT_TOKEN=$(cat /tmp/cluster-keys.json | $VKDR_JQ -r ".root_token")
   $VKDR_KUBECTL create secret generic vault-keys -n $VAULT_NAMESPACE \
       --from-literal=unseal-key="$UNSEAL_KEY" \
       --from-literal=root-token="$ROOT_TOKEN"
@@ -56,9 +60,30 @@ doInitVault () {
 
 doUnsealVault () {
   debug "doUnsealVault: unsealing vault..."
-  UNSEAL_KEY=$(cat /tmp/cluster-keys.json | jq -r ".unseal_keys_b64[0]")
+  UNSEAL_KEY=$(cat /tmp/cluster-keys.json | $VKDR_JQ -r ".unseal_keys_b64[0]")
   $VKDR_KUBECTL -n $VAULT_NAMESPACE exec vault-0 -- vault operator unseal "$UNSEAL_KEY" > /dev/null
   debug "doUnsealVault: vault unsealed!"
+}
+
+doEnableEngines () {
+  debug "doEnableEngines: fetching token"
+  ROOT_TOKEN=$($VKDR_KUBECTL get secret vault-keys -n vkdr -o jsonpath='{.data}' | $VKDR_JQ -r '."root-token"' | base64 --decode)
+  #debug "doEnableEngines: token $ROOT_TOKEN"
+  debug "doEnableEngines: listing enabled vault engines..."
+  VAULT_ENGINES_JSON=$($VKDR_KUBECTL -n $VAULT_NAMESPACE exec vault-0 -- env VAULT_TOKEN=$ROOT_TOKEN vault secrets list -format=json)
+  debug "doEnableEngines: enabling vault engines..."
+  if echo "$VAULT_ENGINES_JSON" | $VKDR_JQ -e '."secret/"' > /dev/null; then
+    debug "doEnableEngines: the kv engine 'secret/' already exists, skipping it."
+  else
+    debug "doEnableEngines: enabling kv-v2 secrets engine at 'secrets/'"
+    $VKDR_KUBECTL -n $VAULT_NAMESPACE exec vault-0 -- env VAULT_TOKEN=$ROOT_TOKEN vault secrets enable -path=secret kv-v2
+  fi
+  if echo "$VAULT_ENGINES_JSON" | $VKDR_JQ -e '."database/"' > /dev/null; then
+    debug "doEnableEngines: the kv engine 'database/' already exists, skipping it."
+  else
+    debug "doEnableEngines: enabling database secrets engine at 'database/'"
+    $VKDR_KUBECTL -n $VAULT_NAMESPACE exec vault-0 -- env VAULT_TOKEN=$ROOT_TOKEN vault secrets enable database
+  fi
 }
 
 getVaultAddress() {

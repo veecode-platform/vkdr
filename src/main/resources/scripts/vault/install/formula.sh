@@ -29,6 +29,7 @@ runFormula() {
   configDomain
   setDevMode
   installVault
+  postInstall
 }
 
 installVault() {
@@ -66,6 +67,14 @@ setDevMode () {
   $VKDR_YQ -i ".server.dev.enabled = true" $VKDR_VAULT_VALUES
   debug "setDevMode: setting vault dev root token in $VKDR_VAULT_VALUES"
   $VKDR_YQ -i ".server.dev.devRootToken = \"$VKDR_ENV_VAULT_DEV_ROOT_TOKEN\"" $VKDR_VAULT_VALUES
+}
+
+postInstall() {
+  if [ "true" = "$VKDR_ENV_VAULT_DEV_MODE" ]; then
+    debug "postInstall: saving dev mode root token in 'vault-keys' secret"
+    $VKDR_KUBECTL create secret generic vault-keys -n $VAULT_NAMESPACE \
+      --from-literal=root-token="$VKDR_ENV_VAULT_DEV_ROOT_TOKEN"
+  fi
 }
 
 createNamespace() {

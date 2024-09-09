@@ -4,6 +4,7 @@ This formula installs an opinionated Vault server. This is meant to be integrate
 
 - [Install Vault in Dev Mode](#install-vault-in-dev-mode)
 - [Install Vault in Production Mode](#install-vault-in-production-mode)
+- [Read and Decode Vault Keys](#read-and-decode-vault-keys)
 
 ## Install Vault in Dev Mode
 
@@ -11,7 +12,7 @@ Vault can be installed in "dev" mode with a custom root token. This means that y
 
 ```sh
 # starts cluster with traefik
-vkdr infra up
+vkdr infra start --traefik
 # starts Postgres
 vkdr vault install --dev --dev-root-token mysecret
 ```
@@ -26,7 +27,7 @@ Please notice that "ïnit" operation takes care of both Vault initialization and
 
 ```sh
 # starts cluster
-vkdr infra up
+vkdr infra start --traefik
 # starts Postgres
 vkdr vault install -s
 vkdr vault init
@@ -34,4 +35,14 @@ vkdr vault init
 
 This behaviour is possible because we are keeping the unseal keys in a kubernetes secret. This is not the most secure way to do it, but it is the most practical one (VKDR is not designed for production use anyway). 
 
+## Read and Decode Vault Keys
+
+To read and decode the root and unseal Vault keys you can use the following command:
+
+```sh
+kubectl get secret vault-keys -n vkdr -o jsonpath='{.data}' | \
+  jq -r 'to_entries[] | "\(.key)=\(.value | @base64d)"'
+```
+
+Please understand that this is VKDR-specific and should not be used in production. This is just a way to make it easier to work with Vault in a development environment.
 
