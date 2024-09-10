@@ -5,6 +5,7 @@ This formula installs an opinionated Vault server. This is meant to be integrate
 - [Install Vault in Dev Mode](#install-vault-in-dev-mode)
 - [Install Vault in Production Mode](#install-vault-in-production-mode)
 - [Read and Decode Vault Keys](#read-and-decode-vault-keys)
+- [External Secrets Operator](#external-secrets-operator)
 
 ## Install Vault in Dev Mode
 
@@ -28,7 +29,7 @@ Please notice that "ïnit" operation takes care of both Vault initialization and
 ```sh
 # starts cluster
 vkdr infra start --traefik
-# starts Postgres
+# Vault install and init
 vkdr vault install -s
 vkdr vault init
 ```
@@ -45,4 +46,15 @@ kubectl get secret vault-keys -n vkdr -o jsonpath='{.data}' | \
 ```
 
 Please understand that this is VKDR-specific and should not be used in production. This is just a way to make it easier to work with Vault in a development environment.
+
+## External Secrets Operator
+
+At several points in VKDR Vault is integrated with the External Secrets Operator. You have to install them in any order:
+
+```sh
+vkdr infra start --traefik
+vkdr vault install -s
+vkdr vault init
+vkdr eso install
+```
 

@@ -1,4 +1,4 @@
-package codes.vee.vkdr.cmd;
+package codes.vee.vkdr.cmd.postgres;
 
 import codes.vee.vkdr.ShellExecutor;
 import picocli.CommandLine;
@@ -31,7 +31,7 @@ public class VkdrPostgresCreateDBCommand implements Callable<Integer> {
 
     @CommandLine.Option(names = {"-s","--store", "--store_secret"},
     defaultValue = "false",
-    description = "Store password in secret")
+    description = "Store password in k8s secret")
     private boolean store_secret;
 
     @CommandLine.Option(names = {"--drop", "--drop-database", "--drop_database"},
@@ -39,8 +39,13 @@ public class VkdrPostgresCreateDBCommand implements Callable<Integer> {
             description = "Drop (destroy) database if it exists")
     private boolean drop_database;
 
+    @CommandLine.Option(names = {"--vault", "--create-vault", "--create_vault"},
+            defaultValue = "false",
+            description = "Create vault database engine config")
+    private boolean create_vault;
+
     @Override
     public Integer call() throws Exception {
-        return ShellExecutor.executeCommand("postgres/createdb", database_name, admin_password, user_name, password, String.valueOf(store_secret), String.valueOf(drop_database));
+        return ShellExecutor.executeCommand("postgres/createdb", database_name, admin_password, user_name, password, String.valueOf(store_secret), String.valueOf(drop_database), String.valueOf(create_vault));
     }
 }

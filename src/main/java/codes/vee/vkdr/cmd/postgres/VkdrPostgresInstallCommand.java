@@ -1,4 +1,4 @@
-package codes.vee.vkdr.cmd;
+package codes.vee.vkdr.cmd.postgres;
 
 import codes.vee.vkdr.ShellExecutor;
 import picocli.CommandLine;

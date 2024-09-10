@@ -1,4 +1,4 @@
-package codes.vee.vkdr.cmd;
+package codes.vee.vkdr.cmd.postgres;
 
 import codes.vee.vkdr.ShellExecutor;
 import org.springframework.stereotype.Component;
@@ -10,7 +10,7 @@ import java.io.IOException;
 @CommandLine.Command(name = "postgres", mixinStandardHelpOptions = true, exitCodeOnExecutionException = 50,
         description = "install/remove Postgres database",
         subcommands = {VkdrPostgresInstallCommand.class, VkdrPostgresCreateDBCommand.class})
-class VkdrPostgresCommand {
+public class VkdrPostgresCommand {
 
     @CommandLine.Command(name = "remove", mixinStandardHelpOptions = true,
             description = "remove Postgres database",
