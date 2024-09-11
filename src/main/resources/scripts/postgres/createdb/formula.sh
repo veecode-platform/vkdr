@@ -7,6 +7,7 @@ VKDR_ENV_POSTGRES_PASSWORD=$4
 VKDR_ENV_POSTGRES_STORE_SECRET=$5
 VKDR_ENV_POSTGRES_DROP_DATABASE=$6
 VKDR_ENV_POSTGRES_CREATE_VAULT=$7
+VKDR_ENV_POSTGRES_VAULT_ROTATION_SCHEDULE=$8
 
 source "$(dirname "$0")/../../.util/tools-versions.sh"
 source "$(dirname "$0")/../../.util/tools-paths.sh"
@@ -26,6 +27,7 @@ startInfos() {
   boldNotice "Store secret: $VKDR_ENV_POSTGRES_STORE_SECRET"
   boldNotice "Drop database: $VKDR_ENV_POSTGRES_DROP_DATABASE"
   boldNotice "Create vault database config: $VKDR_ENV_POSTGRES_CREATE_VAULT"
+  boldNotice "Vault rotation schedule: $VKDR_ENV_POSTGRES_VAULT_ROTATION_SCHEDULE"
   bold "=============================="
 }
 
@@ -93,7 +95,7 @@ createVaultConfig() {
     vault write database/static-roles/$VKDR_ENV_POSTGRES_USER_NAME \
         db_name=$VKDR_ENV_POSTGRES_DATABASE_NAME \
         username="$VKDR_ENV_POSTGRES_USER_NAME" \
-        rotation_schedule="0 * * * SAT"
+        rotation_schedule="$VKDR_ENV_POSTGRES_VAULT_ROTATION_SCHEDULE"
 }
 
 saveSecret() {

@@ -44,8 +44,13 @@ public class VkdrPostgresCreateDBCommand implements Callable<Integer> {
             description = "Create vault database engine config")
     private boolean create_vault;
 
+    @CommandLine.Option(names = {"--vault-rotation", "--vault-rotation-schedule", "--vault_rotation_schedule"},
+            defaultValue = "0 * * * SAT",
+            description = "Vault secret rotation schedule (default: '0 * * * SAT')")
+    private String vault_rotation_schedule;
+
     @Override
     public Integer call() throws Exception {
-        return ShellExecutor.executeCommand("postgres/createdb", database_name, admin_password, user_name, password, String.valueOf(store_secret), String.valueOf(drop_database), String.valueOf(create_vault));
+        return ShellExecutor.executeCommand("postgres/createdb", database_name, admin_password, user_name, password, String.valueOf(store_secret), String.valueOf(drop_database), String.valueOf(create_vault), vault_rotation_schedule);
     }
 }
