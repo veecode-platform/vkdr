@@ -9,7 +9,7 @@ VAULT_STATUS="none"
 VAULT_DEV_MODE="false"
 
 startInfos() {
-  boldInfo "Vault Install"
+  boldInfo "Vault Init"
   bold "=============================="
   bold "=============================="
 }

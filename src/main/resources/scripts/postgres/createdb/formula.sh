@@ -90,7 +90,7 @@ createVaultConfig() {
       password="$VKDR_PG_PWD"
   debug "createVaultConfig: creating vault database/static-roles/$VKDR_ENV_POSTGRES_DATABASE_NAME..."
   $VKDR_KUBECTL -n $VAULT_NAMESPACE exec vault-0 -- env VAULT_TOKEN=$VKDR_VAULT_TOKEN \
-    vault write database/static-roles/$VKDR_ENV_POSTGRES_DATABASE_NAME \
+    vault write database/static-roles/$VKDR_ENV_POSTGRES_USER_NAME \
         db_name=$VKDR_ENV_POSTGRES_DATABASE_NAME \
         username="$VKDR_ENV_POSTGRES_USER_NAME" \
         rotation_schedule="0 * * * SAT"
