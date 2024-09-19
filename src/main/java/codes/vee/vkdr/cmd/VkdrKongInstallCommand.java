@@ -43,7 +43,7 @@ public class VkdrKongInstallCommand implements Callable<Integer> {
 
     @CommandLine.Option(names = {"-t","--tag", "--image_tag"},
         defaultValue = "",
-        description = "Kong image name, defaults to chart default (ex: '3.6')")
+        description = "Kong image name, defaults to chart default (ex: '3.8')")
     private String image_tag;
 
     @CommandLine.Option(names = {"-l","--license","--license-file"},
