@@ -7,6 +7,8 @@ VKDR_ENV_DELETE_REGISTRY=$1
 source "$(dirname "$0")/../../.util/log.sh"
 source "$(dirname "$0")/../../.util/tools-paths.sh"
 
+REGISTRY_CONFIG="$(dirname "$0")/../../.util/configs/mirror-registry.yaml"
+
 runFormula() {
   startInfos
   stopCluster
@@ -31,11 +33,20 @@ stopCluster() {
     #else
     #  error "Registry k3d-registry not running..."
     #fi
-    if ${VKDR_K3D} registry list | grep -q "k3d-docker-io"; then
-      ${VKDR_K3D} registry delete k3d-docker-io
-    else
-      error "Registry k3d-mirror not running..."
-    fi
+
+    debug "stopCluster: parsing mirror config from $REGISTRY_CONFIG"
+    MIRRORS=$($VKDR_YQ -r '.mirrors | keys[]' "$REGISTRY_CONFIG")
+    debug "startMirrors: reading current registry list"
+    REGISTRIES=$($VKDR_K3D registry list -o json | $VKDR_JQ -r '.[].name')
+    for mirror in $MIRRORS; do
+      MIRROR_NAME="${mirror//./-}"
+      if echo "$REGISTRIES" | grep -qx "k3d-$MIRROR_NAME"; then
+        debug "stopCluster: Deleting registry k3d-$MIRROR_NAME"
+        ${VKDR_K3D} registry delete "k3d-$MIRROR_NAME"
+      else
+        error "Registry k3d-mirror not running..."
+      fi
+    done
   fi
 }
 

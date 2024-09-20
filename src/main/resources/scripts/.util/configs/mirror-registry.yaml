@@ -2,3 +2,6 @@ mirrors:
   "docker.io":
     endpoint:
       - http://host.k3d.internal:6001
+  "registry.k8s.io":
+    endpoint:
+      - http://host.k3d.internal:6002

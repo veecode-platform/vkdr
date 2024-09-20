@@ -17,6 +17,8 @@ VOLUMES_ARRAY=()
 source "$(dirname "$0")/../../.util/log.sh"
 source "$(dirname "$0")/../../.util/tools-paths.sh"
 
+REGISTRY_CONFIG="$(dirname "$0")/../../.util/configs/mirror-registry.yaml"
+
 startInfos() {
   bold "=============================="
   boldInfo "VKDR Local Infra Start Routine"
@@ -38,24 +40,56 @@ startInfos() {
   bold "=============================="
 }
 
-# Create the local registry and Docker Hub Mirror
-startRegistry() {
+startLocalRegistry() {
+  debug "startLocalRegistry: TODO"
   #if ! ${VKDR_K3D} registry list | grep -q "k3d-registry\.localhost"; then
   #  ${VKDR_K3D} registry create registry.localhost \
   #    -p 6000 -v vkdr-registry:/var/lib/registry
   #else
   #  warn "Registry already started, skipping..."
   #fi
+}
 
-  if ! ${VKDR_K3D} registry list | grep -q "k3d-docker-io"; then
+# Create the local registry and Docker Hub Mirror
+startRegistry() {
+  local mirror_name=$1
+  local mirror_host=$2
+  local mirror_port=$3
+  if [ "docker-io" = "$mirror_name" ]; then
     ${VKDR_K3D} registry create docker-io \
       --proxy-remote-url https://registry-1.docker.io \
-      -p 6001 -v vkdr-mirror-registry:/var/lib/registry
+      -p $mirror_port -v vkdr-mirror-registry:/var/lib/registry
   else
-    warn "Mirror already started, skipping..."
+    ${VKDR_K3D} registry create $mirror_name \
+      --proxy-remote-url https://$mirror_host \
+      -p $mirror_port -v vkdr-${mirror_name}-mirror-registry:/var/lib/registry
   fi
 }
 
+startMirrors() {
+  local MIRRORS
+  local MIRROR_NAME
+  local REGISTRIES
+  debug "startMirrors: parsing mirror config from $REGISTRY_CONFIG"
+  MIRRORS=$($VKDR_YQ -r '.mirrors | keys[]' "$REGISTRY_CONFIG")
+  debug "startMirrors: reading current registry list"
+  REGISTRIES=$($VKDR_K3D registry list -o json | $VKDR_JQ -r '.[].name')
+  debug "startMirrors: current registries: $REGISTRIES"
+  for mirror in $MIRRORS; do
+    MIRROR_NAME="${mirror//./-}"
+    if echo "$REGISTRIES" | grep -qx "k3d-$MIRROR_NAME"; then
+      debug "startMirrors: Mirror $MIRROR_NAME already started, skipping..."
+    else
+      # pegar porta do endpoint
+      export MY_MIRROR="$mirror"
+      MY_PORT=$($VKDR_YQ e '.mirrors[strenv(MY_MIRROR)].endpoint[0] | select(.) | split(":") | .[-1]' "$REGISTRY_CONFIG")
+      debug "startMirrors: will start mirror $mirror as $MIRROR_NAME registry in port $MY_PORT..."
+      startRegistry $MIRROR_NAME $mirror $MY_PORT
+    fi
+  done
+}
+
+# Create the k3d cluster
 # Starts K8S using Registries
 startCluster() {
   if $VKDR_K3D cluster list | grep -q "vkdr-local"; then
@@ -69,7 +103,7 @@ startCluster() {
     -p "$VKDR_ENV_HTTP_PORT:80@loadbalancer" \
     -p "$VKDR_ENV_HTTPS_PORT:443@loadbalancer" \
     --registry-use k3d-docker-io:6001  \
-    --registry-config "$(dirname "$0")/../../.util/configs/mirror-registry.yaml" \
+    --registry-config "$REGISTRY_CONFIG" \
     $NODEPORT_FLAG $NODEPORT_VALUE $TRAEFIK_FLAG $TRAEFIK_VALUE "${VOLUMES_ARRAY[@]}"
   $VKDR_KUBECTL cluster-info
 }
@@ -109,7 +143,7 @@ postStart() {
 }
 
 startInfos
-startRegistry
+startMirrors
 parseVolumes
 configureCluster
 startCluster
