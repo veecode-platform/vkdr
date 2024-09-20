@@ -14,8 +14,13 @@ public class VkdrPostgresInstallCommand implements Callable<Integer> {
     description = "Postgres admin password (default: '')")
     private String admin_password;
 
+    @CommandLine.Option(names = {"-w","--wait"},
+            defaultValue = "false",
+            description = "Wait until Postgres is ready (default: false)")
+    private boolean wait_for;
+
     @Override
     public Integer call() throws Exception {
-        return ShellExecutor.executeCommand("postgres/install", admin_password);
+        return ShellExecutor.executeCommand("postgres/install", admin_password, String.valueOf(wait_for));
     }
 }
