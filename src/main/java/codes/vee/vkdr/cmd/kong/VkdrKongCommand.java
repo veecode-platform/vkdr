@@ -1,4 +1,4 @@
-package codes.vee.vkdr.cmd;
+package codes.vee.vkdr.cmd.kong;
 
 import codes.vee.vkdr.ShellExecutor;
 import org.springframework.stereotype.Component;

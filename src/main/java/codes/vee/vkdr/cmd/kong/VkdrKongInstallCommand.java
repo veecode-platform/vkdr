@@ -1,4 +1,4 @@
-package codes.vee.vkdr.cmd;
+package codes.vee.vkdr.cmd.kong;
 
 import com.google.gson.Gson;
 import codes.vee.vkdr.ShellExecutor;

@@ -2,6 +2,8 @@ package codes.vee.vkdr.cmd;
 
 import codes.vee.vkdr.cmd.devportal.VkdrDevPortalCommand;
 import codes.vee.vkdr.cmd.keycloak.VkdrKeycloakCommand;
+import codes.vee.vkdr.cmd.kong.VkdrKongCommand;
+import codes.vee.vkdr.cmd.minio.VkdrMinioCommand;
 import codes.vee.vkdr.cmd.postgres.VkdrPostgresCommand;
 import codes.vee.vkdr.cmd.whoami.VkdrWhoamiCommand;
 import codes.vee.vkdr.cmd.vault.VkdrVaultCommand;
@@ -33,6 +35,7 @@ import picocli.CommandLine.Command;
                 VkdrWhoamiCommand.class,
                 VkdrVaultCommand.class,
                 VkdrEsoCommand.class,
+                VkdrMinioCommand.class,
                 VkdrUpgrade.class})
 public class VkdrCommand {
 

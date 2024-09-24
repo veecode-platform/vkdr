@@ -1,0 +1,12 @@
+auth:
+  rootPassword: vert1234
+# console
+ingress:
+  enabled: true
+  hostname: minio.localhost
+# s3 api
+apiIngress:
+  enabled: false
+#extraEnvVars:
+#  - name: MINIO_LOG_LEVEL
+#    value: DEBUG
