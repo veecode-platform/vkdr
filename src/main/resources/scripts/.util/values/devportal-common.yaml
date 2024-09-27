@@ -73,3 +73,19 @@ platform:
 
 permission:
   enabled: true
+
+kubernetes:
+  clusterLocatorMethods:
+    - clusters:
+        - authProvider: serviceAccount
+          name: cluster-vkdr-local
+          skipMetricsLookup: false
+          skipTLSVerify: true
+          url: https://kubernetes.default.svc
+          serviceAccountToken: xxx
+kong:
+  enabled: true
+  instances:
+    - name: cluster-vkdr-local
+      apiManager: http://kong-kong-admin.vkdr.svc.cluster.local:8001
+      allowedHeaders: ["Authorization", "Content-Type"]

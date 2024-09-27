@@ -10,6 +10,7 @@ source "$(dirname "$0")/../../.util/tools-versions.sh"
 source "$(dirname "$0")/../../.util/tools-paths.sh"
 source "$(dirname "$0")/../../.util/log.sh"
 source "$(dirname "$0")/../../.util/ingress-tools.sh"
+source "$(dirname "$0")/../../.util/devportal-k8s-service-account/generateSAToken.sh"
 
 VKDR_DEVPORTAL_VALUES="$(dirname "$0")/../../.util/values/devportal-common.yaml"
 # port values override by detectClusterPorts
@@ -57,7 +58,8 @@ installDevPortal() {
     --set "appConfig.backend.baseUrl=${VKDR_PROTOCOL}://devportal.${VKDR_ENV_DEVPORTAL_DOMAIN}${VKDR_DEVPORTAL_PORT}" \
     --set "integrations.github.token=${VKDR_ENV_DEVPORTAL_GITHUB_TOKEN}" \
     --set "auth.providers.github.clientId=${VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_ID}" \
-    --set "auth.providers.github.clientSecret=${VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_SECRET}"
+    --set "auth.providers.github.clientSecret=${VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_SECRET}" \
+    --set "kubernetes.clusterLocatorMethods[0].clusters[0].serviceAccountToken=${VKDR_SERVICE_ACCOUNT_TOKEN}"
 }
 
 checkForKong() {
@@ -69,14 +71,21 @@ checkForKong() {
   debug "checkForKong: Kong not found, will install it as default ingress controller:"
   debug "checkForKong: running 'vkdr kong install --default-ic'"
   (
-    vkdr kong install --default-ic
+    vkdr kong install --default-ic -t "3.8" -e
   )
+}
+
+generateServiceAccountToken() {
+  debug "generateServiceAccountToken: generating service account token"
+  createDevPortalServiceAccount
+  debug "generateServiceAccountToken: service account token = ${VKDR_SERVICE_ACCOUNT_TOKEN:0:10} (first 10 chars)"
 }
 
 runFormula() {
   detectClusterPorts
   startInfos
   checkForKong
+  generateServiceAccountToken
   installDevPortal
 }
 
