@@ -5,6 +5,7 @@ VKDR_ENV_DEVPORTAL_SECURE=$2
 VKDR_ENV_DEVPORTAL_GITHUB_TOKEN=$3
 VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_ID=$4
 VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_SECRET=$5
+VKDR_ENV_DEVPORTAL_INSTALL_SAMPLES=$6
 
 source "$(dirname "$0")/../../.util/tools-versions.sh"
 source "$(dirname "$0")/../../.util/tools-paths.sh"
@@ -25,6 +26,7 @@ startInfos() {
   boldNotice "Github Token: *****${VKDR_ENV_DEVPORTAL_GITHUB_TOKEN: -3}"
   boldNotice "Github Client ID: *****${VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_ID: -3}"
   boldNotice "Github Client Secret: *****${VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_SECRET: -3}"
+  boldNotice "Install Sample apps: $VKDR_ENV_DEVPORTAL_INSTALL_SAMPLES"
   bold "=============================="
   boldNotice "Cluster LB HTTP port: $VKDR_HTTP_PORT"
   boldNotice "Cluster LB HTTPS port: $VKDR_HTTPS_PORT"
@@ -50,6 +52,11 @@ installDevPortal() {
         VKDR_DEVPORTAL_PORT=":$VKDR_HTTP_PORT"
       fi
     fi
+  local LOCATION_TARGET="https://github.com/veecode-platform/vkdr-catalog/blob/main/catalog-info.yaml"
+  if [ "true" = "$VKDR_ENV_DEVPORTAL_INSTALL_SAMPLES" ]; then
+    LOCATION_TARGET="https://github.com/veecode-platform/vkdr-catalog/blob/main/catalog-info-samples.yaml"
+  fi
+  debug "installDevPortal: DevPortal location target = $LOCATION_TARGET"
   $VKDR_HELM upgrade platform-devportal --install --wait --timeout 10m \
     veecode-platform/devportal --create-namespace -n platform \
     -f "$VKDR_DEVPORTAL_VALUES" \
@@ -59,7 +66,8 @@ installDevPortal() {
     --set "integrations.github.token=${VKDR_ENV_DEVPORTAL_GITHUB_TOKEN}" \
     --set "auth.providers.github.clientId=${VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_ID}" \
     --set "auth.providers.github.clientSecret=${VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_SECRET}" \
-    --set "kubernetes.clusterLocatorMethods[0].clusters[0].serviceAccountToken=${VKDR_SERVICE_ACCOUNT_TOKEN}"
+    --set "kubernetes.clusterLocatorMethods[0].clusters[0].serviceAccountToken=${VKDR_SERVICE_ACCOUNT_TOKEN}" \
+    --set "locations[0].target=${LOCATION_TARGET}"
 }
 
 checkForKong() {
@@ -71,7 +79,7 @@ checkForKong() {
   debug "checkForKong: Kong not found, will install it as default ingress controller:"
   debug "checkForKong: running 'vkdr kong install --default-ic'"
   (
-    vkdr kong install --default-ic -t "3.8" -e
+    vkdr kong install --default-ic -t "3.8" -e -m standard
   )
 }
 
@@ -81,12 +89,24 @@ generateServiceAccountToken() {
   debug "generateServiceAccountToken: service account token = ${VKDR_SERVICE_ACCOUNT_TOKEN:0:10} (first 10 chars)"
 }
 
+installSampleApps() {
+  if [ "true" != "$VKDR_ENV_DEVPORTAL_INSTALL_SAMPLES" ]; then
+    debug "installSampleApps: skipping sample apps installation"
+    return
+  fi
+  debug "installSampleApps: installing sample apps"
+  local VKDR_SAMPLES_PATH="$(dirname "$0")/../../.util/sample-apps"
+  $VKDR_KUBECTL apply -f "$VKDR_SAMPLES_PATH/petclinic.yaml" -n vkdr
+  $VKDR_KUBECTL apply -f "$VKDR_SAMPLES_PATH/viacep-api.yaml" -n vkdr
+}
+
 runFormula() {
   detectClusterPorts
   startInfos
   checkForKong
   generateServiceAccountToken
   installDevPortal
+  installSampleApps
 }
 
 runFormula

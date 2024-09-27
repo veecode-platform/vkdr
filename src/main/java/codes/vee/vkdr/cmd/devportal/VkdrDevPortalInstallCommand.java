@@ -31,9 +31,13 @@ class VkdrDevPortalInstallCommand implements Callable<Integer>  {
             defaultValue = "",
             description = "Github OAuth App client secret")
     private String github_client_secret;
+    @CommandLine.Option(names = {"--samples","--install-samples","--install_samples"},
+            defaultValue = "false",
+            description = "Install apps from sample catalog (default: false)")
+    private boolean install_samples;
 
     @Override
     public Integer call() throws Exception {
-        return ShellExecutor.executeCommand("devportal/install", domain, String.valueOf(enable_https), github_token, github_client_id, github_client_secret);
+        return ShellExecutor.executeCommand("devportal/install", domain, String.valueOf(enable_https), github_token, github_client_id, github_client_secret, String.valueOf(install_samples));
     }
 }
