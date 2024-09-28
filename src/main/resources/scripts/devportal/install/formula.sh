@@ -77,7 +77,7 @@ checkForKong() {
     return 0;
   fi
   debug "checkForKong: Kong not found, will install it as default ingress controller:"
-  debug "checkForKong: running 'vkdr kong install --default-ic'"
+  debug "checkForKong: running 'vkdr kong install --default-ic' -e -m standard"
   (
     vkdr kong install --default-ic -t "3.8" -e -m standard
   )

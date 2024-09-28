@@ -48,11 +48,11 @@ installArkade() {
   else
     info "Installing arkade..."
     # patches download script in order to change BINLOCATION
-    curl -sLS https://get.arkade.dev > /tmp/arkinst0.sh
-    sed "s/^export BINLOCATION=.*/export BINLOCATION=~\/\.vkdr\/bin/g" /tmp/arkinst0.sh > /tmp/arkinst.sh
+    curl -sLS https://get.arkade.dev > /tmp/arkinst.sh
+    #sed "s/^export BINLOCATION=.*/export BINLOCATION=~\/\.vkdr\/bin/g" /tmp/arkinst0.sh > /tmp/arkinst.sh
     chmod +x /tmp/arkinst.sh
-    rm /tmp/arkinst0.sh
-    /tmp/arkinst.sh 2> /dev/null
+    #rm /tmp/arkinst0.sh
+    BINLOCATION=~/.vkdr/bin /tmp/arkinst.sh 2> /dev/null
   fi
 }
 
@@ -76,7 +76,7 @@ installTool() {
     notice "Tool $toolName already installed. Skipping."
   else
     info "Installing $toolName $toolVersion using arkade..."
-    $VKDR_HOME/bin/arkade get $toolName --version=$toolVersion --path="$VKDR_HOME/bin" > /dev/null
+    $VKDR_HOME/bin/arkade get $toolName --version=$toolVersion --path="$VKDR_HOME/bin" --progress=false > /dev/null
     info "$toolName $toolVersion installed!"
   fi
 }
