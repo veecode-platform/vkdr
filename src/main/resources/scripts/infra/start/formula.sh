@@ -6,13 +6,16 @@ VKDR_ENV_HTTP_PORT=$2
 VKDR_ENV_HTTPS_PORT=$3
 VKDR_ENV_NUMBER_NODEPORTS=$4
 VKDR_ENV_API_PORT=$5
-VKDR_ENV_VOLUMES=$6
+VKDR_ENV_AGENTS=$6
+VKDR_ENV_VOLUMES=$7
 # internal
 NODEPORT_FLAG=""
 NODEPORT_VALUE=""
 TRAEFIK_FLAG=""
 TRAEFIK_VALUE=""
 VOLUMES_ARRAY=()
+AGENTS_FLAG=""
+AGENTS_VALUE=""
 
 source "$(dirname "$0")/../../.util/log.sh"
 source "$(dirname "$0")/../../.util/tools-paths.sh"
@@ -36,6 +39,7 @@ startInfos() {
   else
     boldNotice "NodePorts disabled"
   fi
+  boldNotice "K3d Node Agents: ${VKDR_ENV_AGENTS}"
   #boldWarn "Using two local unamed Docker Volumes"
   bold "=============================="
 }
@@ -104,7 +108,7 @@ startCluster() {
     -p "$VKDR_ENV_HTTPS_PORT:443@loadbalancer" \
     --registry-use k3d-docker-io:6001  \
     --registry-config "$REGISTRY_CONFIG" \
-    $NODEPORT_FLAG $NODEPORT_VALUE $TRAEFIK_FLAG $TRAEFIK_VALUE "${VOLUMES_ARRAY[@]}"
+    $NODEPORT_FLAG $NODEPORT_VALUE $TRAEFIK_FLAG $TRAEFIK_VALUE $AGENTS_FLAG $AGENTS_VALUE "${VOLUMES_ARRAY[@]}"
   $VKDR_KUBECTL cluster-info
 }
 
@@ -118,6 +122,10 @@ configureCluster() {
   if [ "$VKDR_ENV_TRAEFIK" == false ]; then
     TRAEFIK_FLAG="--k3s-arg"
     TRAEFIK_VALUE="--disable=traefik@server:0"
+  fi
+  if [ "0" != "$VKDR_ENV_AGENTS" ]; then
+    AGENTS_FLAG="--agents"
+    AGENTS_VALUE="$VKDR_ENV_AGENTS"
   fi
 }
 

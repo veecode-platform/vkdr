@@ -13,7 +13,7 @@ env:
   admin_gui_api_url: "http://manager.localhost:8000"
 image:
   repository: kong
-  tag: "3.7"
+  tag: "3.8"
 admin:
   enabled: true
   type: ClusterIP
@@ -79,3 +79,14 @@ postgresql:
     username: kong
     password: kong
     database: kong
+#
+# Service Monitor (Prometheus)
+#
+serviceMonitor:
+  enabled: true
+  interval: 30s
+  scrapeTimeout: 30s
+  labels:
+    release: grafana-cloud
+  targetLabels:
+    - grafana-cloud

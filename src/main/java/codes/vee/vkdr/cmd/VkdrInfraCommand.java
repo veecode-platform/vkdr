@@ -47,6 +47,10 @@ class VkdrInfraCommand {
                       defaultValue = "",
                       description = "Kubernetes API port (default: '' = random port)")
               String api_port,
+              @Option(names = {"--agents", "--k3d-agents", "--k3d_agents"},
+                      defaultValue = "0",
+                      description = "Optionally start k3d agents (default: 0)")
+              int k3d_agents,
               @Option(names = {"-v", "--volumes"},
                       defaultValue = "",
                       description = {"Volumes to be mounted in the k3d cluster (default: '')",
@@ -54,7 +58,7 @@ class VkdrInfraCommand {
                               "This will allow for hostPath mounts to work in the k3d cluster and to survive cluster recycling."})
               String volumes) throws IOException, InterruptedException {
         logger.debug("'infra start' was called, enable_traefik={}, http_port={}, https_port={}, nodeports={}, volumes={}", enable_traefik, http_port, https_port, nodeports, volumes);
-        return ShellExecutor.executeCommand("infra/start", String.valueOf(enable_traefik), String.valueOf(http_port), String.valueOf(https_port), String.valueOf(nodeports), api_port, volumes);
+        return ShellExecutor.executeCommand("infra/start", String.valueOf(enable_traefik), String.valueOf(http_port), String.valueOf(https_port), String.valueOf(nodeports), api_port, String.valueOf(k3d_agents), volumes);
     }
 
     @Command(name = "up", mixinStandardHelpOptions = true,

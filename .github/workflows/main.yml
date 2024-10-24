@@ -17,8 +17,9 @@ jobs:
           #- os: ubuntu-latest
           #  os-name: linux
           #  arch: arm64
-          # macos-12 = osx intel
-          - os: macos-12
+          #  TODO
+          # macos-13 = osx intel
+          - os: macos-13
             os-name: osx
             arch: amd64
           # macos-14 = osx arm (M1+)

@@ -6,6 +6,7 @@ VKDR_ENV_DEVPORTAL_GITHUB_TOKEN=$3
 VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_ID=$4
 VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_SECRET=$5
 VKDR_ENV_DEVPORTAL_INSTALL_SAMPLES=$6
+VKDR_ENV_DEVPORTAL_GRAFANA_TOKEN=$7
 
 source "$(dirname "$0")/../../.util/tools-versions.sh"
 source "$(dirname "$0")/../../.util/tools-paths.sh"
@@ -27,6 +28,7 @@ startInfos() {
   boldNotice "Github Client ID: *****${VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_ID: -3}"
   boldNotice "Github Client Secret: *****${VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_SECRET: -3}"
   boldNotice "Install Sample apps: $VKDR_ENV_DEVPORTAL_INSTALL_SAMPLES"
+  boldNotice "Grafana Cloud token: *****${VKDR_ENV_DEVPORTAL_GRAFANA_TOKEN: -5}"
   bold "=============================="
   boldNotice "Cluster LB HTTP port: $VKDR_HTTP_PORT"
   boldNotice "Cluster LB HTTPS port: $VKDR_HTTPS_PORT"

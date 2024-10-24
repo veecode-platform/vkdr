@@ -35,9 +35,13 @@ class VkdrDevPortalInstallCommand implements Callable<Integer>  {
             defaultValue = "false",
             description = "Install apps from sample catalog (default: false)")
     private boolean install_samples;
+    @CommandLine.Option(names = {"--grafana-token","--grafana_token"},
+            defaultValue = "",
+            description = "Grafana Cloud token")
+    private String grafana_token;
 
     @Override
     public Integer call() throws Exception {
-        return ShellExecutor.executeCommand("devportal/install", domain, String.valueOf(enable_https), github_token, github_client_id, github_client_secret, String.valueOf(install_samples));
+        return ShellExecutor.executeCommand("devportal/install", domain, String.valueOf(enable_https), github_token, github_client_id, github_client_secret, String.valueOf(install_samples), grafana_token);
     }
 }
