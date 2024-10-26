@@ -78,4 +78,15 @@ class VkdrInfraCommand {
         return ShellExecutor.executeCommand("infra/stop", String.valueOf(delete_registry));
     }
 
+    @Command(name = "expose", mixinStandardHelpOptions = true,
+            description = {"exposes the local vkdr cluster using a public cloudflare tunnel",
+                "(a valid kubeconfig file is generated at '~/.vkdr/tmp/kconfig')"},
+            exitCodeOnExecutionException = 14)
+    int expose(@Option(names = {"--off", "--terminate-tunnel", "--terminate_tunnel" },
+            defaultValue = "false",
+            description = "terminate tunnel (default: false)")
+             boolean terminate_tunnel) throws IOException, InterruptedException {
+        return ShellExecutor.executeCommand("infra/expose", String.valueOf(terminate_tunnel));
+    }
+
 }
