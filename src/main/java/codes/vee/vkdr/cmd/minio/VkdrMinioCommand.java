@@ -1,22 +1,15 @@
 package codes.vee.vkdr.cmd.minio;
 
-import codes.vee.vkdr.ShellExecutor;
+import codes.vee.vkdr.cmd.common.ExitCodes;
 import org.springframework.stereotype.Component;
 import picocli.CommandLine;
 
-import java.io.IOException;
-
 @Component
-@CommandLine.Command(name = "minio", mixinStandardHelpOptions = true, exitCodeOnExecutionException = 120,
-        description = "install/remove Minio storage",
-        subcommands = {VkdrMinioInstallCommand.class})
+@CommandLine.Command(name = "minio", mixinStandardHelpOptions = true, exitCodeOnExecutionException = ExitCodes.MINIO_BASE,
+        description = "manage MinIO service",
+        subcommands = {
+            VkdrMinioInstallCommand.class,
+            VkdrMinioRemoveCommand.class
+        })
 public class VkdrMinioCommand {
-
-    @CommandLine.Command(name = "remove", mixinStandardHelpOptions = true,
-            description = "remove Minio storage",
-            exitCodeOnExecutionException = 22)
-    int remove() throws IOException, InterruptedException {
-        return ShellExecutor.executeCommand("minio/remove");
-    }
-
 }

@@ -2,6 +2,8 @@ package codes.vee.vkdr.cmd.kong;
 
 import com.google.gson.Gson;
 import codes.vee.vkdr.ShellExecutor;
+import codes.vee.vkdr.cmd.common.CommonDomainMixin;
+import codes.vee.vkdr.cmd.common.ExitCodes;
 import picocli.CommandLine;
 
 import java.util.HashMap;
@@ -10,19 +12,13 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 @CommandLine.Command(name = "install", mixinStandardHelpOptions = true,
         description = "install Kong Gateway",
-        exitCodeOnExecutionException = 21)
+        exitCodeOnExecutionException = ExitCodes.KONG_INSTALL)
 public class VkdrKongInstallCommand implements Callable<Integer> {
 
     enum KongMode { dbless, standard, hybrid };
-    @CommandLine.Option(names = {"-d","--domain"},
-        defaultValue = "localhost",
-        description = "DNS domain to use on generated ingress for Admin UI/API (default: localhost)")
-    private String domain;
 
-    @CommandLine.Option(names = {"-s","--secure","--enable_https"},
-        defaultValue = "false",
-        description = "enable HTTPS port too (default: false)")
-    private boolean enable_https;
+    @CommandLine.Mixin
+    private CommonDomainMixin domainSecure;
 
     @CommandLine.Option(names = {"-m","--mode"},
         defaultValue = "dbless",
@@ -124,6 +120,6 @@ public class VkdrKongInstallCommand implements Callable<Integer> {
     public Integer call() throws Exception {
         Gson gson = new Gson();
         String envJson = gson.toJson(environment);
-        return ShellExecutor.executeCommand("kong/install", domain, String.valueOf(enable_https), String.valueOf(kong_mode), String.valueOf(enable_enterprise), license, image_name, image_tag, admin_password, String.valueOf(api_ingress), String.valueOf(default_ingress_controller), String.valueOf(use_nodeport), String.valueOf(admin_oidc), log_level, String.valueOf(enable_acme), acme_server, proxy_tls_secret, envJson);
+        return ShellExecutor.executeCommand("kong/install", domainSecure.domain, String.valueOf(domainSecure.enable_https), String.valueOf(kong_mode), String.valueOf(enable_enterprise), license, image_name, image_tag, admin_password, String.valueOf(api_ingress), String.valueOf(default_ingress_controller), String.valueOf(use_nodeport), String.valueOf(admin_oidc), log_level, String.valueOf(enable_acme), acme_server, proxy_tls_secret, envJson);
     }
 }

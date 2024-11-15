@@ -4,11 +4,14 @@ import codes.vee.vkdr.cmd.devportal.VkdrDevPortalCommand;
 import codes.vee.vkdr.cmd.keycloak.VkdrKeycloakCommand;
 import codes.vee.vkdr.cmd.kong.VkdrKongCommand;
 import codes.vee.vkdr.cmd.minio.VkdrMinioCommand;
+import codes.vee.vkdr.cmd.nginx.VkdrNginxCommand;
 import codes.vee.vkdr.cmd.postgres.VkdrPostgresCommand;
 import codes.vee.vkdr.cmd.whoami.VkdrWhoamiCommand;
 import codes.vee.vkdr.cmd.vault.VkdrVaultCommand;
 import codes.vee.vkdr.cmd.eso.VkdrEsoCommand;
 import codes.vee.vkdr.cmd.grafana_cloud.VkdrGrafanaCloudCommand;
+import codes.vee.vkdr.cmd.infra.VkdrInfraCommand;
+
 import org.springframework.stereotype.Component;
 import picocli.CommandLine.Command;
 

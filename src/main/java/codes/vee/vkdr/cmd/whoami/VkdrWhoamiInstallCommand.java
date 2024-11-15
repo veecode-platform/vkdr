@@ -1,6 +1,8 @@
 package codes.vee.vkdr.cmd.whoami;
 
 import codes.vee.vkdr.ShellExecutor;
+import codes.vee.vkdr.cmd.common.CommonDomainMixin;
+import codes.vee.vkdr.cmd.common.ExitCodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
@@ -8,24 +10,17 @@ import picocli.CommandLine;
 import java.util.concurrent.Callable;
 
 @CommandLine.Command(name = "install", mixinStandardHelpOptions = true,
-        description = "install 'whoami' service",
-        exitCodeOnExecutionException = 91)
+        description = "install whoami service",
+        exitCodeOnExecutionException = ExitCodes.WHOAMI_INSTALL)
 public class VkdrWhoamiInstallCommand implements Callable<Integer> {
 
     private static final Logger logger = LoggerFactory.getLogger(VkdrWhoamiCommand.class);
-    @CommandLine.Option(names = {"-d", "--domain"},
-            defaultValue = "localhost",
-            description = "DNS domain to use on generated ingress (default: localhost)")
-    String domain;
-
-    @CommandLine.Option(names = {"-s","--secure","--enable_https"},
-            defaultValue = "false",
-            description = "enable HTTPS port too (default: false)")
-    boolean enable_https;
+    @CommandLine.Mixin
+    private CommonDomainMixin domainSecure;
 
     @Override
     public Integer call() throws Exception {
-        logger.debug("'whoami install' was called, domain={}, enable_https={}", domain, enable_https);
-        return ShellExecutor.executeCommand("whoami/install", domain, String.valueOf(enable_https));
+        logger.debug("'whoami install' was called, domain={}, enable_https={}", domainSecure.domain, domainSecure.enable_https);
+        return ShellExecutor.executeCommand("whoami/install", domainSecure.domain, String.valueOf(domainSecure.enable_https));
     }
 }

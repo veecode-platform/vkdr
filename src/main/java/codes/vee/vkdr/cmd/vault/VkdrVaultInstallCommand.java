@@ -1,23 +1,18 @@
 package codes.vee.vkdr.cmd.vault;
 
 import codes.vee.vkdr.ShellExecutor;
+import codes.vee.vkdr.cmd.common.CommonDomainMixin;
+import codes.vee.vkdr.cmd.common.ExitCodes;
 import picocli.CommandLine;
 
 import java.util.concurrent.Callable;
 
 @CommandLine.Command(name = "install", mixinStandardHelpOptions = true,
         description = "install Hashicorp Vault",
-        exitCodeOnExecutionException = 101)
+        exitCodeOnExecutionException = ExitCodes.VAULT_INSTALL)
 public class VkdrVaultInstallCommand implements Callable<Integer> {
-    @CommandLine.Option(names = {"-d", "--domain"},
-            defaultValue = "localhost",
-            description = "DNS domain to use on generated ingress (default: localhost)")
-    String domain;
-
-    @CommandLine.Option(names = {"-s","--secure","--enable_https"},
-            defaultValue = "false",
-            description = "enable HTTPS port too (default: false)")
-    boolean enable_https;
+    @CommandLine.Mixin
+    private CommonDomainMixin domainSecure;
 
     @CommandLine.Option(names = {"--dev","--dev-mode","--dev_mode"},
             defaultValue = "false",
@@ -31,7 +26,7 @@ public class VkdrVaultInstallCommand implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        return ShellExecutor.executeCommand("vault/install", domain, String.valueOf(enable_https), String.valueOf(enable_dev_mode), dev_root_token);
+        return ShellExecutor.executeCommand("vault/install", domainSecure.domain, String.valueOf(domainSecure.enable_https), String.valueOf(enable_dev_mode), dev_root_token);
     }
 
 }

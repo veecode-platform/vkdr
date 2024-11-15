@@ -1,22 +1,20 @@
 package codes.vee.vkdr.cmd.keycloak;
 
 import codes.vee.vkdr.ShellExecutor;
+import codes.vee.vkdr.cmd.common.CommonDomainMixin;
+import codes.vee.vkdr.cmd.common.ExitCodes;
 import picocli.CommandLine;
 
 import java.util.concurrent.Callable;
+
 @CommandLine.Command(name = "install", mixinStandardHelpOptions = true,
         description = "install Keycloak",
-        exitCodeOnExecutionException = 41)
+        exitCodeOnExecutionException = ExitCodes.KEYCLOAK_INSTALL)
 public class VkdrKeycloakInstallCommand implements Callable<Integer> {
 
-    @CommandLine.Option(names = {"-d","--domain"},
-            defaultValue = "localhost",
-            description = "DNS domain to use on generated ingress for Admin UI/API (default: localhost)")
-    private String domain;
-    @CommandLine.Option(names = {"-s","--secure","--enable_https"},
-            defaultValue = "false",
-            description = "enable HTTPS port too (default: false)")
-    private boolean enable_https;
+    @CommandLine.Mixin
+    private CommonDomainMixin domainSecure;
+
     @CommandLine.Option(names = {"-u","--user","--admin_user"},
             defaultValue = "admin",
             description = "Keycloak admin user (default: 'admin')")
@@ -28,6 +26,6 @@ public class VkdrKeycloakInstallCommand implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        return ShellExecutor.executeCommand("keycloak/install", domain, String.valueOf(enable_https), admin_user, admin_password);
+        return ShellExecutor.executeCommand("keycloak/install", domainSecure.domain, String.valueOf(domainSecure.enable_https), admin_user, admin_password);
     }
 }

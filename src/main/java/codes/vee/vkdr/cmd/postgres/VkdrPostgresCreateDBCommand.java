@@ -1,12 +1,13 @@
 package codes.vee.vkdr.cmd.postgres;
 
 import codes.vee.vkdr.ShellExecutor;
+import codes.vee.vkdr.cmd.common.ExitCodes;
 import picocli.CommandLine;
 import java.util.concurrent.Callable;
 
 @CommandLine.Command(name = "createdb", mixinStandardHelpOptions = true,
         description = "creates a new database, with an optional user/password as its owner",
-        exitCodeOnExecutionException = 51)
+        exitCodeOnExecutionException = ExitCodes.POSTGRES_INSTALL)
 public class VkdrPostgresCreateDBCommand implements Callable<Integer> {
 
     @CommandLine.Option(names = {"-d","--database"},

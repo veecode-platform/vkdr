@@ -1,26 +1,15 @@
 package codes.vee.vkdr.cmd.grafana_cloud;
 
 import codes.vee.vkdr.ShellExecutor;
+import codes.vee.vkdr.cmd.common.ExitCodes;
 import picocli.CommandLine;
 
 import java.util.concurrent.Callable;
 
 @CommandLine.Command(name = "install", mixinStandardHelpOptions = true,
-        description = "install Grafana Cloud components",
-        exitCodeOnExecutionException = 131)
+        description = "install Grafana Cloud integration",
+        exitCodeOnExecutionException = ExitCodes.GRAFANA_CLOUD_INSTALL)
 public class VkdrGrafanaCloudInstallCommand implements Callable<Integer> {
-
-    /*
-    @CommandLine.Option(names = {"-d","--domain"},
-        defaultValue = "localhost",
-        description = "DNS domain to use on generated ingress for Minio console (default: localhost)")
-    private String domain;
-
-    @CommandLine.Option(names = {"-s","--secure","--enable_https"},
-        defaultValue = "false",
-        description = "enable HTTPS port too (default: false)")
-    private boolean enable_https;
-    */
 
     @CommandLine.Option(names = {"-t","--token"},
         defaultValue = "",

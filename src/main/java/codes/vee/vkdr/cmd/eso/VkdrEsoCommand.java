@@ -1,6 +1,8 @@
 package codes.vee.vkdr.cmd.eso;
 
 import codes.vee.vkdr.ShellExecutor;
+import codes.vee.vkdr.cmd.common.ExitCodes;
+
 import org.springframework.stereotype.Component;
 import picocli.CommandLine.Command;
 
@@ -13,7 +15,7 @@ public class VkdrEsoCommand {
 
     @Command(name = "remove", mixinStandardHelpOptions = true,
             description = "remove External Secrets Operator",
-            exitCodeOnExecutionException = 112)
+            exitCodeOnExecutionException = ExitCodes.ESO_REMOVE)
     int remove() throws IOException, InterruptedException {
         return ShellExecutor.executeCommand("eso/remove");
     }

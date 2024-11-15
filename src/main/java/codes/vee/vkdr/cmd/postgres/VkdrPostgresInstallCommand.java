@@ -1,12 +1,13 @@
 package codes.vee.vkdr.cmd.postgres;
 
 import codes.vee.vkdr.ShellExecutor;
+import codes.vee.vkdr.cmd.common.ExitCodes;
 import picocli.CommandLine;
 import java.util.concurrent.Callable;
 
 @CommandLine.Command(name = "install", mixinStandardHelpOptions = true,
         description = "install Postgres database",
-        exitCodeOnExecutionException = 51)
+        exitCodeOnExecutionException = ExitCodes.POSTGRES_INSTALL)
 public class VkdrPostgresInstallCommand implements Callable<Integer> {
 
     @CommandLine.Option(names = {"-p","--admin", "--admin_password"},

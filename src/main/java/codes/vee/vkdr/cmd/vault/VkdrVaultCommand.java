@@ -1,28 +1,17 @@
 package codes.vee.vkdr.cmd.vault;
 
-import codes.vee.vkdr.ShellExecutor;
-import codes.vee.vkdr.cmd.VkdrCommand;
-import codes.vee.vkdr.cmd.whoami.VkdrWhoamiInstallCommand;
+import codes.vee.vkdr.cmd.common.ExitCodes;
 import org.springframework.stereotype.Component;
 import picocli.CommandLine;
 
-import java.io.IOException;
-
 @Component
-@CommandLine.Command(name = "vault", mixinStandardHelpOptions = true, exitCodeOnExecutionException = 100,
-        description = "install/remove/operate Hashicorp Vault", subcommands = {VkdrVaultInstallCommand.class, VkdrVaultInitCommand.class})
+@CommandLine.Command(name = "vault", mixinStandardHelpOptions = true, exitCodeOnExecutionException = ExitCodes.VAULT_BASE,
+        description = "manage Hashicorp Vault",
+        subcommands = {
+            VkdrVaultExplainCommand.class,
+            VkdrVaultInitCommand.class,
+            VkdrVaultInstallCommand.class,
+            VkdrVaultRemoveCommand.class
+        })
 public class VkdrVaultCommand {
-    @CommandLine.Command(name = "remove", mixinStandardHelpOptions = true,
-            description = "remove Hashicorp Vault",
-            exitCodeOnExecutionException = 102)
-    int remove()throws IOException, InterruptedException {
-        return ShellExecutor.executeCommand("vault/remove");
-    }
-
-    @CommandLine.Command(name = "explain", mixinStandardHelpOptions = true,
-            description = "explain Vault install formulas",
-            exitCodeOnExecutionException = 23)
-    int explain() throws IOException, InterruptedException {
-        return ShellExecutor.explainCommand("vault/explain");
-    }
 }

@@ -1,27 +1,19 @@
 package codes.vee.vkdr.cmd.minio;
 
 import codes.vee.vkdr.ShellExecutor;
-import com.google.gson.Gson;
+import codes.vee.vkdr.cmd.common.CommonDomainMixin;
+import codes.vee.vkdr.cmd.common.ExitCodes;
 import picocli.CommandLine;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.Callable;
 
 @CommandLine.Command(name = "install", mixinStandardHelpOptions = true,
-        description = "install Minio storage",
-        exitCodeOnExecutionException = 121)
+        description = "install MinIO service",
+        exitCodeOnExecutionException = ExitCodes.MINIO_INSTALL)
 public class VkdrMinioInstallCommand implements Callable<Integer> {
 
-    @CommandLine.Option(names = {"-d","--domain"},
-        defaultValue = "localhost",
-        description = "DNS domain to use on generated ingress for Minio console (default: localhost)")
-    private String domain;
-
-    @CommandLine.Option(names = {"-s","--secure","--enable_https"},
-        defaultValue = "false",
-        description = "enable HTTPS port too (default: false)")
-    private boolean enable_https;
+    @CommandLine.Mixin
+    private CommonDomainMixin domainSecure;
 
     @CommandLine.Option(names = {"-p","--admin", "--admin_password"},
         defaultValue = "vkdr1234",
@@ -38,6 +30,6 @@ public class VkdrMinioInstallCommand implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        return ShellExecutor.executeCommand("minio/install", domain, String.valueOf(enable_https), admin_password, String.valueOf(api_ingress));
+        return ShellExecutor.executeCommand("minio/install", domainSecure.domain, String.valueOf(domainSecure.enable_https), admin_password, String.valueOf(api_ingress));
     }
 }

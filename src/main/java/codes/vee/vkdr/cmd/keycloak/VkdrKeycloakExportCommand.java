@@ -1,6 +1,7 @@
 package codes.vee.vkdr.cmd.keycloak;
 
 import codes.vee.vkdr.ShellExecutor;
+import codes.vee.vkdr.cmd.common.ExitCodes;
 import org.springframework.stereotype.Component;
 import picocli.CommandLine;
 
@@ -9,7 +10,7 @@ import java.util.concurrent.Callable;
 @Component
 @CommandLine.Command(name = "export", mixinStandardHelpOptions = true,
         description = "export Keycloak realm",
-        exitCodeOnExecutionException = 43)
+        exitCodeOnExecutionException = ExitCodes.KEYCLOAK_IMPORT_EXPORT)
 public class VkdrKeycloakExportCommand implements Callable<Integer> {
     @CommandLine.Option(names = {"-f","--file","--export_file"},
             defaultValue = "/dev/stdout",
