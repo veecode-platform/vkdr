@@ -11,7 +11,7 @@ import java.util.concurrent.Callable;
 @Component
 @CommandLine.Command(name = "upgrade", mixinStandardHelpOptions = true, exitCodeOnExecutionException = ExitCodes.UPGRADE_BASE,
         description = "upgrade vkdr")
-public class VkdrUpgrade implements Callable<Integer> {
+public class VkdrUpgradeCommand implements Callable<Integer> {
     @Value("${vkdr.version}")
     private String vkdrVersion;
 

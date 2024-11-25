@@ -41,7 +41,7 @@ import picocli.CommandLine.Command;
                 VkdrEsoCommand.class,
                 VkdrMinioCommand.class,
                 VkdrGrafanaCloudCommand.class,
-                VkdrUpgrade.class})
+                VkdrUpgradeCommand.class})
 public class VkdrCommand {
 
 }
