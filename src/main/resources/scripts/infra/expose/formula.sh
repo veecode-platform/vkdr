@@ -75,7 +75,7 @@ generateSAKubeConfig() {
   $VKDR_YQ eval "
     .clusters[].cluster.certificate-authority-data = \"${CADATA}\" |
     .clusters[].cluster.server = \"${TUNNEL_URL}\" |
-    .clusters[].cluster.\"insecure-skip-tls-verify\" = \"${insecure_tls_verify}\" |
+    .clusters[].cluster.\"insecure-skip-tls-verify\" = ${insecure_tls_verify} |
     .users[].user.token = \"${SA_TOKEN}\"
   " "$kconfig_src" > "$kconfig_dest"
   debug "generateSAKubeConfig: kubeconfig generated in $kconfig_dest"
