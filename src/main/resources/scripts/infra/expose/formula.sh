@@ -72,9 +72,12 @@ generateSAKubeConfig() {
     insecure_tls_verify="false"
   fi
   #cat "$kconfig_src"
-  sed "s#\$TUNNEL_URL#$TUNNEL_URL#g" "$kconfig_src" | \
-    sed "s/\$CADATA/$CADATA/g" | sed "s/\$SA_TOKEN/$SA_TOKEN/g" | \
-    sed "s/\$NOTLSVERIFY/$insecure_tls_verify/g" > "$kconfig_dest"
+  $VKDR_YQ eval "
+    .clusters[].cluster.certificate-authority-data = \"${CADATA}\" |
+    .clusters[].cluster.server = \"${TUNNEL_URL}\" |
+    .clusters[].cluster.\"insecure-skip-tls-verify\" = \"${insecure_tls_verify}\" |
+    .users[].user.token = \"${SA_TOKEN}\"
+  " "$kconfig_src" > "$kconfig_dest"
   debug "generateSAKubeConfig: kubeconfig generated in $kconfig_dest"
 }
 
