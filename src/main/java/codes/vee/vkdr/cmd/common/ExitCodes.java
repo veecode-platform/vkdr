@@ -76,4 +76,6 @@ public final class ExitCodes {
     public static final int MIRROR_BASE = 140;
     public static final int MIRROR_LIST = 141;
     public static final int MIRROR_ADD = 142;
+    public static final int MIRROR_EXPLAIN = 143;
+    public static final int MIRROR_REMOVE = 144;
 }

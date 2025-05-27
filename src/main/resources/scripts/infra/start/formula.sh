@@ -20,7 +20,7 @@ AGENTS_VALUE=""
 source "$(dirname "$0")/../../.util/log.sh"
 source "$(dirname "$0")/../../.util/tools-paths.sh"
 
-REGISTRY_CONFIG="$(dirname "$0")/../../.util/configs/mirror-registry.yaml"
+MIRROR_CONFIG="${HOME}/.vkdr/scripts/.util/configs/mirror-registry.yaml"
 
 startInfos() {
   bold "=============================="
@@ -74,8 +74,8 @@ startMirrors() {
   local MIRRORS
   local MIRROR_NAME
   local REGISTRIES
-  debug "startMirrors: parsing mirror config from $REGISTRY_CONFIG"
-  MIRRORS=$($VKDR_YQ -r '.mirrors | keys[]' "$REGISTRY_CONFIG")
+  debug "startMirrors: parsing mirror config from $MIRROR_CONFIG"
+  MIRRORS=$($VKDR_YQ -r '.mirrors | keys[]' "$MIRROR_CONFIG")
   debug "startMirrors: reading current registry list"
   REGISTRIES=$($VKDR_K3D registry list -o json | $VKDR_JQ -r '.[].name')
   debug "startMirrors: current registries: $REGISTRIES"
@@ -86,7 +86,7 @@ startMirrors() {
     else
       # pegar porta do endpoint
       export MY_MIRROR="$mirror"
-      MY_PORT=$($VKDR_YQ e '.mirrors[strenv(MY_MIRROR)].endpoint[0] | select(.) | split(":") | .[-1]' "$REGISTRY_CONFIG")
+      MY_PORT=$($VKDR_YQ e '.mirrors[strenv(MY_MIRROR)].endpoint[0] | select(.) | split(":") | .[-1]' "$MIRROR_CONFIG")
       debug "startMirrors: will start mirror $mirror as $MIRROR_NAME registry in port $MY_PORT..."
       startRegistry $MIRROR_NAME $mirror $MY_PORT
     fi
@@ -100,14 +100,14 @@ startCluster() {
     error "Cluster vkdr-local already created."
     return
   fi
-  info "Mirror from $(dirname "$0")/../../.util/configs/mirror-registry.yaml"
-  cat "$(dirname "$0")/../../.util/configs/mirror-registry.yaml"
+  info "Mirror from $MIRROR_CONFIG"
+  cat "$MIRROR_CONFIG"
   [[ -z "$VKDR_ENV_API_PORT" ]] && API_PORT_FLAG="" || API_PORT_FLAG="--api-port"
   $VKDR_K3D cluster create vkdr-local $API_PORT_FLAG $VKDR_ENV_API_PORT \
     -p "$VKDR_ENV_HTTP_PORT:80@loadbalancer" \
     -p "$VKDR_ENV_HTTPS_PORT:443@loadbalancer" \
     --registry-use k3d-docker-io:6001  \
-    --registry-config "$REGISTRY_CONFIG" \
+    --registry-config "$MIRROR_CONFIG" \
     $NODEPORT_FLAG $NODEPORT_VALUE $TRAEFIK_FLAG $TRAEFIK_VALUE $AGENTS_FLAG $AGENTS_VALUE "${VOLUMES_ARRAY[@]}"
   $VKDR_KUBECTL cluster-info
 }

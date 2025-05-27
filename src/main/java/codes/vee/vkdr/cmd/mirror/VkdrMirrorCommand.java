@@ -9,7 +9,9 @@ import picocli.CommandLine.Command;
         description = "Manage container image mirrors",
         subcommands = {
             VkdrMirrorListCommand.class,
-            VkdrMirrorAddCommand.class
+            VkdrMirrorAddCommand.class,
+            VkdrMirrorExplainCommand.class,
+            VkdrMirrorRemoveCommand.class
         })
 public class VkdrMirrorCommand {
     

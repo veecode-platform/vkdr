@@ -7,7 +7,8 @@ VKDR_ENV_DELETE_REGISTRY=$1
 source "$(dirname "$0")/../../.util/log.sh"
 source "$(dirname "$0")/../../.util/tools-paths.sh"
 
-REGISTRY_CONFIG="$(dirname "$0")/../../.util/configs/mirror-registry.yaml"
+#MIRROR_CONFIG="$(dirname "$0")/../../.util/configs/mirror-registry.yaml"
+MIRROR_CONFIG="${HOME}/.vkdr/scripts/.util/configs/mirror-registry.yaml"
 
 runFormula() {
   startInfos
@@ -34,8 +35,8 @@ stopCluster() {
     #  error "Registry k3d-registry not running..."
     #fi
 
-    debug "stopCluster: parsing mirror config from $REGISTRY_CONFIG"
-    MIRRORS=$($VKDR_YQ -r '.mirrors | keys[]' "$REGISTRY_CONFIG")
+    debug "stopCluster: parsing mirror config from $MIRROR_CONFIG"
+    MIRRORS=$($VKDR_YQ -r '.mirrors | keys[]' "$MIRROR_CONFIG")
     debug "startMirrors: reading current registry list"
     REGISTRIES=$($VKDR_K3D registry list -o json | $VKDR_JQ -r '.[].name')
     for mirror in $MIRRORS; do
