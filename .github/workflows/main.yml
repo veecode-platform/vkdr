@@ -42,7 +42,7 @@ jobs:
           mv ./target/vkdr ./target/vkdr-${{ matrix.os-name }}-${{ matrix.arch }}
       
       - name: Upload binary
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: vkdr-${{ matrix.os-name }}-${{ matrix.arch }}
           path: ./target/vkdr-${{ matrix.os-name }}-${{ matrix.arch }}
@@ -53,7 +53,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download all artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
       - name: Release version and assets
         uses: softprops/action-gh-release@v2
         with:
