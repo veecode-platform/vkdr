@@ -51,7 +51,7 @@ URL="$BASE_URL/$FILE"
 
 # Download the file
 echo "Downloading $FILE..."
-curl -L $URL -o "/tmp/$FILE"
+curl -sL $URL -o "/tmp/$FILE"
 
 # Optional: Add instructions to decompress the file if needed
 echo "Decompressing $FILE..."

@@ -4,6 +4,13 @@ source "$(dirname "$0")/../.util/tools-versions.sh"
 source "$(dirname "$0")/../.util/tools-paths.sh"
 source "$(dirname "$0")/../.util/log.sh"
 
+# Check if --force flag is passed
+FORCE_INSTALL=false
+if [[ "$1" == "--force" ]]; then
+  FORCE_INSTALL=true
+  boldInfo "Force reinstallation enabled"
+fi
+
 runFormula() {
   boldInfo "VKDR initialization"
   bold "=============================="
@@ -43,10 +50,14 @@ installeksctl(){
 }
 
 installArkade() {
-  if [[ -f "$VKDR_ARKADE" ]]; then
+  if [[ -f "$VKDR_ARKADE" ]] && [[ "$FORCE_INSTALL" == "false" ]]; then
     notice "Alex Ellis' arkade already installed. Skipping..."
   else
-    info "Installing arkade..."
+    if [[ "$FORCE_INSTALL" == "true" ]] && [[ -f "$VKDR_ARKADE" ]]; then
+      info "Force reinstalling arkade..."
+    else
+      info "Installing arkade..."
+    fi
     # patches download script in order to change BINLOCATION
     curl -sLS https://get.arkade.dev > /tmp/arkinst.sh
     #sed "s/^export BINLOCATION=.*/export BINLOCATION=~\/\.vkdr\/bin/g" /tmp/arkinst0.sh > /tmp/arkinst.sh
@@ -72,10 +83,14 @@ installAWS() {
 installTool() {
   local toolName=$1
   local toolVersion=$2
-  if [[ -f "$VKDR_HOME/bin/$toolName" ]]; then
+  if [[ -f "$VKDR_HOME/bin/$toolName" ]] && [[ "$FORCE_INSTALL" == "false" ]]; then
     notice "Tool $toolName already installed. Skipping."
   else
-    info "Installing $toolName $toolVersion using arkade..."
+    if [[ "$FORCE_INSTALL" == "true" ]] && [[ -f "$VKDR_HOME/bin/$toolName" ]]; then
+      info "Force reinstalling $toolName $toolVersion using arkade..."
+    else
+      info "Installing $toolName $toolVersion using arkade..."
+    fi
     $VKDR_HOME/bin/arkade get $toolName --version=$toolVersion --path="$VKDR_HOME/bin" --progress=false > /dev/null
     info "$toolName $toolVersion installed!"
   fi
@@ -96,10 +111,14 @@ installOkteto() {
 }
 
 installHelm() {
-  if [[ -f "$VKDR_HELM" ]]; then
+  if [[ -f "$VKDR_HELM" ]] && [[ "$FORCE_INSTALL" == "false" ]]; then
     notice "Helm already installed. Skipping..."
   else
-    info "Installing Helm..."
+    if [[ "$FORCE_INSTALL" == "true" ]] && [[ -f "$VKDR_HELM" ]]; then
+      info "Force reinstalling Helm..."
+    else
+      info "Installing Helm..."
+    fi
     # patches download script in order to change BINLOCATION
     curl -fsSL -o /tmp/get_helm0.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
     sed 's|\/usr\/local\/bin|$\HOME/\.vkdr\/bin|g' /tmp/get_helm0.sh > /tmp/get_helm.sh
@@ -140,10 +159,14 @@ installDeck() {
 }
 
 installGlow() {
-  if [[ -f "$VKDR_GLOW" ]]; then
+  if [[ -f "$VKDR_GLOW" ]] && [[ "$FORCE_INSTALL" == "false" ]]; then
     notice "Glow already installed. Skipping..."
   else
-    info "Installing Glow..."
+    if [[ "$FORCE_INSTALL" == "true" ]] && [[ -f "$VKDR_GLOW" ]]; then
+      info "Force reinstalling Glow..."
+    else
+      info "Installing Glow..."
+    fi
     "$(dirname "$0")/../.util/download-glow.sh"
     info "Glow installed!"
   fi
