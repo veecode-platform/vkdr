@@ -12,7 +12,7 @@ import codes.vee.vkdr.cmd.eso.VkdrEsoCommand;
 import codes.vee.vkdr.cmd.grafana_cloud.VkdrGrafanaCloudCommand;
 import codes.vee.vkdr.cmd.infra.VkdrInfraCommand;
 import codes.vee.vkdr.cmd.mirror.VkdrMirrorCommand;
-
+import codes.vee.vkdr.cmd.traefik.VkdrTraefikCommand;
 import org.springframework.stereotype.Component;
 import picocli.CommandLine.Command;
 
@@ -43,6 +43,7 @@ import picocli.CommandLine.Command;
                 VkdrMinioCommand.class,
                 VkdrGrafanaCloudCommand.class,
                 VkdrMirrorCommand.class,
+                VkdrTraefikCommand.class,
                 VkdrUpgradeCommand.class})
 public class VkdrCommand {
 

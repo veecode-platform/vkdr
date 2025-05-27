@@ -78,4 +78,9 @@ public final class ExitCodes {
     public static final int MIRROR_ADD = 142;
     public static final int MIRROR_EXPLAIN = 143;
     public static final int MIRROR_REMOVE = 144;
+
+    // Traefik related exit codes (150-159)
+    public static final int TRAEFIK_BASE = 150;
+    public static final int TRAEFIK_INSTALL = 151;
+    public static final int TRAEFIK_REMOVE = 152;
 }
