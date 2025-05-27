@@ -5,10 +5,10 @@ RELEASE_VERSION=$(shell echo $(VERSION) | sed 's/-SNAPSHOT//')
 NEXT_VERSION=$(shell echo $(RELEASE_VERSION) | awk -F. '{print $$1"."$$2"."$$3+1"-SNAPSHOT"}')
 
 # Targets
-.PHONY: release bump
+.PHONY: release bump generate-release-notes
 
 # Default target
-release: set-release-version git-tag bump-version
+release: set-release-version generate-release-notes git-tag bump-version
 
 # Set the release version (remove -SNAPSHOT)
 set-release-version:
@@ -29,6 +29,11 @@ bump-version:
 	mvn versions:commit
 	git commit -am "Bump version to $(NEXT_VERSION)"
 	git push origin main
+
+# Generate release notes
+generate-release-notes:
+	./src/main/resources/scripts/.util/generate-release-notes.sh $(RELEASE_VERSION)
+	git add CHANGELOG.md
 
 # Rollback changes made by versions:set in case of error
 rollback:
