@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Script to generate release notes from git commits
 set -e
@@ -11,10 +11,9 @@ if [ -z "$VERSION" ]; then
 fi
 
 # Source the log utilities
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/log.sh"
+source "$(dirname "$0")/log.sh"
 
-startInfos "Generating release notes for v$VERSION"
+info "Generating release notes for v$VERSION"
 
 # Get the latest tag
 LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
@@ -31,16 +30,19 @@ fi
 # Create CHANGELOG.md if it doesn't exist
 if [ ! -f CHANGELOG.md ]; then
   info "Creating new CHANGELOG.md file"
-  echo "# Changelog" > CHANGELOG.md
+  echo "# VKDR Changelog" > CHANGELOG.md
   echo "" >> CHANGELOG.md
 fi
 
 # Prepare release notes
 RELEASE_DATE=$(date +"%Y-%m-%d")
-RELEASE_NOTES="## v$VERSION ($RELEASE_DATE)\n\n$COMMITS\n\n"
+#RELEASE_NOTES=$"## v$VERSION ($RELEASE_DATE)\n$COMMITS\n"
+#RELEASE_NOTES=$'## v'"$VERSION"' ('"$RELEASE_DATE"')\n'"$COMMITS"'\n'
+RELEASE_NOTES=$(printf "## v%s (%s)\n%s\n" "$VERSION" "$RELEASE_DATE" "$COMMITS")
+echo "NOTES: $RELEASE_NOTES"
 
 # Insert new release notes at the top of the file (after the header)
-awk -v notes="$RELEASE_NOTES" 'NR==2{print notes}1' CHANGELOG.md > CHANGELOG.md.tmp
+sed '2r /dev/stdin' CHANGELOG.md <<< "$RELEASE_NOTES" > CHANGELOG.md.tmp
 mv CHANGELOG.md.tmp CHANGELOG.md
 
-success "Release notes for v$VERSION have been generated and added to CHANGELOG.md"
+info "Release notes for v$VERSION have been generated and added to CHANGELOG.md"
