@@ -71,4 +71,9 @@ public final class ExitCodes {
     public static final int GRAFANA_CLOUD_INSTALL = 131;
     public static final int GRAFANA_CLOUD_REMOVE = 132;
     public static final int GRAFANA_CLOUD_CLEAN = 133;
+    
+    // Mirror related exit codes (140-149)
+    public static final int MIRROR_BASE = 140;
+    public static final int MIRROR_LIST = 141;
+    public static final int MIRROR_ADD = 142;
 }
