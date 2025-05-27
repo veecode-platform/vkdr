@@ -15,6 +15,10 @@ import java.util.concurrent.Callable;
         description = "initialize vkdr (downloads vkdr dependencies into `~/.vkdr/bin`)")
 public class VkdrInitCommand implements Callable<Integer> {
     private static final Logger logger = LoggerFactory.getLogger(VkdrInitCommand.class);
+    
+    @CommandLine.Option(names = {"--force"}, description = "Force reinstallation of all tools")
+    private boolean force;
+    
     @Override
     public Integer call() throws Exception {
         logger.debug("'init' was called...");
@@ -25,7 +29,12 @@ public class VkdrInitCommand implements Callable<Integer> {
         } else {
             logger.info("Environment variable VKDR_SCRIPT_HOME is set to: " + envHomeDir + ", skipping unpackScripts() call.");
         }
-        // runs init script
-        return ShellExecutor.executeCommand("init");
+        // runs init script with force flag if specified
+        if (force) {
+            logger.info("Force flag detected, will force reinstallation of all tools");
+            return ShellExecutor.executeCommand("init", "--force");
+        } else {
+            return ShellExecutor.executeCommand("init");
+        }
     }
 }
