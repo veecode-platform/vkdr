@@ -18,6 +18,14 @@ import org.slf4j.LoggerFactory;
 public class ShellExecutor {
     private static final Logger logger = LoggerFactory.getLogger(ShellExecutor.class);
 
+    /**
+     * Executes a shell script and prints its output to the console.
+     * This is the default behavior of executeCommand, capturing the output and printing it to the console.
+     * @param args The arguments to pass to the script.
+     * @return The exit value of the script.
+     * @throws IOException If an I/O error occurs.
+     * @throws InterruptedException If the script is interrupted.
+     */
     public static int executeCommand(String... args) throws IOException, InterruptedException {
         String cmdName = args[0];
         String homeDir = System.getProperty("user.home");
@@ -55,6 +63,14 @@ public class ShellExecutor {
         return exitVal;
     }
 
+    /**
+     * Executes a shell script and prints its output to the console. 
+     * This is different from executeCommand in that it does not wait for the script to finish (returns immediately).
+     * @param args The arguments to pass to the script.
+     * @return The exit value of the script.
+     * @throws IOException If an I/O error occurs.
+     * @throws InterruptedException If the script is interrupted.
+     */
     public static int explainCommand(String... args) throws IOException, InterruptedException {
         String cmdName = args[0];
         String homeDir = System.getProperty("user.home");
