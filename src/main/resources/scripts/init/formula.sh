@@ -167,7 +167,7 @@ installGlow() {
     else
       info "Installing Glow..."
     fi
-    "$(dirname "$0")/../.util/download-glow.sh"
+    "$(dirname "$0")/../.util/download-glow.sh" "$VKDR_TOOLS_GLOW"
     info "Glow installed!"
   fi
 }

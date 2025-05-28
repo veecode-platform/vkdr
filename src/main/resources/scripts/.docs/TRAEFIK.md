@@ -1,4 +1,15 @@
-# Traefik Ingress Controller
+# Traefik Ingress Controller <!-- omit in toc -->
+
+This feature allows you to install Traefik ingress controller in your Kubernetes cluster.
+
+- [Overview](#overview)
+- [Differences from Bundled Traefik](#differences-from-bundled-traefik)
+- [Installation](#installation)
+  - [Options](#options)
+- [Dashboard Access](#dashboard-access)
+- [Removal](#removal)
+- [Use Cases](#use-cases)
+- [Compatibility](#compatibility)
 
 ## Overview
 This command installs the official Traefik ingress controller in your Kubernetes cluster. This is a **standalone** Traefik installation that is different from the bundled Traefik that can be optionally enabled in `vkdr infra start`.

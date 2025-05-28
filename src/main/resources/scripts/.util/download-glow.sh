@@ -3,6 +3,7 @@
 VKDR_HOME=~/.vkdr
 VKDR_GLOW=$VKDR_HOME/bin/glow
 VKDR_TOOLS_GLOW=${1:-v1.5.1}
+MYVERSION="${VKDR_TOOLS_GLOW:1}" # revome the 'v' prefix for version comparison
 
 # Define the base URL for the downloads
 BASE_URL="https://github.com/charmbracelet/glow/releases/download/$VKDR_TOOLS_GLOW"
@@ -15,10 +16,10 @@ case "$OS" in
     "Darwin")
         case "$ARCH" in
             "x86_64")
-                FILE="glow_Darwin_x86_64.tar.gz"
+                FILE="glow_${MYVERSION}_Darwin_x86_64.tar.gz"
                 ;;
             "arm64")
-                FILE="glow_Darwin_arm64.tar.gz"
+                FILE="glow_${MYVERSION}_Darwin_arm64.tar.gz"
                 ;;
             *)
                 echo "Unsupported architecture: $ARCH"
@@ -29,10 +30,10 @@ case "$OS" in
     "Linux")
         case "$ARCH" in
             "x86_64")
-                FILE="glow_Linux_x86_64.tar.gz"
+                FILE="glow_${MYVERSION}_Linux_x86_64.tar.gz"
                 ;;
             "arm64")
-                FILE="glow_Linux_arm64.tar.gz"
+                FILE="glow_${MYVERSION}_Linux_arm64.tar.gz"
                 ;;
             *)
                 echo "Unsupported architecture: $ARCH"
@@ -57,7 +58,8 @@ curl -sL $URL -o "/tmp/$FILE"
 echo "Decompressing $FILE..."
 mkdir -p /tmp/glow-tmp
 tar -xzf "/tmp/$FILE" -C /tmp/glow-tmp
-mv /tmp/glow-tmp/glow $VKDR_HOME/bin/
+FILENAME="${FILE%.tar.gz}"
+mv "/tmp/glow-tmp/$FILENAME/glow" "$VKDR_HOME/bin/"
 rm -Rf /tmp/glow-tmp
 
 echo "Download and decompression complete."
