@@ -8,3 +8,6 @@ ingress:
     - secretName: whoami-tls
       hosts:
         - whoami.localhost
+service:
+  ports:
+    http: 80
