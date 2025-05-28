@@ -29,8 +29,8 @@ fi
 
 last_line=$(printf "%s\n" "$COMMITS" | tail -n 1)
 
-# Check if it starts with "Bump version "
-if [[ $last_line == Bump\ version\ * ]]; then
+# Check if it starts with "* Bump version " and remove line if it does
+if [[ $last_line == \*\ Bump\ version\ * ]]; then
   # Remove last line
   COMMITS=$(printf "%s\n" "$COMMITS" | sed '$d')
 fi

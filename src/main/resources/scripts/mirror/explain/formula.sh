@@ -9,7 +9,7 @@ runFormula() {
 }
 
 explainMirror() {
-  $VKDR_GLOW -p "$(dirname "$0")/../../.docs/MIRROR.md"
+  $VKDR_GLOW -t "$(dirname "$0")/../../.docs/MIRROR.md"
 }
 
 runFormula

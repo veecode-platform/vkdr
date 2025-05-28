@@ -12,6 +12,6 @@ import java.util.concurrent.Callable;
 public class VkdrTraefikExplainCommand implements Callable<Integer> {
     @Override
     public Integer call() throws IOException, InterruptedException {
-        return ShellExecutor.executeCommand("traefik/explain");
+        return ShellExecutor.explainCommand("traefik/explain");
     }
 }
