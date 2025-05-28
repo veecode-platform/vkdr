@@ -27,6 +27,14 @@ else
   COMMITS=$(git log ${LATEST_TAG}..HEAD --pretty=format:"* %s (%h)" --no-merges)
 fi
 
+last_line=$(printf "%s\n" "$COMMITS" | tail -n 1)
+
+# Check if it starts with "Bump version "
+if [[ $last_line == Bump\ version\ * ]]; then
+  # Remove last line
+  COMMITS=$(printf "%s\n" "$COMMITS" | sed '$d')
+fi
+
 # Create CHANGELOG.md if it doesn't exist
 if [ ! -f CHANGELOG.md ]; then
   info "Creating new CHANGELOG.md file"
@@ -38,7 +46,7 @@ fi
 RELEASE_DATE=$(date +"%Y-%m-%d")
 #RELEASE_NOTES=$"## v$VERSION ($RELEASE_DATE)\n$COMMITS\n"
 #RELEASE_NOTES=$'## v'"$VERSION"' ('"$RELEASE_DATE"')\n'"$COMMITS"'\n'
-RELEASE_NOTES=$(printf "## v%s (%s)\n%s\n" "$VERSION" "$RELEASE_DATE" "$COMMITS")
+RELEASE_NOTES=$(printf "## v%s (%s)\n%s\n\n" "$VERSION" "$RELEASE_DATE" "$COMMITS")
 echo "NOTES: $RELEASE_NOTES"
 
 # Insert new release notes at the top of the file (after the header)
