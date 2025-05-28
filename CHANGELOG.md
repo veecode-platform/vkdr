@@ -1,5 +1,7 @@
 # VKDR Changelog
 
+## v0.1.59 (2025-05-28)
+* fixed 'traefik explain' command for good this time :) (384ce37)
 ## v0.1.58 (2025-05-28)
 * fixes for 'traefik explain' command and glow download (4d9056c)
 
