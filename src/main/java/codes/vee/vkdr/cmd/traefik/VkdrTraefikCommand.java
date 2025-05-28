@@ -9,7 +9,8 @@ import picocli.CommandLine;
         description = "manage traefik ingress controller",
         subcommands = {
             VkdrTraefikInstallCommand.class,
-            VkdrTraefikRemoveCommand.class
+            VkdrTraefikRemoveCommand.class,
+            VkdrTraefikExplainCommand.class
         })
 public class VkdrTraefikCommand {
 }

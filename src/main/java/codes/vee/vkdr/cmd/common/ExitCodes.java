@@ -83,4 +83,5 @@ public final class ExitCodes {
     public static final int TRAEFIK_BASE = 150;
     public static final int TRAEFIK_INSTALL = 151;
     public static final int TRAEFIK_REMOVE = 152;
+    public static final int TRAEFIK_EXPLAIN = 153;
 }

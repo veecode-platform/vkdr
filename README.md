@@ -97,7 +97,7 @@ Recomendo usar o SDKMAN (https://sdkman.io/install) para instalar
 a JDK localmente. Para este projeto utilizamos a GraalVM 21:
 
 ```shell
-sdk use java 21.0.2-graalce
+sdk use java 24.0.1-graalce
 ```
 
 ## Atualizando dependências
@@ -112,4 +112,12 @@ Verificar plugins com:
 
 ```shell
 mvn versions:display-plugin-updates
+```
+
+## Notas sobre o Maven
+
+Warnings de unsafe memory access podem ser suspendidos por enquanto com:
+
+```shell
+export MAVEN_OPTS="--enable-native-access=ALL-UNNAMED --sun-misc-unsafe-memory-access=allow"
 ```
