@@ -35,7 +35,7 @@ installNginxLB() {
   if [ "true" = "$VKDR_ENV_NGINX_DEFAULT" ]; then
     debug "installNginxLB: nginx will become the **default** ingress controller"
     $VKDR_HELM upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
-      --set "controller.progressDeadlineSeconds=60" \ 
+      --set "controller.progressDeadlineSeconds=60" \
       --set "controller.ingressClassResource.default=$VKDR_ENV_NGINX_DEFAULT"
   else
     debug "installNginxLB: installing nginx ingress controller"
@@ -59,13 +59,13 @@ installNginxNP() {
       --set "controller.service.type=NodePort" \
       --set "controller.service.nodePorts.http=$NGINX_PORT_1" \
       --set "controller.service.nodePorts.https=$NGINX_PORT_2" \
-      --set "controller.progressDeadlineSeconds=60" \ 
+      --set "controller.progressDeadlineSeconds=60" \
       --set "controller.ingressClassResource.default=$VKDR_ENV_NGINX_DEFAULT"
   else
     debug "installNginxNP: installing nginx ingress controller"
     $VKDR_HELM upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
       --set "controller.service.type=NodePort" \
-      --set "controller.progressDeadlineSeconds=60" \ 
+      --set "controller.progressDeadlineSeconds=60" \
       --set "controller.service.nodePorts.http=$NGINX_PORT_1" \
       --set "controller.service.nodePorts.https=$NGINX_PORT_2"
   fi
