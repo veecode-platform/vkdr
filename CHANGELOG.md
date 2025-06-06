@@ -1,5 +1,7 @@
 # VKDR Changelog
 
+## v0.1.62 (2025-06-06)
+* 'vault generate-tls' command and optional vault tls for internal traffic (d479fe2)
 ## v0.1.61 (2025-05-30)
 * fix nginx install bugs (d3e4baa)
 ## v0.1.60 (2025-05-29)
