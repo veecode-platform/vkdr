@@ -1,5 +1,10 @@
 # VKDR Changelog
 
+
+## v0.1.64 (2025-06-06)
+* 'make command' utility (e1d30f7)
+* changelog formatting (9e0b71a)
+* updated tools and windsurf rules (54eb576)
 ## v0.1.63 (2025-06-06)
 * changelog formatting (1fd4925)
 * removed unused import (1787588)
