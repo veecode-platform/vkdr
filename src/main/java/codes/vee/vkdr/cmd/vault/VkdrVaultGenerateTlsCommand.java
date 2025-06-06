@@ -1,7 +1,6 @@
 package codes.vee.vkdr.cmd.vault;
 
 import codes.vee.vkdr.ShellExecutor;
-import codes.vee.vkdr.cmd.common.CommonDomainMixin;
 import codes.vee.vkdr.cmd.common.ExitCodes;
 import picocli.CommandLine;
 
