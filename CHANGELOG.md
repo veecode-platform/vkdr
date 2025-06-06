@@ -1,5 +1,9 @@
 # VKDR Changelog
 
+## v0.1.63 (2025-06-06)
+* changelog formatting (1fd4925)
+* removed unused import (1787588)
+* upgraded spring boot to 3.5.0 (5c4e0dd)
 
 ## v0.1.62 (2025-06-06)
 * 'vault generate-tls' command and optional vault tls for internal traffic (d479fe2)
