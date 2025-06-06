@@ -55,6 +55,7 @@ public final class ExitCodes {
     public static final int VAULT_REMOVE = 102;
     public static final int VAULT_INIT = 103;
     public static final int VAULT_EXPLAIN = 104;
+    public static final int VAULT_GENERATE_TLS = 105;
 
     // ESO related exit codes (110-119)
     public static final int ESO_BASE = 110;

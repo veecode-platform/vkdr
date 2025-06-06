@@ -1,9 +1,10 @@
-# Postgres formula <!-- omit in toc -->
+# Vault formula <!-- omit in toc -->
 
-This formula installs an opinionated Vault server. This is meant to be integrated with all other formulas so that no secrets are stored anywhere else, and kubernets secrets are mantained by Vault itself.
+This formula installs an opinionated Vault server. This is meant to be integrated with all other formulas so that no secrets are stored anywhere else, and kubernetes secrets are maintained by Vault itself.
 
 - [Install Vault in Dev Mode](#install-vault-in-dev-mode)
 - [Install Vault in Production Mode](#install-vault-in-production-mode)
+- [Generate TLS Certificates](#generate-tls-certificates)
 - [Read and Decode Vault Keys](#read-and-decode-vault-keys)
 - [External Secrets Operator](#external-secrets-operator)
 
@@ -35,6 +36,35 @@ vkdr vault init
 ```
 
 This behaviour is possible because we are keeping the unseal keys in a kubernetes secret. This is not the most secure way to do it, but it is the most practical one (VKDR is not designed for production use anyway). 
+
+## Generate TLS Certificates
+
+Vault can be configured to use TLS for secure communication. The `generate-tls` command creates self-signed certificates for Vault and optionally saves them as Kubernetes secrets.
+
+```sh
+# Generate certificates with default settings
+vkdr vault generate-tls
+
+# Generate new certificates even if they already exist
+vkdr vault generate-tls --force
+
+# Generate certificates and save them as Kubernetes secrets
+vkdr vault generate-tls --save
+
+# Generate new certificates and update Kubernetes secrets
+vkdr vault generate-tls --save --force
+
+# Generate certificates with a specific common name and validity period
+vkdr vault generate-tls --cn vault.example.com --days 730
+```
+
+After generating certificates, you can install Vault with TLS enabled:
+
+```sh
+vkdr vault install --tls
+```
+
+The certificates are stored in `$HOME/.vkdr/certs/vault` and, if the `--save` flag is used, they are also stored as Kubernetes secrets named `vault-server-ca` and `vault-server-tls` in the `vkdr` namespace.
 
 ## Read and Decode Vault Keys
 

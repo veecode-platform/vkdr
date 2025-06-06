@@ -11,7 +11,8 @@ import picocli.CommandLine;
             VkdrVaultExplainCommand.class,
             VkdrVaultInitCommand.class,
             VkdrVaultInstallCommand.class,
-            VkdrVaultRemoveCommand.class
+            VkdrVaultRemoveCommand.class,
+            VkdrVaultGenerateTlsCommand.class
         })
 public class VkdrVaultCommand {
 }

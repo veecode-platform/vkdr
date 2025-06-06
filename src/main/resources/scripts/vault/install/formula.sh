@@ -4,6 +4,7 @@ VKDR_ENV_VAULT_DOMAIN=$1
 VKDR_ENV_VAULT_SECURE=$2
 VKDR_ENV_VAULT_DEV_MODE=$3
 VKDR_ENV_VAULT_DEV_ROOT_TOKEN=$4
+VKDR_ENV_VAULT_TLS_MODE=$5
 
 source "$(dirname "$0")/../../.util/tools-versions.sh"
 source "$(dirname "$0")/../../.util/tools-paths.sh"
@@ -19,6 +20,7 @@ startInfos() {
   boldNotice "Secure: $VKDR_ENV_VAULT_SECURE"
   boldNotice "Dev Mode: $VKDR_ENV_VAULT_DEV_MODE"
   boldNotice "Dev Root Token: $VKDR_ENV_VAULT_DEV_ROOT_TOKEN"
+  boldNotice "TLS Mode: $VKDR_ENV_VAULT_TLS_MODE"
   bold "=============================="
 }
 
@@ -43,7 +45,13 @@ installVault() {
 
 settings() {
   VKDR_VAULT_VALUES=/tmp/vault.yaml
-  cp "$(dirname "$0")/../../.util/values/vault.yaml" $VKDR_VAULT_VALUES
+  if [ "true" = "$VKDR_ENV_VAULT_TLS_MODE" ]; then
+    debug "settings: setting vault tls mode in $VKDR_VAULT_VALUES"
+    cp "$(dirname "$0")/../../.util/values/vault-tls.yaml" $VKDR_VAULT_VALUES
+  else
+    debug "settings: setting vault non tls mode in $VKDR_VAULT_VALUES"
+    cp "$(dirname "$0")/../../.util/values/vault.yaml" $VKDR_VAULT_VALUES
+  fi
 }
 
 configDomain() {

@@ -1,0 +1,71 @@
+#
+# TLS Configuration on ingress backends supported by annotations
+# Traefik: https://doc.traefik.io/traefik/routing/providers/kubernetes-ingress/#on-ingress
+# Nginx: https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations/#backend-protocol
+# Kong: https://docs.konghq.com/kubernetes-ingress-controller/3.4.x/reference/annotations/
+#
+global:
+  enabled: true
+  tlsDisable: false
+
+ui:
+  enabled: true
+server:
+  dev:
+    enabled: false
+  ingress:
+    enabled: true
+    # Annotations to handle HTTPS backend for supported ingress controllers
+    annotations:
+      # For Nginx Ingress Controller
+      nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+      nginx.ingress.kubernetes.io/ssl-verify: "false"
+      # For Traefik
+      traefik.ingress.kubernetes.io/service.serversscheme: "https"
+      traefik.ingress.kubernetes.io/service.serverstls.insecureskipverify: "true"
+    hosts:
+      - host: vault.localhost
+    tls:
+      - secretName: vault-tls
+        hosts:
+          - vault.localhost
+  # TLS configuration
+  standalone:
+    # these affect the vault server started inside the container
+    config: |
+      ui = true
+
+      listener "tcp" {
+        tls_disable = 0
+        address = "[::]:8200"
+        cluster_address = "[::]:8201"
+        tls_cert_file = "/vault/userconfig/vault-server-tls/tls.crt"
+        tls_key_file = "/vault/userconfig/vault-server-tls/tls.key"
+        tls_client_ca_file = "/vault/userconfig/vault-server-ca/ca.crt"
+      }
+
+      storage "file" {
+        path = "/vault/data"
+      }
+  extraEnvironmentVars:
+    # these affect the vault CLI ran inside the container
+    VAULT_CACERT: /vault/userconfig/vault-server-ca/ca.crt
+    VAULT_TLSCERT: /vault/userconfig/vault-server-tls/tls.crt
+    VAULT_TLSKEY: /vault/userconfig/vault-server-tls/tls.key
+  volumes:
+    - name: vault-server-ca
+      secret:
+        defaultMode: 420
+        secretName: vault-server-ca
+    - name: vault-server-tls
+      secret:
+        defaultMode: 420
+        secretName: vault-server-tls
+  volumeMounts:
+    - mountPath: /vault/userconfig/vault-server-ca
+      name: vault-server-ca
+      readOnly: true
+    - mountPath: /vault/userconfig/vault-server-tls
+      name: vault-server-tls
+      readOnly: true
+  
