@@ -46,7 +46,7 @@ fi
 RELEASE_DATE=$(date +"%Y-%m-%d")
 #RELEASE_NOTES=$"## v$VERSION ($RELEASE_DATE)\n$COMMITS\n"
 #RELEASE_NOTES=$'## v'"$VERSION"' ('"$RELEASE_DATE"')\n'"$COMMITS"'\n'
-RELEASE_NOTES=$(printf "## v%s (%s)\n%s\n\n" "$VERSION" "$RELEASE_DATE" "$COMMITS")
+RELEASE_NOTES=$(printf "\n## v%s (%s)\n%s\n" "$VERSION" "$RELEASE_DATE" "$COMMITS")
 echo "NOTES: $RELEASE_NOTES"
 
 # Insert new release notes at the top of the file (after the header)
