@@ -1,3 +1,4 @@
+// NEXT: 160
 package codes.vee.vkdr.cmd.common;
 
 public final class ExitCodes {
@@ -85,4 +86,6 @@ public final class ExitCodes {
     public static final int TRAEFIK_INSTALL = 151;
     public static final int TRAEFIK_REMOVE = 152;
     public static final int TRAEFIK_EXPLAIN = 153;
+
+    // ADD_HERE
 }

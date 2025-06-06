@@ -5,7 +5,7 @@ RELEASE_VERSION=$(shell echo $(VERSION) | sed 's/-SNAPSHOT//')
 NEXT_VERSION=$(shell echo $(RELEASE_VERSION) | awk -F. '{print $$1"."$$2"."$$3+1"-SNAPSHOT"}')
 
 # Targets
-.PHONY: release bump generate-release-notes
+.PHONY: release bump generate-release-notes command
 
 # Default target
 release: set-release-version generate-release-notes git-tag bump-version
@@ -38,3 +38,13 @@ generate-release-notes:
 # Rollback changes made by versions:set in case of error
 rollback:
 	mvn versions:revert
+
+# Create a new vkdr command structure
+# Usage: make command task=<command> subtask=<subcommand>
+command:
+	@if [ -z "$(task)" ] || [ -z "$(subtask)" ]; then \
+		echo "Error: Both task and subtask must be specified"; \
+		echo "Usage: make command task=<command> subtask=<subcommand>"; \
+		exit 1; \
+	fi
+	./src/main/resources/scripts/.util/create-command.sh "$(task)" "$(subtask)"
