@@ -1,9 +1,12 @@
 # VKDR Changelog
 
+
 ## v0.1.62 (2025-06-06)
 * 'vault generate-tls' command and optional vault tls for internal traffic (d479fe2)
+
 ## v0.1.61 (2025-05-30)
 * fix nginx install bugs (d3e4baa)
+
 ## v0.1.60 (2025-05-29)
 * workaround nginx progressDeadlineSeconds bug in chart default values (9434799)
 * whoami ingress service fix in values (3aa66a1)
