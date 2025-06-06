@@ -30,4 +30,4 @@ VKDR is a command-line interface (CLI) tool designed to accelerate local develop
 - Some commands (specially the ones that install/remove tools) have a common set of arguments that define a hostname and a boolean "secure". For those we use a special field "@CommandLine.Mixin private CommonDomainMixin domainSecure;"
 
 # Explain command
-- For some commands we define a "explain" subcommand, that uses a "glow" CLI to open a markdown document. The commands "kong explain" and "mirror explain" are examples, use them as a reference to create others when asked.
+- For some commands we define a "explain" subcommand, that uses a "glow" CLI to open a markdown document. The commands "kong explain" and "mirror explain" are examples, use them as a reference to create others when asked. All the markdown documents are placed under the "src/main/resources/scripts/.docs/" folder.
