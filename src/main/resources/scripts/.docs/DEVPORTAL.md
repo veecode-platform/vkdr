@@ -8,6 +8,9 @@ A few conditions apply:
 
 - You must start `vkdr` bound to ports 80/443 (http/https)
 - You must have a valid GitHub PAT token
+- You must create entries in your `/etc/hosts` file for the following domains:
+    - devportal.localhost (127.0.0.1)
+    - petclinic.localhost (127.0.0.1)
 
 ```sh
 vkdr infra start --http 80 --https 443
@@ -24,5 +27,34 @@ vkdr devportal install --github-token $GITHUB_TOKEN
 
 This will install DevPortal and its dependencies locally (`vkdr` cluster):
 
-- Kong Gateway
+- Kong Gateway (standard mode as as default ingress controller)
 - Postgres
+
+DevPortal will be available at http://devportal.localhost, in guest mode and showing e default catalog.
+
+## Install DevPortal with sample applications
+
+You can also deploy sample applications to your cluster by running the following command:
+
+```sh
+vkdr devportal install --github-token $GITHUB_TOKEN --samples
+```
+
+These sample apps can be used to demonstrate a few live capabilities of DevPortal without needing to build anything yourself. The sample apps are:
+
+- ViaCEP API: a simple API to get Brazilian addresses by CEP.
+
+```sh
+curl localhost/cep/20020080/json
+```
+
+- Petclinic: a simple Spring Boot application with a few APIs (http://petclinic.localhost/)
+
+
+## Using your own catalog
+
+You can pick a catalog of youw own just providing its URL:
+
+```sh
+vkdr devportal install --github-token $GITHUB_TOKEN --location $YOUR_CATALOG_URL
+```

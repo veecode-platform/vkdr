@@ -6,6 +6,7 @@ VKDR_ENV_DEVPORTAL_GITHUB_TOKEN=$3
 #VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_ID=$4
 #VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_SECRET=$5
 VKDR_ENV_DEVPORTAL_INSTALL_SAMPLES=$4
+VKDR_ENV_DEVPORTAL_CATALOG_LOCATION=$5
 #VKDR_ENV_DEVPORTAL_GRAFANA_TOKEN=$7
 
 source "$(dirname "$0")/../../.util/tools-versions.sh"
@@ -14,7 +15,9 @@ source "$(dirname "$0")/../../.util/log.sh"
 source "$(dirname "$0")/../../.util/ingress-tools.sh"
 #source "$(dirname "$0")/../../.util/devportal-k8s-service-account/generateSAToken.sh"
 
-VKDR_DEVPORTAL_VALUES="$(dirname "$0")/../../.util/values/devportal-common.yaml"
+VKDR_DEVPORTAL_VALUES_SRC="$(dirname "$0")/../../.util/values/devportal-common.yaml"
+VKDR_DEVPORTAL_VALUES="/tmp/devportal.yaml"
+
 # port values override by detectClusterPorts
 VKDR_HTTP_PORT=8000
 VKDR_HTTPS_PORT=8001
@@ -31,6 +34,7 @@ startInfos() {
 #  boldNotice "Github Client ID: *****${VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_ID: -3}"
 #  boldNotice "Github Client Secret: *****${VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_SECRET: -3}"
   boldNotice "Install Sample apps: $VKDR_ENV_DEVPORTAL_INSTALL_SAMPLES"
+  boldNotice "Catalog location: $VKDR_ENV_DEVPORTAL_CATALOG_LOCATION"
 #  boldNotice "Grafana Cloud token: *****${VKDR_ENV_DEVPORTAL_GRAFANA_TOKEN: -5}"
   bold "=============================="
   boldNotice "Cluster LB HTTP port: $VKDR_HTTP_PORT"
@@ -62,14 +66,12 @@ installDevPortal() {
   if [ "true" = "$VKDR_ENV_DEVPORTAL_INSTALL_SAMPLES" ]; then
     LOCATION_TARGET="https://github.com/veecode-platform/vkdr-catalog/blob/main/catalog-info-samples.yaml"
   fi
-  debug "installDevPortal: DevPortal location target = $LOCATION_TARGET"
+  debug "installDevPortal: DevPortal install using helm chart"
   $VKDR_HELM upgrade veecode-devportal veecode-devportal --install --wait --timeout 10m \
     --repo "$REPO_URL" --create-namespace -n "$DEVPORTAL_NAMESPACE" \
     -f "$VKDR_DEVPORTAL_VALUES" \
     --set "global.host=devportal.${VKDR_ENV_DEVPORTAL_DOMAIN}" \
-    --set "global.protocol=${VKDR_PROTOCOL}" \
-    --set "integrations.github.token=${VKDR_ENV_DEVPORTAL_GITHUB_TOKEN}" \
-    --set "locations[0].target=${LOCATION_TARGET}"
+    --set "global.protocol=${VKDR_PROTOCOL}"
 }
 
 checkForKong() {
@@ -131,12 +133,33 @@ metadata:
 " | $VKDR_KUBECTL apply -f -
 }
 
+settingDevPortal() {
+  # copies values file for modification
+  cp "$VKDR_DEVPORTAL_VALUES_SRC" "$VKDR_DEVPORTAL_VALUES"
+}
+
+setLocations() {
+  local LOCATION_TARGET="https://github.com/veecode-platform/vkdr-catalog/blob/main/catalog-info.yaml"
+  if [ "true" = "$VKDR_ENV_DEVPORTAL_INSTALL_SAMPLES" ]; then
+    LOCATION_TARGET="https://github.com/veecode-platform/vkdr-catalog/blob/main/catalog-info-samples.yaml"
+  fi
+  # add location to values file under "upstream.backstage.appConfig.catalog.locations"
+  $VKDR_YQ eval ".upstream.backstage.appConfig.catalog.locations += [{\"type\": \"url\", \"target\": \"$LOCATION_TARGET\"}]" -i "$VKDR_DEVPORTAL_VALUES"
+  # if VKDR_ENV_DEVPORTAL_CATALOG_LOCATION is set, add it to values file under "upstream.backstage.appConfig.catalog.locations"
+  if [ -n "$VKDR_ENV_DEVPORTAL_CATALOG_LOCATION" ]; then
+    $VKDR_YQ eval ".upstream.backstage.appConfig.catalog.locations += [{\"type\": \"url\", \"target\": \"$VKDR_ENV_DEVPORTAL_CATALOG_LOCATION\"}]" -i "$VKDR_DEVPORTAL_VALUES"
+  fi
+  debug "setLocations: patched locations into $VKDR_DEVPORTAL_VALUES"
+}
+
 runFormula() {
   detectClusterPorts
   startInfos
+  settingDevPortal
   checkForKong
   createDevPortalNamespace
   createSecret
+  setLocations
   installDevPortal
   generateServiceAccountToken
   installSampleApps

@@ -120,7 +120,7 @@ upstream:
                   minutes: 20
                 timeout:
                   minutes: 3
-        # locations:
+        locations:
         #   - type: url
         #     target: https://github.com/veecode-saas-tenants/tenants-catalog/blob/main/catalog-info.yaml
       integrations:

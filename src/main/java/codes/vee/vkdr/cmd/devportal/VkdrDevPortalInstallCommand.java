@@ -40,9 +40,20 @@ class VkdrDevPortalInstallCommand implements Callable<Integer>  {
             description = "Install apps from sample catalog (default: false)")
     private boolean install_samples;
 
+    @CommandLine.Option(names = {"--location"},
+            defaultValue = "",
+            description = "Backstage catalog location (URL)")
+    private String location;
+
     @Override
     public Integer call() throws Exception {
-        //return ShellExecutor.executeCommand("devportal/install", domainSecure.domain, String.valueOf(domainSecure.enable_https), github_token, github_client_id, github_client_secret, String.valueOf(install_samples), grafana_token);
-        return ShellExecutor.executeCommand("devportal/install", domainSecure.domain, String.valueOf(domainSecure.enable_https), github_token, String.valueOf(install_samples));
+        return ShellExecutor.executeCommand(
+                "devportal/install",
+                domainSecure.domain,
+                String.valueOf(domainSecure.enable_https),
+                github_token,
+                String.valueOf(install_samples),
+                location
+        );
     }
 }
