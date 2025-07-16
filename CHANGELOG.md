@@ -1,6 +1,9 @@
 # VKDR Changelog
 
 
+## v0.1.66 (2025-07-16)
+* devportal install with better defaults + location parameter (239370b)
+
 ## v0.1.65 (2025-07-16)
 * update devportal to 'next' chart (e2fc736)
 * spring boot update (397d731)
