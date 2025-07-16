@@ -1,91 +1,139 @@
-replicas: 1
-image:
-  # repository: andrevtg/devportal-bundle
-  # tag: magalu
-  #pullPolicy: Always
-  pullPolicy: IfNotPresent
-
-environment: development
-
-ingress:
-  enabled: true
+#
+# setup minimo infra local (vkdr)
+#
+global:
   host: devportal.localhost
-  className: kong
-  annotations:
-    # konghq.com/https-redirect-status-code: "308"
-    konghq.com/preserve-host: "true"
-    # konghq.com/protocols: "https"
-    konghq.com/strip-path: "false"
-  #tls:
-  #  secretName: devportal-secret
-
-resources:
-  requests:
-    cpu: 500m
-    memory: 512Mi
-  limits:
-    cpu: 1000m
-    memory: 1Gi
-
-appConfig:
-  title: Devportal
-  app:
-    baseUrl: http://devportal.localhost
-  backend:
-    baseUrl: http://devportal.localhost
-    #secret: 56616a93-ac28-42ab-929d-6ec1fc008c54
-  database:
-    client: better-sqlite3
-    #connection: ':memory:'
-
-auth:
-  providers:
-    github:
-      clientId: <github-client-id>
-      clientSecret: <github-client-secret>
-
-integrations:
-  github:
-    host: github.com
-    apiBaseUrl: https://api.github.com/
-    token: <github-token>
-
-# catalog:
-#   providers:
-#     github:
-#       organization: veecode-platform # string
-#       catalogPath: /catalog-info.yaml # string
-#       filters:
-#         branch: main # Optional. Uses `master` as default
-#         repository: catalog #suggestion devportal-catalog
-#         validateLocationsExist: true
-
-locations:
-  - type: url
-    target: https://github.com/veecode-platform/vkdr-catalog/blob/main/catalog-info.yaml
-
-platform:
-  guest:
+  protocol: http
+  dynamic:
+    plugins:
+      # VeeCode Homepage
+      - package: '@veecode-platform/plugin-veecode-homepage-dynamic@0.1.9'
+        disabled: false
+        integrity: sha512-MFv33GyxK+0/BqnAKPvZjC8Iw9V6fgFdUwcTGlFiSZElRM/4ncf9LVc2wo+aC5h0kO2svIuQeXVjP5q2jPlUhg==
+        pluginConfig:
+          dynamicPlugins:
+            frontend:
+              veecode-platform.plugin-veecode-homepage:
+                dynamicRoutes:
+                  - path: /
+                    importName: VeecodeHomepagePage
+                    config:
+                      props:
+                        width: 1500
+                        height: 800
+      # Github Workflows
+      - package: '@veecode-platform/backstage-plugin-github-workflows-dynamic@0.1.0'
+        disabled: true
+      # Gitlab Pipelines
+      - package: '@veecode-platform/backstage-plugin-gitlab-pipelines-dynamic@0.1.0'
+        disabled: true
+      # Infracost
+      - package: '@veecode-platform/backstage-plugin-infracost-dynamic@0.1.0'
+        disabled: true
+      # Kubernetes GPT Analyzer
+      - package: '@veecode-platform/backstage-plugin-kubernetes-gpt-analyzer-dynamic@0.1.0'
+        disabled: true
+      # Zora OSS
+      - package: '@veecode-platform/backstage-plugin-zora-oss-dynamic@0.1.0'
+        disabled: true
+upstream:
+  enabled: true
+  fullnameOverride: veecode-devportal
+  ingress:
     enabled: true
-  apiManagement:
-    enabled: false
-    readOnlyMode: false
-
-permission:
-  enabled: true
-
-kubernetes:
-  clusterLocatorMethods:
-    - clusters:
-        - authProvider: serviceAccount
-          name: cluster-vkdr-local
-          skipMetricsLookup: false
-          skipTLSVerify: true
-          url: https://kubernetes.default.svc
-          serviceAccountToken: xxx
-kong:
-  enabled: true
-  instances:
-    - name: cluster-vkdr-local
-      apiManager: http://kong-kong-admin.vkdr.svc.cluster.local:8001
-      allowedHeaders: ["Authorization", "Content-Type"]
+  backstage:
+    extraEnvVarsSecrets:
+      - my-backstage-secrets
+    appConfig:
+      auth:
+        environment: "development"
+        session:
+          secret: "${BACKEND_AUTH_SECRET_KEY}"
+        providers:
+          guest:
+            userEntityRef: user:default/admin
+            ownershipEntityRefs: [group:default/admin]
+            dangerouslyAllowOutsideDevelopment: true
+          # github:
+          #   development:
+          #     clientId: ${GITHUB_CLIENT_ID}
+          #     clientSecret: ${GITHUB_CLIENT_SECRET}
+          #     signIn:
+          #       resolvers:
+          #         - resolver: usernameMatchingUserEntityName
+          #         - resolver: emailMatchingUserEntityProfileEmail
+          #         - resolver: emailLocalPartMatchingUserEntityName
+      permission:
+        enabled: false
+      app:
+        #baseUrl: http://devportal.localhost
+        analytics:
+          ga4:
+            measurementId: 0000000
+            #measurementId: ${GA_ANALYTICS_ID}
+            identity: optional
+            testMode: false
+            debug: true
+      backend:
+        #baseUrl: http://devportal.localhost
+        auth:
+          externalAccess:
+            - type: static
+              options:
+                token: ${BACKEND_AUTH_SECRET_KEY}
+                subject: secret
+      scaffolder:
+        providers:
+          github:
+            - host: "github.com"
+              token: ${GITHUB_TOKEN}
+      enabledPlugins:
+        github: true
+        kubernetes: true
+      platform:
+        guest:
+          enabled: true
+      #   signInProviders:
+      #     - github
+      catalog:
+        providers:
+          # githubOrg:
+          #   id: providerId
+          #   githubUrl: https://github.com
+          #   orgs:
+          #     - "veecode-saas-tenants"
+          #   schedule:
+          #     frequency:
+          #       minutes: 20
+          #     timeout:
+          #       minutes: 3
+          github:
+            providerId:
+              organization: "veecode-platform"
+              catalogPath: "/catalog-info.yaml"
+              validateLocationsExist: true
+              filters:
+                branch: "main"
+                repository: "vkdr-catalog"
+              schedule:
+                frequency:
+                  minutes: 20
+                timeout:
+                  minutes: 3
+        # locations:
+        #   - type: url
+        #     target: https://github.com/veecode-saas-tenants/tenants-catalog/blob/main/catalog-info.yaml
+      integrations:
+        github:
+          - host: "github.com"
+            token: ${GITHUB_TOKEN}
+            # apps:
+            #   - appId: ${GITHUB_APP_ID}
+            #     clientId: ${GITHUB_CLIENT_ID}
+            #     clientSecret: ${GITHUB_CLIENT_SECRET}
+            #     privateKey: |
+            #       ${GITHUB_PRIVATE_KEY}
+            #     webhookSecret: ${GITHUB_WEBHOOK_SECRET}
+      grafana:
+        domain: grafana.localhost
+        unifiedAlerting: true

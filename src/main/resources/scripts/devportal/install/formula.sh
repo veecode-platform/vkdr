@@ -3,21 +3,24 @@
 VKDR_ENV_DEVPORTAL_DOMAIN=$1
 VKDR_ENV_DEVPORTAL_SECURE=$2
 VKDR_ENV_DEVPORTAL_GITHUB_TOKEN=$3
-VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_ID=$4
-VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_SECRET=$5
-VKDR_ENV_DEVPORTAL_INSTALL_SAMPLES=$6
-VKDR_ENV_DEVPORTAL_GRAFANA_TOKEN=$7
+#VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_ID=$4
+#VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_SECRET=$5
+VKDR_ENV_DEVPORTAL_INSTALL_SAMPLES=$4
+#VKDR_ENV_DEVPORTAL_GRAFANA_TOKEN=$7
 
 source "$(dirname "$0")/../../.util/tools-versions.sh"
 source "$(dirname "$0")/../../.util/tools-paths.sh"
 source "$(dirname "$0")/../../.util/log.sh"
 source "$(dirname "$0")/../../.util/ingress-tools.sh"
-source "$(dirname "$0")/../../.util/devportal-k8s-service-account/generateSAToken.sh"
+#source "$(dirname "$0")/../../.util/devportal-k8s-service-account/generateSAToken.sh"
 
 VKDR_DEVPORTAL_VALUES="$(dirname "$0")/../../.util/values/devportal-common.yaml"
 # port values override by detectClusterPorts
 VKDR_HTTP_PORT=8000
 VKDR_HTTPS_PORT=8001
+
+# nao é vkdr, é platform
+DEVPORTAL_NAMESPACE=platform
 
 startInfos() {
   boldInfo "DevPortal Install"
@@ -25,10 +28,10 @@ startInfos() {
   boldNotice "Domain: $VKDR_ENV_DEVPORTAL_DOMAIN"
   boldNotice "Secure: $VKDR_ENV_DEVPORTAL_SECURE"
   boldNotice "Github Token: *****${VKDR_ENV_DEVPORTAL_GITHUB_TOKEN: -3}"
-  boldNotice "Github Client ID: *****${VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_ID: -3}"
-  boldNotice "Github Client Secret: *****${VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_SECRET: -3}"
+#  boldNotice "Github Client ID: *****${VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_ID: -3}"
+#  boldNotice "Github Client Secret: *****${VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_SECRET: -3}"
   boldNotice "Install Sample apps: $VKDR_ENV_DEVPORTAL_INSTALL_SAMPLES"
-  boldNotice "Grafana Cloud token: *****${VKDR_ENV_DEVPORTAL_GRAFANA_TOKEN: -5}"
+#  boldNotice "Grafana Cloud token: *****${VKDR_ENV_DEVPORTAL_GRAFANA_TOKEN: -5}"
   bold "=============================="
   boldNotice "Cluster LB HTTP port: $VKDR_HTTP_PORT"
   boldNotice "Cluster LB HTTPS port: $VKDR_HTTPS_PORT"
@@ -37,38 +40,35 @@ startInfos() {
 
 installDevPortal() {
   debug "installDevPortal: add/update helm repo"
-  $VKDR_HELM repo add veecode-platform https://veecode-platform.github.io/public-charts/
-  $VKDR_HELM repo update veecode-platform
+  REPO_URL="https://veecode-platform.github.io/next-charts"
+  #$VKDR_HELM repo add veecode-platform https://veecode-platform.github.io/public-charts/
+  #$VKDR_HELM repo update veecode-platform
   debug "installDevPortal: installing DevPortal (beta)"
   #VKDR_PROTOCOL=http
   #if [[ "$VKDR_ENV_DEVPORTAL_SECURE" == "true" ]]; then VKDR_PROTOCOL=https; fi
   VKDR_DEVPORTAL_PORT=""
-    if [ "true" = "$VKDR_ENV_DEVPORTAL_SECURE" ]; then
-      VKDR_PROTOCOL="https"
-      if [ "$VKDR_HTTPS_PORT" != "443" ]; then
-        VKDR_DEVPORTAL_PORT=":$VKDR_HTTPS_PORT"
-      fi
-    else
-      VKDR_PROTOCOL="http"
-      if [ "$VKDR_HTTP_PORT" != "80" ]; then
-        VKDR_DEVPORTAL_PORT=":$VKDR_HTTP_PORT"
-      fi
+  if [ "true" = "$VKDR_ENV_DEVPORTAL_SECURE" ]; then
+    VKDR_PROTOCOL="https"
+    if [ "$VKDR_HTTPS_PORT" != "443" ]; then
+      VKDR_DEVPORTAL_PORT=":$VKDR_HTTPS_PORT"
     fi
+  else
+    VKDR_PROTOCOL="http"
+    if [ "$VKDR_HTTP_PORT" != "80" ]; then
+      VKDR_DEVPORTAL_PORT=":$VKDR_HTTP_PORT"
+    fi
+  fi
   local LOCATION_TARGET="https://github.com/veecode-platform/vkdr-catalog/blob/main/catalog-info.yaml"
   if [ "true" = "$VKDR_ENV_DEVPORTAL_INSTALL_SAMPLES" ]; then
     LOCATION_TARGET="https://github.com/veecode-platform/vkdr-catalog/blob/main/catalog-info-samples.yaml"
   fi
   debug "installDevPortal: DevPortal location target = $LOCATION_TARGET"
-  $VKDR_HELM upgrade platform-devportal --install --wait --timeout 10m \
-    veecode-platform/devportal --create-namespace -n platform \
+  $VKDR_HELM upgrade veecode-devportal veecode-devportal --install --wait --timeout 10m \
+    --repo "$REPO_URL" --create-namespace -n "$DEVPORTAL_NAMESPACE" \
     -f "$VKDR_DEVPORTAL_VALUES" \
-    --set "ingress.host=devportal.${VKDR_ENV_DEVPORTAL_DOMAIN}" \
-    --set "appConfig.app.baseUrl=${VKDR_PROTOCOL}://devportal.${VKDR_ENV_DEVPORTAL_DOMAIN}${VKDR_DEVPORTAL_PORT}" \
-    --set "appConfig.backend.baseUrl=${VKDR_PROTOCOL}://devportal.${VKDR_ENV_DEVPORTAL_DOMAIN}${VKDR_DEVPORTAL_PORT}" \
+    --set "global.host=devportal.${VKDR_ENV_DEVPORTAL_DOMAIN}" \
+    --set "global.protocol=${VKDR_PROTOCOL}" \
     --set "integrations.github.token=${VKDR_ENV_DEVPORTAL_GITHUB_TOKEN}" \
-    --set "auth.providers.github.clientId=${VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_ID}" \
-    --set "auth.providers.github.clientSecret=${VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_SECRET}" \
-    --set "kubernetes.clusterLocatorMethods[0].clusters[0].serviceAccountToken=${VKDR_SERVICE_ACCOUNT_TOKEN}" \
     --set "locations[0].target=${LOCATION_TARGET}"
 }
 
@@ -79,16 +79,26 @@ checkForKong() {
     return 0;
   fi
   debug "checkForKong: Kong not found, will install it as default ingress controller:"
-  debug "checkForKong: running 'vkdr kong install --default-ic' -e -m standard"
+  debug "checkForKong: running 'vkdr kong install --default-ic' -m standard"
   (
-    vkdr kong install --default-ic -t "3.8" -e -m standard
+    vkdr kong install --default-ic -t "3.9.1" -m standard
   )
 }
 
 generateServiceAccountToken() {
-  debug "generateServiceAccountToken: generating service account token"
-  createDevPortalServiceAccount
+  debug "generateServiceAccountToken: generating service account token for later use"
+  # SA name hard coded for now
+  SERVICE_ACCOUNT_NAME="veecode-devportal-sa"
+  SERVICE_ACCOUNT_NAMESPACE="vkdr"
+  #createDevPortalServiceAccount
+  # debug "Generating token for $SERVICE_ACCOUNT_NAME namespace $SERVICE_ACCOUNT_NAMESPACE"
+  VKDR_SERVICE_ACCOUNT_TOKEN=$($VKDR_KUBECTL create token ${SERVICE_ACCOUNT_NAME} -n ${DEVPORTAL_NAMESPACE} --duration=87600h)
   debug "generateServiceAccountToken: service account token = ${VKDR_SERVICE_ACCOUNT_TOKEN:0:10} (first 10 chars)"
+  debug "generateServiceAccountToken: creating 'devportal-cluster-secret' secret for token (will be used by kubernetes plugin)"
+  kubectl create secret generic devportal-cluster-secret -n ${DEVPORTAL_NAMESPACE} \
+    --from-literal=devportal-cluster-secret="$VKDR_SERVICE_ACCOUNT_TOKEN" \
+    --dry-run=client --save-config -o yaml | kubectl apply -f -
+  debug "generateServiceAccountToken: secret 'devportal-cluster-secret' can now be used by kubernetes plugin dynamic discovery"
 }
 
 installSampleApps() {
@@ -102,12 +112,33 @@ installSampleApps() {
   $VKDR_KUBECTL apply -f "$VKDR_SAMPLES_PATH/viacep-api.yaml" -n vkdr
 }
 
+# secrets usadas pelo backstage, chart veecode-devportal as monta como env vars
+createSecret() {
+  debug "createSecret: creating secret"
+  $VKDR_KUBECTL create secret generic my-backstage-secrets \
+    --from-literal=BACKEND_AUTH_SECRET_KEY=very_good_secret \
+    --from-literal=GITHUB_TOKEN=${VKDR_ENV_DEVPORTAL_GITHUB_TOKEN} \
+    --dry-run=client --save-config -o yaml | $VKDR_KUBECTL apply -n "$DEVPORTAL_NAMESPACE" -f -
+}
+
+createDevPortalNamespace() {
+  debug "createDevPortalNamespace: creating namespace '$DEVPORTAL_NAMESPACE'"
+  echo "
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: $DEVPORTAL_NAMESPACE
+" | $VKDR_KUBECTL apply -f -
+}
+
 runFormula() {
   detectClusterPorts
   startInfos
   checkForKong
-  generateServiceAccountToken
+  createDevPortalNamespace
+  createSecret
   installDevPortal
+  generateServiceAccountToken
   installSampleApps
 }
 

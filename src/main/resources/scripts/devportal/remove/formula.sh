@@ -17,7 +17,7 @@ runFormula() {
 }
 
 remove() {
-  helm delete platform-devportal -n $VKDR_NAMESPACE
+  helm delete veecode-devportal -n $VKDR_NAMESPACE
 }
 
 runFormula
