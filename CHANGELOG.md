@@ -1,6 +1,10 @@
 # VKDR Changelog
 
 
+## v0.1.65 (2025-07-16)
+* update devportal to 'next' chart (e2fc736)
+* spring boot update (397d731)
+
 ## v0.1.64 (2025-06-06)
 * 'make command' utility (e1d30f7)
 * changelog formatting (9e0b71a)
