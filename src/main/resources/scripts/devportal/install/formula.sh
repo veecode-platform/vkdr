@@ -91,14 +91,13 @@ generateServiceAccountToken() {
   debug "generateServiceAccountToken: generating service account token for later use"
   # SA name hard coded for now
   SERVICE_ACCOUNT_NAME="veecode-devportal-sa"
-  SERVICE_ACCOUNT_NAMESPACE="vkdr"
   #createDevPortalServiceAccount
   # debug "Generating token for $SERVICE_ACCOUNT_NAME namespace $SERVICE_ACCOUNT_NAMESPACE"
   VKDR_SERVICE_ACCOUNT_TOKEN=$($VKDR_KUBECTL create token ${SERVICE_ACCOUNT_NAME} -n ${DEVPORTAL_NAMESPACE} --duration=87600h)
   debug "generateServiceAccountToken: service account token = ${VKDR_SERVICE_ACCOUNT_TOKEN:0:10} (first 10 chars)"
   debug "generateServiceAccountToken: creating 'devportal-cluster-secret' secret for token (will be used by kubernetes plugin)"
-  kubectl create secret generic devportal-cluster-secret -n ${DEVPORTAL_NAMESPACE} \
-    --from-literal=devportal-cluster-secret="$VKDR_SERVICE_ACCOUNT_TOKEN" \
+  kubectl create secret generic cluster-vkdr-local-secret -n ${DEVPORTAL_NAMESPACE} \
+    --from-literal=cluster-vkdr-local-secret="$VKDR_SERVICE_ACCOUNT_TOKEN" \
     --dry-run=client --save-config -o yaml | kubectl apply -f -
   debug "generateServiceAccountToken: secret 'devportal-cluster-secret' can now be used by kubernetes plugin dynamic discovery"
 }

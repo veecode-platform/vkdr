@@ -21,6 +21,51 @@ global:
                       props:
                         width: 1500
                         height: 800
+      # VeeCode GlobalHeader
+      - package: '@veecode-platform/plugin-veecode-global-header-dynamic@0.1.4'
+        disabled: false
+        integrity: sha512-ldP0qC8Jd8AIC8DRnEuT1oQq6ELUxlm90gRAaUl3TEVoenrs8Wwxyb8TqgTiZNO5akhcA8tBMHDAugUYS9+yMg==
+        pluginConfig:
+          dynamicPlugins:
+            frontend:
+              veecode-platform.plugin-veecode-global-header:
+                mountPoints:
+                  - mountPoint: application/header
+                    inportName: VeecodeGlobalHeader
+                    config:
+                      position: above-sidebar
+        # Cluster Explorer
+      - package: '@veecode-platform/backstage-plugin-cluster-explorer-dynamic@0.1.1'
+        disabled: false
+        integrity: sha512-AzQbtKUlbi3hpjynqFvyFn8gfbb6iaELUis5rgMjG7CyMCd6CxYYd1vgXMONJPXjdbfguP54A8rYSvvNCNvhdw==
+        pluginConfig:
+          dynamicPlugins:
+            frontend:
+              veecode-platform.backstage-plugin-cluster-explorer-dynamic:
+                dynamicRoutes:
+                  - path: /cluster-explorer
+                    importName: ClusterExplorerPage
+                    menuItem:
+                      icon: cluster
+                      text: Clusters
+                mountPoints:
+                  - mountPoint: entity.page.cluster-overview/cards
+                    importName: ClusterOverview
+                    config:
+                      layout:
+                        gridColumn: '1 / -1'
+                      if:
+                        anyOf:
+                          - isKind: Cluster
+                entityTabs:
+                  - path: /
+                    title: About #rewrite old overview to about
+                    #priority: -1 # remove original overview tab
+                    mountPoint: entity.page.overview
+                  - path: /overview
+                    title: Cluster Overview
+                    #priority: 10 #higher means goes first
+                    mountPoint: entity.page.cluster-overview
       # Github Workflows
       - package: '@veecode-platform/backstage-plugin-github-workflows-dynamic@0.1.0'
         disabled: true
@@ -39,11 +84,18 @@ global:
 upstream:
   enabled: true
   fullnameOverride: veecode-devportal
+  commonLabels:
+    backstage.io/kubernetes-id: cluster-vkdr-local
   ingress:
     enabled: true
   backstage:
+    image:
+      repository: veecode/devportal
+      tag: 1.0.15
     extraEnvVarsSecrets:
       - my-backstage-secrets
+    podLabels:
+      backstage.io/kubernetes-id: cluster-vkdr-local
     appConfig:
       auth:
         environment: "development"
@@ -74,6 +126,23 @@ upstream:
             identity: optional
             testMode: false
             debug: true
+      kubernetes:
+        serviceLocatorMethod:
+          type: multiTenant
+        clusterLocatorMethods:
+          - type: "catalog"
+      # kubernetes:
+      #   serviceLocatorMethod:
+      #     type: multiTenant
+      #   clusterLocatorMethods:
+      #     - type: "config"
+      #       clusters:
+      #         - name: cluster-vkdr-local
+      #           authProvider: serviceAccount
+      #           serviceAccountToken: 
+      #           skipMetricsLookup: false
+      #           skipTLSVerify: true
+      #           url: https://kubernetes.default.svc
       backend:
         #baseUrl: http://devportal.localhost
         auth:
