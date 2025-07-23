@@ -1,6 +1,9 @@
 # VKDR Changelog
 
 
+## v0.1.67 (2025-07-22)
+* local cluster visible as default (c6bbabd)
+
 ## v0.1.66 (2025-07-16)
 * devportal install with better defaults + location parameter (239370b)
 
