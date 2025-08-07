@@ -45,6 +45,11 @@ class VkdrDevPortalInstallCommand implements Callable<Integer>  {
             description = "Backstage catalog location (URL)")
     private String location;
 
+    @CommandLine.Option(names = {"--npm", "--npm-registry"},
+            defaultValue = "",
+            description = "NPM registry to use (optional)")
+    private String npmRegistry;
+
     @Override
     public Integer call() throws Exception {
         return ShellExecutor.executeCommand(
@@ -53,7 +58,8 @@ class VkdrDevPortalInstallCommand implements Callable<Integer>  {
                 String.valueOf(domainSecure.enable_https),
                 github_token,
                 String.valueOf(install_samples),
-                location
+                location,
+                npmRegistry
         );
     }
 }

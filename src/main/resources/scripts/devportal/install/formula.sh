@@ -7,6 +7,7 @@ VKDR_ENV_DEVPORTAL_GITHUB_TOKEN=$3
 #VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_SECRET=$5
 VKDR_ENV_DEVPORTAL_INSTALL_SAMPLES=$4
 VKDR_ENV_DEVPORTAL_CATALOG_LOCATION=$5
+VKDR_ENV_DEVPORTAL_NPM_REGISTRY=$6
 #VKDR_ENV_DEVPORTAL_GRAFANA_TOKEN=$7
 
 source "$(dirname "$0")/../../.util/tools-versions.sh"
@@ -35,6 +36,7 @@ startInfos() {
 #  boldNotice "Github Client Secret: *****${VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_SECRET: -3}"
   boldNotice "Install Sample apps: $VKDR_ENV_DEVPORTAL_INSTALL_SAMPLES"
   boldNotice "Catalog location: $VKDR_ENV_DEVPORTAL_CATALOG_LOCATION"
+  boldNotice "NPM registry: $VKDR_ENV_DEVPORTAL_NPM_REGISTRY"
 #  boldNotice "Grafana Cloud token: *****${VKDR_ENV_DEVPORTAL_GRAFANA_TOKEN: -5}"
   bold "=============================="
   boldNotice "Cluster LB HTTP port: $VKDR_HTTP_PORT"
@@ -151,6 +153,19 @@ setLocations() {
   debug "setLocations: patched locations into $VKDR_DEVPORTAL_VALUES"
 }
 
+# important: this secret should be mounted as a volume in the backstage pod automatically
+# see https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.4/html/installing_and_viewing_plugins_in_red_hat_developer_hub/assembly-third-party-plugins#proc-load-plugin-js-package_assembly-install-third-party-plugins-rhdh
+# the magic matches the secret name with the release name and a suffix "-dynamic-plugins-npmrc"
+setRegistry() {
+  if [ -z "$VKDR_ENV_DEVPORTAL_NPM_REGISTRY" ]; then
+    debug "setRegistry: npm registry not set, skipping..."    
+  fi
+  debug "setRegistry: criando secret para npm registry $VKDR_ENV_DEVPORTAL_NPM_REGISTRY"
+  $VKDR_KUBECTL create secret generic veecode-devportal-dynamic-plugins-npmrc -n ${DEVPORTAL_NAMESPACE} \
+    "--from-literal=.npmrc=registry=$VKDR_ENV_DEVPORTAL_NPM_REGISTRY" \
+    --type=Opaque --dry-run=client -o yaml | $VKDR_KUBECTL apply -f -
+}
+
 runFormula() {
   detectClusterPorts
   startInfos
@@ -159,6 +174,7 @@ runFormula() {
   createDevPortalNamespace
   createSecret
   setLocations
+  setRegistry
   installDevPortal
   generateServiceAccountToken
   installSampleApps

@@ -4,7 +4,7 @@
 # use this file to update tools-versions script file with latest
 #
 
-VKDR_TOOLS_VERSION=v1.0.0
+VKDR_TOOLS_VERSION=v1.0.1
 VKDR_TOOLS_KUBECTL=$(curl -L -s https://dl.k8s.io/release/stable.txt)
 VKDR_TOOLS_HELM=$(curl -s https://api.github.com/repos/helm/helm/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
 VKDR_TOOLS_K3D=$(curl -s https://api.github.com/repos/k3d-io/k3d/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
