@@ -1,6 +1,9 @@
 # VKDR Changelog
 
 
+## v0.1.68 (2025-08-07)
+* devportal install with npm registry argument (f834cf8)
+
 ## v0.1.67 (2025-07-22)
 * local cluster visible as default (c6bbabd)
 
