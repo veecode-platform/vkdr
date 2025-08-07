@@ -1,6 +1,9 @@
 # VKDR Changelog
 
 
+## v0.1.69 (2025-08-07)
+* fixed DevPortal image tag (6d79278)
+
 ## v0.1.68 (2025-08-07)
 * devportal install with npm registry argument (f834cf8)
 
