@@ -58,3 +58,21 @@ You can pick a catalog of youw own just providing its URL:
 ```sh
 vkdr devportal install --github-token $GITHUB_TOKEN --location $YOUR_CATALOG_URL
 ```
+
+## Using DevPortal to Develop Plugins
+
+You can use DevPortal in conjunction with a local NPM registry to develop dynamic plugins locally.
+
+Start a local NPM registry (like Verdaccio):
+
+```sh
+verdaccio -l 0.0.0.0:4873
+```
+
+Install DevPortal with the "--npm" argument:
+
+```sh
+vkdr devportal install --github-token $GITHUB_TOKEN --npm http://host.k3d.internal:4873
+```
+
+Watch verdaccio logs as it caches all downloaded plugins. You can now publish plugins under development to your local registry and they will be available to DevPortal.
