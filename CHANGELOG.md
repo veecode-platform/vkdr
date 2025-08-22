@@ -1,6 +1,9 @@
 # VKDR Changelog
 
 
+## v0.1.70 (2025-08-22)
+* devportal install --merge (f6d6d2f)
+
 ## v0.1.69 (2025-08-07)
 * fixed DevPortal image tag (6d79278)
 
