@@ -50,6 +50,11 @@ class VkdrDevPortalInstallCommand implements Callable<Integer>  {
             description = "NPM registry to use (optional)")
     private String npmRegistry;
 
+    @CommandLine.Option(names = {"--merge", "--merge-values"},
+            defaultValue = "",
+            description = "Values file to merge with default values (optional)")
+    private String mergeValues;
+
     @Override
     public Integer call() throws Exception {
         return ShellExecutor.executeCommand(
@@ -59,7 +64,8 @@ class VkdrDevPortalInstallCommand implements Callable<Integer>  {
                 github_token,
                 String.valueOf(install_samples),
                 location,
-                npmRegistry
+                npmRegistry,
+                mergeValues
         );
     }
 }

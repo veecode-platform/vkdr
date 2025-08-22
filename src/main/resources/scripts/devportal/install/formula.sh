@@ -8,6 +8,7 @@ VKDR_ENV_DEVPORTAL_GITHUB_TOKEN=$3
 VKDR_ENV_DEVPORTAL_INSTALL_SAMPLES=$4
 VKDR_ENV_DEVPORTAL_CATALOG_LOCATION=$5
 VKDR_ENV_DEVPORTAL_NPM_REGISTRY=$6
+VKDR_ENV_DEVPORTAL_MERGE_VALUES=$7
 #VKDR_ENV_DEVPORTAL_GRAFANA_TOKEN=$7
 
 source "$(dirname "$0")/../../.util/tools-versions.sh"
@@ -37,6 +38,7 @@ startInfos() {
   boldNotice "Install Sample apps: $VKDR_ENV_DEVPORTAL_INSTALL_SAMPLES"
   boldNotice "Catalog location: $VKDR_ENV_DEVPORTAL_CATALOG_LOCATION"
   boldNotice "NPM registry: $VKDR_ENV_DEVPORTAL_NPM_REGISTRY"
+  boldNotice "Merge values file: $VKDR_ENV_DEVPORTAL_MERGE_VALUES"
 #  boldNotice "Grafana Cloud token: *****${VKDR_ENV_DEVPORTAL_GRAFANA_TOKEN: -5}"
   bold "=============================="
   boldNotice "Cluster LB HTTP port: $VKDR_HTTP_PORT"
@@ -139,6 +141,15 @@ settingDevPortal() {
   cp "$VKDR_DEVPORTAL_VALUES_SRC" "$VKDR_DEVPORTAL_VALUES"
 }
 
+mergeValues() {
+  if [ -z "$VKDR_ENV_DEVPORTAL_MERGE_VALUES" ]; then
+    debug "mergeValues: no merge values file specified, skipping..."
+    return
+  fi
+  debug "mergeValues: merging values file $VKDR_ENV_DEVPORTAL_MERGE_VALUES into $VKDR_DEVPORTAL_VALUES"
+  $VKDR_YQ eval-all -i 'select(fileIndex == 0) *+ select(fileIndex == 1)' "$VKDR_DEVPORTAL_VALUES" "$VKDR_ENV_DEVPORTAL_MERGE_VALUES"
+}
+
 setLocations() {
   local LOCATION_TARGET="https://github.com/veecode-platform/vkdr-catalog/blob/main/catalog-info.yaml"
   if [ "true" = "$VKDR_ENV_DEVPORTAL_INSTALL_SAMPLES" ]; then
@@ -175,6 +186,7 @@ runFormula() {
   createSecret
   setLocations
   setRegistry
+  mergeValues
   installDevPortal
   generateServiceAccountToken
   installSampleApps
