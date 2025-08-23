@@ -1,6 +1,9 @@
 # VKDR Changelog
 
 
+## v0.1.71 (2025-08-22)
+* update tools & docker check (9de3015)
+
 ## v0.1.70 (2025-08-22)
 * devportal install --merge (f6d6d2f)
 
