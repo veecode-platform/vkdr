@@ -2,7 +2,7 @@
 
 VKDR_HOME=~/.vkdr
 VKDR_GLOW=$VKDR_HOME/bin/glow
-VKDR_TOOLS_GLOW=${1:-v1.5.1}
+VKDR_TOOLS_GLOW=${1:-v2.1.1}
 MYVERSION="${VKDR_TOOLS_GLOW:1}" # revome the 'v' prefix for version comparison
 
 # Define the base URL for the downloads

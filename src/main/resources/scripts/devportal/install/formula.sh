@@ -15,6 +15,7 @@ source "$(dirname "$0")/../../.util/tools-versions.sh"
 source "$(dirname "$0")/../../.util/tools-paths.sh"
 source "$(dirname "$0")/../../.util/log.sh"
 source "$(dirname "$0")/../../.util/ingress-tools.sh"
+source "$(dirname "$0")/../../.util/docker-tools.sh"
 #source "$(dirname "$0")/../../.util/devportal-k8s-service-account/generateSAToken.sh"
 
 VKDR_DEVPORTAL_VALUES_SRC="$(dirname "$0")/../../.util/values/devportal-common.yaml"
@@ -180,6 +181,7 @@ setRegistry() {
 runFormula() {
   detectClusterPorts
   startInfos
+  checkDockerEngine
   settingDevPortal
   checkForKong
   createDevPortalNamespace

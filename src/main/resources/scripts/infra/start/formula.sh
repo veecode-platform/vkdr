@@ -19,6 +19,7 @@ AGENTS_VALUE=""
 
 source "$(dirname "$0")/../../.util/log.sh"
 source "$(dirname "$0")/../../.util/tools-paths.sh"
+source "$(dirname "$0")/../../.util/docker-tools.sh"
 
 MIRROR_CONFIG="${HOME}/.vkdr/scripts/.util/configs/mirror-registry.yaml"
 
@@ -151,6 +152,7 @@ postStart() {
 }
 
 startInfos
+checkDockerEngine
 startMirrors
 parseVolumes
 configureCluster

@@ -6,12 +6,14 @@ VKDR_ENV_DELETE_REGISTRY=$1
 
 source "$(dirname "$0")/../../.util/log.sh"
 source "$(dirname "$0")/../../.util/tools-paths.sh"
+source "$(dirname "$0")/../../.util/docker-tools.sh"
 
 #MIRROR_CONFIG="$(dirname "$0")/../../.util/configs/mirror-registry.yaml"
 MIRROR_CONFIG="${HOME}/.vkdr/scripts/.util/configs/mirror-registry.yaml"
 
 runFormula() {
   startInfos
+  checkDockerEngine
   stopCluster
 }
 
