@@ -1,122 +1,127 @@
-# VKDR - Vertigo Kubernetes Developer Runtime <!-- omit in toc -->
+# VKDR - VeeCode Kubernetes Developer Runtime <!-- omit in toc -->
 
-- [Introdução](#introdução)
-- [Instalação](#instalação)
-- [Executar no shell via Maven](#executar-no-shell-via-maven)
-- [Build nativo](#build-nativo)
-- [Pasta de scripts](#pasta-de-scripts)
-- [Publicar Releases](#publicar-releases)
-- [Instalando o Java](#instalando-o-java)
+Also available in: 🇧🇷 [Português](README-pt.md)
 
-## Introdução
+- [Introduction](#introduction)
+- [Installation](#installation)
+- [Run in the shell via Maven](#run-in-the-shell-via-maven)
+- [Native build](#native-build)
+- [Scripts folder](#scripts-folder)
+- [Publish Releases](#publish-releases)
+- [Installing Java](#installing-java)
+- [Updating dependencies](#updating-dependencies)
+- [Notes about Maven](#notes-about-maven)
 
-Esta é uma CLI para acelerar o desenvolvimento local usando Kubernetes sem maiores complicações.
+## Introduction
 
-Este projeto usa:
+This is a CLI to accelerate local development using Kubernetes without unnecessary complications.
+
+This project uses:
 
 - Spring Boot 3.1.9
 - Picoli 4.7.6
 - GraalVM Native Support
 - Shell scripts
 
-Cada uma das ações da CLI é implementada por um script shell que é empacotado dentro do binário final. Escolhemos esta estratégia para iterar mais rapidamente em cada nova fórmula.
+Each CLI action is implemented by a shell script that is packaged inside the final binary. We chose this strategy to iterate faster on each new formula.
 
-Exemplo: o comando `infra start` é implementado pelo script `./infra/start/formula.sh` que reside na pasta `src/main/resources/scripts`. Este script é empacotado no binário final e é executado quando o comando `vkdr infra start` é chamado.
+Example: the `infra start` command is implemented by the `./infra/start/formula.sh` script that lives in the `src/main/resources/scripts` folder. This script is packaged in the final binary and executed when `vkdr infra start` is invoked.
 
-## Instalação
+## Installation
 
-Para instalar esta CLI:
+To install this CLI:
 
 ```sh
 curl -L get-vkdr.vee.codes | bash
 ```
 
-## Executar no shell via Maven
+## Run in the shell via Maven
 
-Para executar a CLI no shell (via Maven):
+To run the CLI in the shell (via Maven):
 
 ```sh
 mvn exec:java -Dexec.mainClass=codes.vee.vkdr.VkdrApplication -Dexec.args="infra up"
 ```
 
-## Build nativo
+## Native build
 
-Para compilar o projeto gerando binário nativo:
+To compile the project and generate a native binary:
 
 ```sh
 ./mvnw native:compile -Pnative
 ```
 
-Para executar o binário nativo gerado:
+To run the generated native binary:
 
 ```sh
 ./target/vkdr
 ```
 
-## Pasta de scripts
+## Scripts folder
 
-Durante o desenvolvimento queremos usar os scripts diretamente na pasta do projeto (e não os que residem em `~/.vkdr/scripts`). A variável `VKDR_SCRIPT_HOME` pode apontar para a pasta `src/main/resources/scripts` deste projeto, o que fará o `vkdr` ignorar o local padrão.
+During development we want to use the scripts directly from the project folder (not the ones under `~/.vkdr/scripts`). The `VKDR_SCRIPT_HOME` variable can point to this project's `src/main/resources/scripts` folder, which will make `vkdr` ignore the default location.
 
-Assim é possível testar mudanças nos scripts sem precisar fazer um build binário. O comando abaixo equivale ao `vkdr kong install -h`:
+This allows you to test script changes without building a new binary. The command below is equivalent to `vkdr kong install -h`:
 
 ```sh
 mvn exec:java -Dexec.mainClass=codes.vee.vkdr.VkdrApplication -Dexec.args="kong install -h"
 ```
 
-## Publicar Releases
+## Publish Releases
 
-O pipeline deste projeto irá gerar um novo release com os assets binários de cada plataforma suportada sempre que um "tagged push" ocorrer em main.
+This project's pipeline will generate a new release with binary assets for each supported platform whenever a tagged push occurs on main.
 
 * vkdr-linux-amd64
+* vkdr-linux-arm64
 * vkdr-osx-amd64
 * vkdr-osx-arm64
 
-Para fazer um tagged push e gerar um release manualmente:
+To make a tagged push and generate a release manually:
 
 ```shell
 git tag -a v1.0.x -m "v1.0.x"
 git push --tags
 ```
 
-Para gerar release por automação definimos a versão na forma tradicional do Maven (x.y.z-SNAPSHOT) e o `Makefile` possui uma task que automatiza a task inteira (inclusive o "bump" de versão):
+For automated releases we define the version in Maven's traditional format (x.y.z-SNAPSHOT) and the `Makefile` has a task that automates the entire flow (including the version bump):
 
 ```shell
 make release
 ```
 
-Para uma versão na POM definida como "x.y.z-SNAPSHOT" será feito:
+For a version in the POM defined as "x.y.z-SNAPSHOT" the following will be done:
 
-- Commit de versão "x.y.z"
-- Tag "vx.y.z" ("v" como prefixo)
-- Push (com a tag), o que dispara o pipeline da release no Github
-- Commit/push de versão "x.y.z+1-SNAPSHOT"
+- Commit version "x.y.z"
+- Tag "vx.y.z" ("v" as prefix)
+- Push (with the tag), which triggers the release pipeline on GitHub
+- Commit/push version "x.y.z+1-SNAPSHOT"
 
-## Instalando o Java
+## Installing Java
 
-Recomendo usar o SDKMAN (https://sdkman.io/install) para instalar
-a JDK localmente. Para este projeto utilizamos a GraalVM 21:
+I recommend using SDKMAN (https://sdkman.io/install) to install
+the JDK locally. For this project we use GraalVM 21:
 
 ```shell
-sdk use java 24.0.1-graalce
+sdk install java 24.0.2-graalce
 ```
 
-## Atualizando dependências
+## Updating dependencies
 
-Verificar dependências com:
+Check dependencies with:
 
 ```shell
 mvn versions:display-dependency-updates
 ```
 
-Verificar plugins com:
+Check plugins with:
 
 ```shell
 mvn versions:display-plugin-updates
 ```
 
-## Notas sobre o Maven
+## Notes about Maven
 
-Warnings de unsafe memory access podem ser suspendidos por enquanto com:
+Unsafe memory access warnings can be suppressed for now with:
 
 ```shell
 export MAVEN_OPTS="--enable-native-access=ALL-UNNAMED --sun-misc-unsafe-memory-access=allow"

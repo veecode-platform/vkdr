@@ -14,11 +14,9 @@ jobs:
           - os: ubuntu-latest
             os-name: linux
             arch: amd64
-          #- os: ubuntu-latest
-          #  os-name: linux
-          #  arch: arm64
-          #  TODO
-          # macos-13 = osx intel
+          - os: ubuntu-24.04-arm
+            os-name: linux
+            arch: arm64
           - os: macos-13
             os-name: osx
             arch: amd64
