@@ -1,6 +1,9 @@
 # VKDR Changelog
 
 
+## v0.1.75 (2025-08-25)
+* fix npmrc bug when using default registry (f415fd7)
+
 ## v0.1.74 (2025-08-25)
 * removed '-march=native' (2d64b7f)
 
