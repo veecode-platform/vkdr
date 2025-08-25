@@ -1,6 +1,9 @@
 # VKDR Changelog
 
 
+## v0.1.76 (2025-08-25)
+* local devportal install fixes (aa23a8e)
+
 ## v0.1.75 (2025-08-25)
 * fix npmrc bug when using default registry (f415fd7)
 
