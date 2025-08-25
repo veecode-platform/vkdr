@@ -4,6 +4,7 @@
 global:
   host: devportal.localhost
   protocol: http
+  port: ':8000'
   dynamic:
     plugins:
       # VeeCode Homepage

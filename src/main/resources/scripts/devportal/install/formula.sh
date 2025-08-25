@@ -71,11 +71,12 @@ installDevPortal() {
   if [ "true" = "$VKDR_ENV_DEVPORTAL_INSTALL_SAMPLES" ]; then
     LOCATION_TARGET="https://github.com/veecode-platform/vkdr-catalog/blob/main/catalog-info-samples.yaml"
   fi
-  debug "installDevPortal: DevPortal install using helm chart"
+  debug "installDevPortal: DevPortal install using helm chart, host ${VKDR_ENV_DEVPORTAL_DOMAIN}, port ${VKDR_DEVPORTAL_PORT}, protocol ${VKDR_PROTOCOL}"
   $VKDR_HELM upgrade veecode-devportal veecode-devportal --install --wait --timeout 10m \
     --repo "$REPO_URL" --create-namespace -n "$DEVPORTAL_NAMESPACE" \
     -f "$VKDR_DEVPORTAL_VALUES" \
     --set "global.host=devportal.${VKDR_ENV_DEVPORTAL_DOMAIN}" \
+    --set "global.port=${VKDR_DEVPORTAL_PORT}" \
     --set "global.protocol=${VKDR_PROTOCOL}"
 }
 
