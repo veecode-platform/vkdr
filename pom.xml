@@ -52,8 +52,10 @@
 					<buildArgs>
 						<!-- Include the ZIP file as a resource -->
 						<buildArg>-H:IncludeResources=.*zip$</buildArg>
-						<!-- Use native architecture -->
+						<!-- Will not use native architecture, breaks multiarch build -->
+						<!--
 						<buildArg>-march=native</buildArg>
+						-->
 					</buildArgs>
 				</configuration>
 			</plugin>
