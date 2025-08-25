@@ -1,6 +1,9 @@
 # VKDR Changelog
 
 
+## v0.1.74 (2025-08-25)
+* removed '-march=native' (2d64b7f)
+
 ## v0.1.73 (2025-08-25)
 * reverted back to spring boot 3.5.5 (8089cc4)
 
