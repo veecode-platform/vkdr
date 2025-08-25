@@ -170,7 +170,8 @@ setLocations() {
 # the magic matches the secret name with the release name and a suffix "-dynamic-plugins-npmrc"
 setRegistry() {
   if [ -z "$VKDR_ENV_DEVPORTAL_NPM_REGISTRY" ]; then
-    debug "setRegistry: npm registry not set, skipping..."    
+    debug "setRegistry: npm registry not set, skipping..."   
+    return 
   fi
   debug "setRegistry: criando secret para npm registry $VKDR_ENV_DEVPORTAL_NPM_REGISTRY"
   $VKDR_KUBECTL create secret generic veecode-devportal-dynamic-plugins-npmrc -n ${DEVPORTAL_NAMESPACE} \
