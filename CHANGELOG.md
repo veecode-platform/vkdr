@@ -1,6 +1,9 @@
 # VKDR Changelog
 
 
+## v0.1.73 (2025-08-25)
+* reverted back to spring boot 3.5.5 (8089cc4)
+
 ## v0.1.72 (2025-08-24)
 * README translation, linux-arm now supported (9ecbb67)
 
