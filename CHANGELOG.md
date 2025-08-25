@@ -1,6 +1,9 @@
 # VKDR Changelog
 
 
+## v0.1.72 (2025-08-24)
+* README translation, linux-arm now supported (9ecbb67)
+
 ## v0.1.71 (2025-08-22)
 * update tools & docker check (9de3015)
 
