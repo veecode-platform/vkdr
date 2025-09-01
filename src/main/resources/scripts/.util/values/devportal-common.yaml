@@ -204,6 +204,15 @@ upstream:
             #     privateKey: |
             #       ${GITHUB_PRIVATE_KEY}
             #     webhookSecret: ${GITHUB_WEBHOOK_SECRET}
+      techdocs:
+        generator:
+          runIn: 'local'
+        builder: 'local'
+        publisher:
+          type: 'local'
+          local:
+            # (Optional). Set this to specify where the generated documentation is stored.
+            publishDirectory: /tmp/techdocs-publish
       grafana:
         domain: grafana.localhost
         unifiedAlerting: true
