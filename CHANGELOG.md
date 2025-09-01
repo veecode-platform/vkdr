@@ -1,6 +1,9 @@
 # VKDR Changelog
 
 
+## v0.1.77 (2025-09-01)
+* techdocs simple fix for target folder (e18fbfa)
+
 ## v0.1.76 (2025-08-25)
 * local devportal install fixes (aa23a8e)
 
