@@ -1,6 +1,9 @@
 # VKDR Changelog
 
 
+## v0.1.78 (2025-09-18)
+* included dicebear avatars im CSP rule (6d1aec3)
+
 ## v0.1.77 (2025-09-01)
 * techdocs simple fix for target folder (e18fbfa)
 
