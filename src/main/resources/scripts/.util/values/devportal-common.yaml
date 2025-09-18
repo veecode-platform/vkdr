@@ -152,6 +152,8 @@ upstream:
               options:
                 token: ${BACKEND_AUTH_SECRET_KEY}
                 subject: secret
+        csp:
+          img-src: ["'self'","data:","https://raw.githubusercontent.com/","https://avatars.githubusercontent.com/","https://veecode-platform.github.io","https://platform.vee.codes","https://api.dicebear.com"]
       scaffolder:
         providers:
           github:
