@@ -1,6 +1,9 @@
 # VKDR Changelog
 
 
+## v0.1.79 (2025-10-16)
+* postgres updated to CloudNativePG (CNPG) operator (54446a1)
+
 ## v0.1.78 (2025-09-18)
 * included dicebear avatars im CSP rule (6d1aec3)
 
