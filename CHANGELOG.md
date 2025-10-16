@@ -1,6 +1,10 @@
 # VKDR Changelog
 
 
+## v0.1.80 (2025-10-16)
+* kong working with db operator (2f9b16f)
+* fix: postgres wait (72b2efc)
+
 ## v0.1.79 (2025-10-16)
 * postgres updated to CloudNativePG (CNPG) operator (54446a1)
 
