@@ -3,7 +3,7 @@
 env:
   database: postgres
   log_level: notice
-  pg_host: "kong-postgresql"
+  pg_host: "vkdr-pg-cluster-rw"
   pg_user: kong
   pg_password: kong
   pg_database: kong
@@ -13,7 +13,7 @@ env:
   admin_gui_api_url: "http://manager.localhost:8000"
 image:
   repository: kong
-  tag: "3.9"
+  tag: "3.9.1"
 admin:
   enabled: true
   type: ClusterIP
@@ -73,12 +73,6 @@ portal:
 portalapi:
   enabled: false
 
-postgresql:
-  enabled: true
-  auth:
-    username: kong
-    password: kong
-    database: kong
 #
 # Service Monitor (Prometheus)
 #

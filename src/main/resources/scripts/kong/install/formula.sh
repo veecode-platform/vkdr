@@ -56,8 +56,9 @@ startInfos() {
 runFormula() {
   detectClusterPorts
   startInfos
-  settingKong
   createKongNamespace
+  ensurePostgresDatabase
+  settingKong
   createKongLicenseSecret
   createKongAdminSecret
   createKongSessionConfigSecret
@@ -72,6 +73,54 @@ runFormula() {
   installKong
   enableACME
   postInstallKong
+}
+
+ensurePostgresDatabase() {
+  if [ "$VKDR_ENV_KONG_MODE" != "standard" ]; then
+    debug "ensurePostgresDatabase: not in standard mode, skipping..."
+    return
+  fi
+  
+  POSTGRES_CLUSTER_NAME="vkdr-pg-cluster"
+  POSTGRES_DB_NAME="kong"
+  POSTGRES_USER="kong"
+  POSTGRES_PASSWORD="kong1234"
+  
+  # Check if postgres cluster exists
+  if ! $VKDR_KUBECTL get cluster "$POSTGRES_CLUSTER_NAME" -n "$KONG_NAMESPACE" &>/dev/null; then
+    boldInfo "Postgres cluster not found, installing postgres..."
+    # Call postgres install command
+    if command -v vkdr &>/dev/null; then
+      vkdr postgres install --wait
+    else
+      error "ensurePostgresDatabase: vkdr command not found, cannot install postgres"
+      exit 1
+    fi
+  else
+    debug "ensurePostgresDatabase: postgres cluster '$POSTGRES_CLUSTER_NAME' already exists"
+  fi
+  
+  # Check if kong database CRD exists
+  if ! $VKDR_KUBECTL get database "${POSTGRES_CLUSTER_NAME}-${POSTGRES_DB_NAME}" -n "$KONG_NAMESPACE" &>/dev/null; then
+    boldInfo "Kong database not found, creating database..."
+    # Call postgres createdb command
+    if command -v vkdr &>/dev/null; then
+      vkdr postgres createdb -d "$POSTGRES_DB_NAME" -u "$POSTGRES_USER" -p "$POSTGRES_PASSWORD"
+    else
+      error "ensurePostgresDatabase: vkdr command not found, cannot create database"
+      exit 1
+    fi
+  else
+    debug "ensurePostgresDatabase: kong database already exists"
+  fi
+  
+  # Verify the role secret was created
+  if ! $VKDR_KUBECTL get secret "${POSTGRES_CLUSTER_NAME}-role-${POSTGRES_USER}" -n "$KONG_NAMESPACE" &>/dev/null; then
+    error "ensurePostgresDatabase: expected secret '${POSTGRES_CLUSTER_NAME}-role-${POSTGRES_USER}' not found"
+    exit 1
+  fi
+  
+  boldInfo "Postgres database setup complete!"
 }
 
 enableACME() {
@@ -144,13 +193,12 @@ settingKong() {
           VKDR_ENV_KONG_IMAGE_NAME="kong/kong-gateway"
         fi
       fi
-      # if there is a "kong-pg-secret", use those credentials and do not install postgres subchart
-      if $VKDR_KUBECTL get secrets -n $KONG_NAMESPACE | grep -q "kong-pg-secret" ; then
-        VKDR_KONG_SECRET_VALUES="$(dirname "$0")"/../../.util/values/delta-kong-std-dbsecrets.yaml
-        YAML_TMP_FILE_SECRET=/tmp/kong-secret-std.yaml
-        $VKDR_YQ eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' "$VKDR_KONG_VALUES" "$VKDR_KONG_SECRET_VALUES" > "$YAML_TMP_FILE_SECRET"
-        VKDR_KONG_VALUES=$YAML_TMP_FILE_SECRET
-      fi
+      # Always use external postgres database (operator-based) for standard mode
+      debug "settingKong: merging delta-kong-std-dbsecrets.yaml for external postgres"
+      VKDR_KONG_SECRET_VALUES="$(dirname "$0")"/../../.util/values/delta-kong-std-dbsecrets.yaml
+      YAML_TMP_FILE_SECRET=/tmp/kong-secret-std.yaml
+      $VKDR_YQ eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' "$VKDR_KONG_VALUES" "$VKDR_KONG_SECRET_VALUES" > "$YAML_TMP_FILE_SECRET"
+      VKDR_KONG_VALUES=$YAML_TMP_FILE_SECRET
       ;;
     hybrid)
       error "hybrid not yet implemented"

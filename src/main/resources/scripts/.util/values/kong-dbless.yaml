@@ -8,7 +8,7 @@ env:
   admin_gui_api_url: "http://manager.localhost:8000"
 image:
   repository: kong
-  tag: "3.9"
+  tag: "3.9.1"
 admin:
   enabled: true
   type: ClusterIP
