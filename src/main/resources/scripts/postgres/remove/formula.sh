@@ -7,13 +7,15 @@ source "$(dirname "$0")/../../.util/tools-paths.sh"
 source "$(dirname "$0")/../../.util/log.sh"
 
 POSTGRES_NAMESPACE=vkdr
+POSTGRES_CLUSTER_NAME=vkdr-pg-cluster
 
 startInfos() {
-  boldInfo "Postgres Remove"
+  boldInfo "Postgres Remove (CloudNative-PG)"
   bold "=============================="
-  boldNotice "Delete storage: $VKDR_ENV_POSTGRES_DELETE_STORAGE"
+  boldNotice "Cluster name: $POSTGRES_CLUSTER_NAME"
+  boldNotice "Delete storage/secret: $VKDR_ENV_POSTGRES_DELETE_STORAGE"
   bold "=============================="
-  infoYellow "Please understand that non-deleted storage will be mounted again if postgres is reinstalled."
+  infoYellow "Note: PVCs are retained by default and will be reused if postgres is reinstalled."
 }
 
 runFormula() {
@@ -22,11 +24,14 @@ runFormula() {
 }
 
 remove() {
-  boldInfo "Removing postgres..."
-  $VKDR_HELM delete postgres -n $POSTGRES_NAMESPACE
+  boldInfo "Removing PostgreSQL cluster..."
+  kubectl delete cluster "$POSTGRES_CLUSTER_NAME" -n "$POSTGRES_NAMESPACE"
+  
   if [ "$VKDR_ENV_POSTGRES_DELETE_STORAGE" = "true" ]; then
-    boldInfo "Deleting postgres PVC..."
-    $VKDR_KUBECTL delete pvc -n $POSTGRES_NAMESPACE "data-postgres-postgresql-0"
+    boldInfo "Deleting PostgreSQL PVCs..."
+    kubectl delete pvc -n "$POSTGRES_NAMESPACE" -l "cnpg.io/cluster=$POSTGRES_CLUSTER_NAME"
+    boldInfo "Deleting PostgreSQL superuser secret..."
+    kubectl delete secret "${POSTGRES_CLUSTER_NAME}-superuser" -n "$POSTGRES_NAMESPACE" --ignore-not-found
   fi
 }
 

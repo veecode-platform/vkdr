@@ -1,0 +1,5 @@
+upstream:
+  backstage:
+    image:
+      tag: 1.0.18
+
