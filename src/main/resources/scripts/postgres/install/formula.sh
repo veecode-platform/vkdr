@@ -56,10 +56,31 @@ install() {
   createCluster
   
   if [ "true" = "$VKDR_ENV_POSTGRES_WAIT_FOR" ]; then
-    info "Waiting for PostgreSQL cluster to be ready..."
-    kubectl wait --for=jsonpath='{.status.phase}'=Cluster\ ready --timeout=600s \
-      cluster/"$POSTGRES_CLUSTER_NAME" -n "$POSTGRES_NAMESPACE"
+    waitForCluster
   fi
+}
+
+waitForCluster() {
+  info "Waiting for PostgreSQL cluster to be ready..."
+  local retries=0
+  local max_retries=60
+  
+  while [ "$retries" -lt "$max_retries" ]; do
+    local ready_instances=$(kubectl get cluster "$POSTGRES_CLUSTER_NAME" -n "$POSTGRES_NAMESPACE" -o jsonpath='{.status.readyInstances}' 2>/dev/null || echo "0")
+    local instances=$(kubectl get cluster "$POSTGRES_CLUSTER_NAME" -n "$POSTGRES_NAMESPACE" -o jsonpath='{.spec.instances}' 2>/dev/null || echo "0")
+    
+    if [ "$ready_instances" = "$instances" ] && [ "$ready_instances" != "0" ]; then
+      info "PostgreSQL cluster is ready! ($ready_instances/$instances instances)"
+      return 0
+    fi
+    
+    debug "Waiting for cluster... ($ready_instances/$instances instances ready)"
+    sleep 5
+    retries=$((retries + 1))
+  done
+  
+  error "Timeout waiting for PostgreSQL cluster to be ready"
+  exit 1
 }
 
 postInstall() {
