@@ -1,6 +1,9 @@
 # VKDR Changelog
 
 
+## v0.1.81 (2025-11-02)
+* postgres dropdb and pingdb, keycloak operator based formulas (4516ead)
+
 ## v0.1.80 (2025-10-16)
 * kong working with db operator (2f9b16f)
 * fix: postgres wait (72b2efc)
