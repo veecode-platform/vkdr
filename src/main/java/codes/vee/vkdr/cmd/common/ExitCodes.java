@@ -35,6 +35,9 @@ public final class ExitCodes {
     public static final int POSTGRES_INSTALL = 51;
     public static final int POSTGRES_REMOVE = 52;
     public static final int POSTGRES_EXPLAIN = 53;
+    public static final int POSTGRES_DROP_DB = 54;
+    public static final int POSTGRES_LIST_DBS = 55;
+    public static final int POSTGRES_PING_DB = 56;
 
     // DevPortal related exit codes (60-69)
     public static final int DEVPORTAL_BASE = 60;

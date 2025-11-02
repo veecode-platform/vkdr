@@ -9,8 +9,11 @@ import picocli.CommandLine;
         description = "manage Postgres database",
         subcommands = {
             VkdrPostgresCreateDBCommand.class,
+            VkdrPostgresDropDBCommand.class,
             VkdrPostgresExplainCommand.class,
             VkdrPostgresInstallCommand.class,
+            VkdrPostgresListDBsCommand.class,
+            VkdrPostgresPingDBCommand.class,
             VkdrPostgresRemoveCommand.class
         })
 public class VkdrPostgresCommand {

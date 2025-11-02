@@ -37,3 +37,6 @@ build/
 
 # mvn versions
 pom.xml.versionsBackup
+
+license.json
+

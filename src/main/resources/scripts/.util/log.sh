@@ -30,16 +30,25 @@ log() {
   )
 }
 
-bold() { log "true" "${C[bold]}$*${NC}"; }
-info() { log "true" "${C[green]}$*${NC}"; }
-infoYellow() { log "true" "${C[yellow]}$*${NC}"; }
-boldInfo() { log "true" "${C[boldgreen]}$*${NC}"; }
-notice() { log "true" "${C[blue]}$*${NC}"; }
-boldNotice() { log "true" "${C[boldblue]}$*${NC}"; }
-error() { log "true" "${C[red]}$*${NC}"; }
-boldError() { log "true" "${C[boldred]}$*${NC}"; }
-trace() { log "${LOG_TRACE:-}" "${C[cyan]}$*${NC}"; }
-boldTrace() { log "${LOG_TRACE:-}" "${C[boldcyan]}$*${NC}"; }
-warn() { log "${LOG_DEBUG:-}" "${C[yellow]}$*${NC}"; }
-boldWarn() { log "${LOG_DEBUG:-}" "${C[boldyellow]}$*${NC}"; }
-debug() { log "${LOG_DEBUG:-}" "${C[red]}${C[red]}[DEBUG]${NC} $*${NC}"; }
+# Check if non-error logs should be muted
+shouldLog() {
+  # If VKDR_SILENT is set to "true", only show errors
+  if [ "${VKDR_SILENT:-false}" = "true" ]; then
+    return 1  # Don't log (except errors)
+  fi
+  return 0  # Log normally
+}
+
+bold() { shouldLog && log "true" "${C[bold]}$*${NC}"; return 0; }
+info() { shouldLog && log "true" "${C[green]}$*${NC}"; return 0; }
+infoYellow() { shouldLog && log "true" "${C[yellow]}$*${NC}"; return 0; }
+boldInfo() { shouldLog && log "true" "${C[boldgreen]}$*${NC}"; return 0; }
+notice() { shouldLog && log "true" "${C[blue]}$*${NC}"; return 0; }
+boldNotice() { shouldLog && log "true" "${C[boldblue]}$*${NC}"; return 0; }
+error() { log "true" "${C[red]}$*${NC}"; return 0; }
+boldError() { log "true" "${C[boldred]}$*${NC}"; return 0; }
+trace() { log "${LOG_TRACE:-}" "${C[cyan]}$*${NC}"; return 0; }
+boldTrace() { log "${LOG_TRACE:-}" "${C[boldcyan]}$*${NC}"; return 0; }
+warn() { shouldLog && log "${LOG_DEBUG:-}" "${C[yellow]}$*${NC}"; return 0; }
+boldWarn() { shouldLog && log "${LOG_DEBUG:-}" "${C[boldyellow]}$*${NC}"; return 0; }
+debug() { shouldLog && log "${LOG_DEBUG:-}" "${C[red]}${C[red]}[DEBUG]${NC} $*${NC}"; return 0; }

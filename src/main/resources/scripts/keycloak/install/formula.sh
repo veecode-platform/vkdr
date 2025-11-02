@@ -10,10 +10,16 @@ source "$(dirname "$0")/../../.util/tools-paths.sh"
 source "$(dirname "$0")/../../.util/log.sh"
 source "$(dirname "$0")/../../.util/ingress-tools.sh"
 
-KEYCLOAK_NAMESPACE=vkdr
+KEYCLOAK_NAMESPACE=keycloak
+DB_NAMESPACE=vkdr
 # port values override by detectClusterPorts
 VKDR_HTTP_PORT=8000
 VKDR_HTTPS_PORT=8001
+
+KEYCLOAK_OPERATOR_YAML="$(dirname "$0")/../../.util/operators/keycloak/keycloak-operator.yml"
+KEYCLOAK_CRD_YAML="$(dirname "$0")/../../.util/operators/keycloak/keycloakrealmimports.k8s.keycloak.org-v1.yml"
+KEYCLOAK_IMPORT_YAML="$(dirname "$0")/../../.util/operators/keycloak/keycloaks.k8s.keycloak.org-v1.yml"
+KEYCLOAK_SERVER_YAML="$(dirname "$0")/../../.util/operators/keycloak/keycloak-server.yml"
 
 startInfos() {
   boldInfo "Keycloak Install"
@@ -31,25 +37,121 @@ startInfos() {
 runFormula() {
   detectClusterPorts
   startInfos
-  configure
-  configDomain
   createNamespace
+  configure
+  #configDomain
+  ensurePostgresDatabase
+  ensurePostgresSecret
+  ensureAdminSecret
   install
   postInstall
 }
 
 configure() {
-  VKDR_KEYCLOAK_VALUES=/tmp/keycloak-standard.yaml
-  cp "$(dirname "$0")"/../../.util/values/keycloak-standard.yaml $VKDR_KEYCLOAK_VALUES
-  # set domain to "auth.DOMAIN"
+  # Install Keycloak operator if not already installed
+  if ! kubectl get deployment keycloak-operator -n keycloak &>/dev/null; then
+    debug "install: deploying Keycloak operator"
+    kubectl apply --server-side -f "$KEYCLOAK_CRD_YAML"
+    kubectl apply --server-side -f "$KEYCLOAK_IMPORT_YAML"
+    kubectl apply --server-side -f "$KEYCLOAK_OPERATOR_YAML" -n keycloak
+    info "Waiting for Keycloak operator to be ready..."
+    kubectl wait --for=condition=Available --timeout=300s \
+      deployment/keycloak-operator -n keycloak
+  else
+    info "Keycloak operator already installed, skipping..."
+  fi
 
   # if there is a "keycloak-pg-secret" use those credentials and do not install postgres subchart
-  if $VKDR_KUBECTL get secrets -n $KEYCLOAK_NAMESPACE | grep -q "keycloak-pg-secret" ; then
-    VKDR_KEYCLOAK_SECRET_VALUES="$(dirname "$0")"/../../.util/values/delta-keycloak-std-dbsecrets.yaml
-    YAML_TMP_FILE_SECRET=/tmp/keycloak-secret-std.yaml
-    $VKDR_YQ eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' $VKDR_KEYCLOAK_VALUES $VKDR_KEYCLOAK_SECRET_VALUES > $YAML_TMP_FILE_SECRET
-    VKDR_KEYCLOAK_VALUES=$YAML_TMP_FILE_SECRET
+  # if $VKDR_KUBECTL get secrets -n $KEYCLOAK_NAMESPACE | grep -q "keycloak-pg-secret" ; then
+  #   VKDR_KEYCLOAK_SECRET_VALUES="$(dirname "$0")"/../../.util/values/delta-keycloak-std-dbsecrets.yaml
+  #   YAML_TMP_FILE_SECRET=/tmp/keycloak-secret-std.yaml
+  #   $VKDR_YQ eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' $VKDR_KEYCLOAK_VALUES $VKDR_KEYCLOAK_SECRET_VALUES > $YAML_TMP_FILE_SECRET
+  #   VKDR_KEYCLOAK_VALUES=$YAML_TMP_FILE_SECRET
+  # fi
+}
+
+ensureAdminSecret() {
+  # if there is no secret "vkdr-keycloak-initial-admin" in namespace "$KEYCLOAK_NAMESPACE"
+  # create this secret with the VKDR_ENV_KEYCLOAK_ADMIN_USER and VKDR_ENV_KEYCLOAK_ADMIN_PASSWORD
+  if ! $VKDR_KUBECTL get secret "vkdr-keycloak-initial-admin" -n "$KEYCLOAK_NAMESPACE" &>/dev/null; then
+    debug "ensureAdminSecret: creating 'vkdr-keycloak-initial-admin' secret with admin credentials"
+    
+    # Create new secret with admin username and password from environment variables
+    $VKDR_KUBECTL create secret generic "vkdr-keycloak-initial-admin" \
+      --type=kubernetes.io/basic-auth \
+      --from-literal=username="$VKDR_ENV_KEYCLOAK_ADMIN_USER" \
+      --from-literal=password="$VKDR_ENV_KEYCLOAK_ADMIN_PASSWORD" \
+      -n "$KEYCLOAK_NAMESPACE"
+    
+    info "ensureAdminSecret: created 'vkdr-keycloak-initial-admin' with admin credentials"
+  else
+    debug "ensureAdminSecret: 'vkdr-keycloak-initial-admin' already exists"
   fi
+}
+
+ensurePostgresSecret() {
+  # if there is no secret "keycloak-db-secret" in namespace "$KEYCLOAK_NAMESPACE"
+  # extract username and password from the postgres secret and create a new secret with those fields
+  if ! $VKDR_KUBECTL get secret "keycloak-db-secret" -n "$KEYCLOAK_NAMESPACE" &>/dev/null; then
+    debug "ensurePostgresSecret: copying username and password from '${POSTGRES_CLUSTER_NAME}-role-${POSTGRES_USER}' secret"
+    
+    # Extract username and password from the source secret
+    USERNAME=$($VKDR_KUBECTL get secret "${POSTGRES_CLUSTER_NAME}-role-${POSTGRES_USER}" -n "$DB_NAMESPACE" -o jsonpath='{.data.username}')
+    PASSWORD=$($VKDR_KUBECTL get secret "${POSTGRES_CLUSTER_NAME}-role-${POSTGRES_USER}" -n "$DB_NAMESPACE" -o jsonpath='{.data.password}')
+    
+    # Create new secret with only username and password fields
+    $VKDR_KUBECTL create secret generic "keycloak-db-secret" \
+      --from-literal=username="$(echo "$USERNAME" | base64 -d)" \
+      --from-literal=password="$(echo "$PASSWORD" | base64 -d)" \
+      -n "$KEYCLOAK_NAMESPACE"
+    
+    info "ensurePostgresSecret: created 'keycloak-db-secret' with database credentials"
+  else
+    debug "ensurePostgresSecret: 'keycloak-db-secret' already exists"
+  fi
+}
+
+ensurePostgresDatabase() {
+  POSTGRES_CLUSTER_NAME="vkdr-pg-cluster"
+  POSTGRES_DB_NAME="keycloak"
+  POSTGRES_USER="keycloak"
+  POSTGRES_PASSWORD="auth1234"
+  
+  # Check if postgres cluster exists
+  if ! $VKDR_KUBECTL get cluster "$POSTGRES_CLUSTER_NAME" -n "$DB_NAMESPACE" &>/dev/null; then
+    boldInfo "Postgres cluster not found, installing postgres..."
+    # Call postgres install command
+    if command -v vkdr &>/dev/null; then
+      vkdr postgres install --wait
+    else
+      error "ensurePostgresDatabase: vkdr command not found, cannot install postgres"
+      exit 1
+    fi
+  else
+    debug "ensurePostgresDatabase: postgres cluster '$POSTGRES_CLUSTER_NAME' already exists"
+  fi
+  
+  # Check if kong database CRD exists
+  if ! $VKDR_KUBECTL get database "${POSTGRES_CLUSTER_NAME}-${POSTGRES_DB_NAME}" -n "$DB_NAMESPACE" &>/dev/null; then
+    boldInfo "Keycloak database not found, creating database..."
+    # Call postgres createdb command
+    if command -v vkdr &>/dev/null; then
+      vkdr postgres createdb -d "$POSTGRES_DB_NAME" -u "$POSTGRES_USER" -p "$POSTGRES_PASSWORD"
+    else
+      error "ensurePostgresDatabase: vkdr command not found, cannot create database"
+      exit 1
+    fi
+  else
+    debug "ensurePostgresDatabase: kong database already exists"
+  fi
+  
+  # Verify the role secret was created
+  if ! $VKDR_KUBECTL get secret "${POSTGRES_CLUSTER_NAME}-role-${POSTGRES_USER}" -n "$DB_NAMESPACE" &>/dev/null; then
+    error "ensurePostgresDatabase: expected secret '${POSTGRES_CLUSTER_NAME}-role-${POSTGRES_USER}' not found"
+    exit 1
+  fi
+  
+  boldInfo "Postgres database setup complete!"
 }
 
 configDomain() {
@@ -89,12 +191,8 @@ configDomain() {
 }
 
 install() {
-  debug "Keycloak install: add/update helm repo"
-  $VKDR_HELM repo add bitnami https://charts.bitnami.com/bitnami
-  $VKDR_HELM repo update bitnami
-  debug "install: installing Keycloak"
-  $VKDR_HELM upgrade -i keycloak bitnami/keycloak \
-    -n $KEYCLOAK_NAMESPACE --version 21.2.1 --values $VKDR_KEYCLOAK_VALUES
+  debug "Keycloak install"
+  $VKDR_KUBECTL apply -f "$KEYCLOAK_SERVER_YAML" -n "$KEYCLOAK_NAMESPACE"
 }
 
 postInstall() {

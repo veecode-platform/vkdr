@@ -40,7 +40,9 @@ stopCluster() {
     debug "stopCluster: parsing mirror config from $MIRROR_CONFIG"
     MIRRORS=$($VKDR_YQ -r '.mirrors | keys[]' "$MIRROR_CONFIG")
     debug "startMirrors: reading current registry list"
-    REGISTRIES=$($VKDR_K3D registry list -o json | $VKDR_JQ -r '.[].name')
+    # avoid DEBUG output from k3d
+    K3D_JSON=$(LOG_LEVEL=error $VKDR_K3D registry list -o json)
+    REGISTRIES=$(echo "$K3D_JSON" | $VKDR_JQ -r '.[].name')
     for mirror in $MIRRORS; do
       MIRROR_NAME="${mirror//./-}"
       if echo "$REGISTRIES" | grep -qx "k3d-$MIRROR_NAME"; then

@@ -16,6 +16,7 @@ source "$(dirname "$0")/../../.util/vault-tools.sh"
 
 POSTGRES_NAMESPACE=vkdr
 POSTGRES_CLUSTER_NAME=vkdr-pg-cluster
+POSTGRES_CLUSTER_SUPER_USER_NAME=app
 VAULT_NAMESPACE=vkdr
 
 startInfos() {
@@ -35,22 +36,24 @@ startInfos() {
 runFormula() {
   startInfos
   sanitizeVars
+  dropDBifAsked
   createDB
-  createVaultConfig
-  saveSecret
+  #createVaultConfig
+  #saveSecret
+}
+
+dropDBifAsked() {
+  # Then, create the database using CloudNative-PG Database CRD
+  if [ "true" = "$VKDR_ENV_POSTGRES_DROP_DATABASE" ]; then
+    boldInfo "Deleting existing Database resource if it exists..."
+    vkdr postgres dropdb -d "$VKDR_ENV_POSTGRES_DATABASE_NAME" -u "$VKDR_ENV_POSTGRES_USER_NAME"
+  fi
 }
 
 createDB() {
   # First, create the database owner role (user) with password
   createDatabaseRole
-  
-  # Then, create the database using CloudNative-PG Database CRD
-  if [ "true" = "$VKDR_ENV_POSTGRES_DROP_DATABASE" ]; then
-    boldInfo "Deleting existing Database resource if it exists..."
-    kubectl delete database "${POSTGRES_CLUSTER_NAME}-${VKDR_ENV_POSTGRES_DATABASE_NAME}" \
-      -n "$POSTGRES_NAMESPACE" --ignore-not-found
-  fi
-  
+    
   boldInfo "Creating Database resource using CloudNative-PG CRD..."
   cat <<EOF | kubectl apply -f -
 apiVersion: postgresql.cnpg.io/v1
@@ -74,7 +77,37 @@ EOF
 }
 
 createDatabaseRole() {
-  boldInfo "Creating database role (user) ${VKDR_ENV_POSTGRES_USER_NAME} using declarative role management..."
+  if [ "true" = "$VKDR_ENV_POSTGRES_CREATE_VAULT" ]; then
+    createVaultManagedRole
+  else
+    createDatabaseManagedRole
+  fi
+}
+
+createVaultManagedRole() {
+  boldInfo "Creating database role (user) ${VKDR_ENV_POSTGRES_USER_NAME} using Vault role management..."
+  debug "createVaultConfig: fetching vault token and PG admin password"
+  VKDR_VAULT_TOKEN=$(getVaultToken)
+  VKDR_PG_PWD=$(getPgAdminPassword)
+  
+  debug "createVaultConfig: creating vault database/config/$VKDR_ENV_POSTGRES_DATABASE_NAME..."
+  $VKDR_KUBECTL -n $VAULT_NAMESPACE exec vault-0 -- env VAULT_TOKEN=$VKDR_VAULT_TOKEN \
+    vault write database/config/$VKDR_ENV_POSTGRES_DATABASE_NAME \
+      plugin_name="postgresql-database-plugin" \
+      allowed_roles="$VKDR_ENV_POSTGRES_DATABASE_NAME" \
+      connection_url="postgresql://{{username}}:{{password}}@${POSTGRES_CLUSTER_NAME}-rw:5432/$VKDR_ENV_POSTGRES_DATABASE_NAME" \
+      username="$POSTGRES_CLUSTER_SUPER_USER_NAME" \
+      password="$VKDR_PG_PWD"
+  debug "createVaultConfig: creating vault database/static-roles/$VKDR_ENV_POSTGRES_DATABASE_NAME..."
+  $VKDR_KUBECTL -n $VAULT_NAMESPACE exec vault-0 -- env VAULT_TOKEN=$VKDR_VAULT_TOKEN \
+    vault write database/static-roles/$VKDR_ENV_POSTGRES_USER_NAME \
+        db_name=$VKDR_ENV_POSTGRES_DATABASE_NAME \
+        username="$VKDR_ENV_POSTGRES_USER_NAME" \
+        rotation_schedule="$VKDR_ENV_POSTGRES_VAULT_ROTATION_SCHEDULE"
+}
+
+createDatabaseManagedRole() {
+  boldInfo "Creating database role (user) ${VKDR_ENV_POSTGRES_USER_NAME} using declarative Operator role management..."
   
   # First, create the password secret for the role
   local ROLE_SECRET_NAME="${POSTGRES_CLUSTER_NAME}-role-${VKDR_ENV_POSTGRES_USER_NAME}"
@@ -186,13 +219,14 @@ createVaultConfig() {
   debug "createVaultConfig: fetching vault token and PG admin password"
   VKDR_VAULT_TOKEN=$(getVaultToken)
   VKDR_PG_PWD=$(getPgAdminPassword)
+  
   debug "createVaultConfig: creating vault database/config/$VKDR_ENV_POSTGRES_DATABASE_NAME..."
   $VKDR_KUBECTL -n $VAULT_NAMESPACE exec vault-0 -- env VAULT_TOKEN=$VKDR_VAULT_TOKEN \
     vault write database/config/$VKDR_ENV_POSTGRES_DATABASE_NAME \
       plugin_name="postgresql-database-plugin" \
       allowed_roles="$VKDR_ENV_POSTGRES_DATABASE_NAME" \
       connection_url="postgresql://{{username}}:{{password}}@${POSTGRES_CLUSTER_NAME}-rw:5432/$VKDR_ENV_POSTGRES_DATABASE_NAME" \
-      username="postgres" \
+      username="$POSTGRES_CLUSTER_SUPER_USER_NAME" \
       password="$VKDR_PG_PWD"
   debug "createVaultConfig: creating vault database/static-roles/$VKDR_ENV_POSTGRES_DATABASE_NAME..."
   $VKDR_KUBECTL -n $VAULT_NAMESPACE exec vault-0 -- env VAULT_TOKEN=$VKDR_VAULT_TOKEN \
@@ -203,27 +237,32 @@ createVaultConfig() {
 }
 
 saveSecret() {
-  if [ "$VKDR_ENV_POSTGRES_STORE_SECRET" != "true" ]; then
-    return
-  fi
-  if [ "$VKDR_ENV_POSTGRES_CREATE_VAULT" != "true" ]; then
-    boldInfo "Storing plain secret in '$VKDR_ENV_POSTGRES_USER_NAME-pg-secret'..."
-    $VKDR_KUBECTL delete secret "$VKDR_ENV_POSTGRES_USER_NAME-pg-secret" -n "$POSTGRES_NAMESPACE" --ignore-not-found=true
-    $VKDR_KUBECTL create secret generic "$VKDR_ENV_POSTGRES_USER_NAME-pg-secret" -n "$POSTGRES_NAMESPACE" \
-      --from-literal=password="$VKDR_ENV_POSTGRES_PASSWORD" \
-      --from-literal=user="$VKDR_ENV_POSTGRES_USER_NAME" \
-      --from-literal=dbname="$VKDR_ENV_POSTGRES_DATABASE_NAME"
-  else
-    boldInfo "Storing secret in '$VKDR_ENV_POSTGRES_USER_NAME-pg-secret' using ESO CRDs and Vault..."
-    # todo: delete ESO CRDs on removal
-    sed "s/\${user_name}/$VKDR_ENV_POSTGRES_USER_NAME/g" "$(dirname "$0")/../../.util/values/eso-crds-template.yaml" \
-      | sed "s/\${db_name}/$VKDR_ENV_POSTGRES_DATABASE_NAME/g" \
-      | $VKDR_KUBECTL apply -f -
-  fi
+  error "saveSecret: not implemented anymore, operator will create the secret 'vkdr-pg-cluster-role-\$USERNAME' naturally"
+  exit 1
+  # if [ "$VKDR_ENV_POSTGRES_STORE_SECRET" != "true" ]; then
+  #   return
+  # fi
+  # if [ "$VKDR_ENV_POSTGRES_CREATE_VAULT" != "true" ]; then
+  #   boldInfo "Storing plain secret in '$VKDR_ENV_POSTGRES_USER_NAME-pg-secret'..."
+  #   $VKDR_KUBECTL delete secret "$VKDR_ENV_POSTGRES_USER_NAME-pg-secret" -n "$POSTGRES_NAMESPACE" --ignore-not-found=true
+  #   $VKDR_KUBECTL create secret generic "$VKDR_ENV_POSTGRES_USER_NAME-pg-secret" -n "$POSTGRES_NAMESPACE" \
+  #     --from-literal=password="$VKDR_ENV_POSTGRES_PASSWORD" \
+  #     --from-literal=user="$VKDR_ENV_POSTGRES_USER_NAME" \
+  #     --from-literal=dbname="$VKDR_ENV_POSTGRES_DATABASE_NAME"
+  # else
+  #   boldInfo "Storing secret in '$VKDR_ENV_POSTGRES_USER_NAME-pg-secret' using ESO CRDs and Vault..."
+  #   # todo: delete ESO CRDs on removal
+  #   sed "s/\${user_name}/$VKDR_ENV_POSTGRES_USER_NAME/g" "$(dirname "$0")/../../.util/values/eso-crds-template.yaml" \
+  #     | sed "s/\${db_name}/$VKDR_ENV_POSTGRES_DATABASE_NAME/g" \
+  #     | $VKDR_KUBECTL apply -f -
+  # fi
 }
 
 getPgAdminPassword() {
   if [ -z "$VKDR_ENV_POSTGRES_ADMIN_PASSWORD" ]; then
+    # old chart way
+    #kubectl get secret "${POSTGRES_CLUSTER_NAME}-superuser" -n "$POSTGRES_NAMESPACE" -o jsonpath='{.data.password}' | base64 -d
+    # operator will create a secret with the password
     kubectl get secret "${POSTGRES_CLUSTER_NAME}-superuser" -n "$POSTGRES_NAMESPACE" -o jsonpath='{.data.password}' | base64 -d
   else
     echo "$VKDR_ENV_POSTGRES_ADMIN_PASSWORD"
