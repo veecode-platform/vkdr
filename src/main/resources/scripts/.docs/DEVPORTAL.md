@@ -2,6 +2,8 @@
 
 This formula installs VeeCode DevPortal on a Kubernetes cluster with default configurations for local testing and development.
 
+IMPORTANT: currently not working until helm chart is updated.
+
 ## Pre-requisites
 
 A few conditions apply:

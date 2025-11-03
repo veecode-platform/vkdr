@@ -20,6 +20,8 @@ KEYCLOAK_OPERATOR_YAML="$(dirname "$0")/../../.util/operators/keycloak/keycloak-
 KEYCLOAK_CRD_YAML="$(dirname "$0")/../../.util/operators/keycloak/keycloakrealmimports.k8s.keycloak.org-v1.yml"
 KEYCLOAK_IMPORT_YAML="$(dirname "$0")/../../.util/operators/keycloak/keycloaks.k8s.keycloak.org-v1.yml"
 KEYCLOAK_SERVER_YAML="$(dirname "$0")/../../.util/operators/keycloak/keycloak-server.yml"
+KEYCLOAK_BOOTSTRAP_SECRET=vkdr-keycloak-bootstrap-admin-user
+KEYCLOAK_FINAL_SERVER_YAML="$KEYCLOAK_SERVER_YAML"
 
 startInfos() {
   boldInfo "Keycloak Install"
@@ -39,7 +41,7 @@ runFormula() {
   startInfos
   createNamespace
   configure
-  #configDomain
+  configDomain
   ensurePostgresDatabase
   ensurePostgresSecret
   ensureAdminSecret
@@ -60,6 +62,9 @@ configure() {
   else
     info "Keycloak operator already installed, skipping..."
   fi
+  # copies server yaml file to temp file
+  cp "$KEYCLOAK_SERVER_YAML" /tmp/keycloak-server.yml
+  KEYCLOAK_FINAL_SERVER_YAML="/tmp/keycloak-server.yml"
 
   # if there is a "keycloak-pg-secret" use those credentials and do not install postgres subchart
   # if $VKDR_KUBECTL get secrets -n $KEYCLOAK_NAMESPACE | grep -q "keycloak-pg-secret" ; then
@@ -73,19 +78,18 @@ configure() {
 ensureAdminSecret() {
   # if there is no secret "vkdr-keycloak-initial-admin" in namespace "$KEYCLOAK_NAMESPACE"
   # create this secret with the VKDR_ENV_KEYCLOAK_ADMIN_USER and VKDR_ENV_KEYCLOAK_ADMIN_PASSWORD
-  if ! $VKDR_KUBECTL get secret "vkdr-keycloak-initial-admin" -n "$KEYCLOAK_NAMESPACE" &>/dev/null; then
-    debug "ensureAdminSecret: creating 'vkdr-keycloak-initial-admin' secret with admin credentials"
+  if ! $VKDR_KUBECTL get secret "$KEYCLOAK_BOOTSTRAP_SECRET" -n "$KEYCLOAK_NAMESPACE" &>/dev/null; then
+    debug "ensureAdminSecret: creating '$KEYCLOAK_BOOTSTRAP_SECRET' secret with admin credentials"
     
     # Create new secret with admin username and password from environment variables
-    $VKDR_KUBECTL create secret generic "vkdr-keycloak-initial-admin" \
-      --type=kubernetes.io/basic-auth \
+    $VKDR_KUBECTL create secret generic "$KEYCLOAK_BOOTSTRAP_SECRET" \
       --from-literal=username="$VKDR_ENV_KEYCLOAK_ADMIN_USER" \
       --from-literal=password="$VKDR_ENV_KEYCLOAK_ADMIN_PASSWORD" \
       -n "$KEYCLOAK_NAMESPACE"
     
-    info "ensureAdminSecret: created 'vkdr-keycloak-initial-admin' with admin credentials"
+    info "ensureAdminSecret: created '$KEYCLOAK_BOOTSTRAP_SECRET' with admin credentials"
   else
-    debug "ensureAdminSecret: 'vkdr-keycloak-initial-admin' already exists"
+    debug "ensureAdminSecret: '$KEYCLOAK_BOOTSTRAP_SECRET' already exists"
   fi
 }
 
@@ -154,6 +158,10 @@ ensurePostgresDatabase() {
   boldInfo "Postgres database setup complete!"
 }
 
+#
+# fix this in the future, focus on "spec.hostname.hostname" of CRD
+# spec also has "spec.ingress.tls" or similar
+#
 configDomain() {
   VKDR_KEYCLOAK_PORT=""
     if [ "true" = "$VKDR_ENV_KEYCLOAK_SECURE" ]; then
@@ -167,32 +175,30 @@ configDomain() {
         VKDR_KEYCLOAK_PORT=":$VKDR_HTTP_PORT"
       fi
     fi
-  if [ "$VKDR_ENV_KEYCLOAK_DOMAIN" != "localhost" ]; then
-    debug "configDomain: setting keycloak hostname to 'auth.$VKDR_ENV_KEYCLOAK_DOMAIN' in $VKDR_KEYCLOAK_VALUES"
-    $VKDR_YQ eval ".ingress.hostname = \"auth.$VKDR_ENV_KEYCLOAK_DOMAIN\"" -i $VKDR_KEYCLOAK_VALUES
-  fi
+  # must set "spec.hostname.hostname" in $KEYCLOAK_FINAL_SERVER_YAML to 
+  # $VKDR_PROTOCOL://auth.${VKDR_ENV_KEYCLOAK_DOMAIN}${VKDR_KEYCLOAK_PORT}
+  FINAL_KEYCLOAK_HOSTNAME="$VKDR_PROTOCOL://auth.${VKDR_ENV_KEYCLOAK_DOMAIN}${VKDR_KEYCLOAK_PORT}"
+  debug "configDomain: forcing hostname to '$FINAL_KEYCLOAK_HOSTNAME'"
+  $VKDR_YQ eval ".spec.hostname.hostname = \"$FINAL_KEYCLOAK_HOSTNAME\"" -i $KEYCLOAK_FINAL_SERVER_YAML
   if [ "$VKDR_ENV_KEYCLOAK_SECURE" = "true" ]; then
     debug "configDomain: forcing HTTPS with ingress annotations"
     # forces https on Kong
-    $VKDR_YQ -i ".ingress.annotations.\"konghq.com/protocols\" = \"https\"" $VKDR_KEYCLOAK_VALUES
-    $VKDR_YQ -i ".ingress.annotations.\"konghq.com/https-redirect-status-code\" = \"301\"" $VKDR_KEYCLOAK_VALUES
+    $VKDR_YQ -i ".spec.ingress.annotations.\"konghq.com/protocols\" = \"https\"" $VKDR_KEYCLOAK_VALUES
+    $VKDR_YQ -i ".spec.ingress.annotations.\"konghq.com/https-redirect-status-code\" = \"301\"" $VKDR_KEYCLOAK_VALUES
     # should not enable TLS if using ACME plugin
     if detectACMEPlugin; then
-      debug "configDomain: will not enable ingress TLS in $VKDR_KEYCLOAK_VALUES as ACME plugin is used"
+      debug "configDomain: will not enable ingress TLS in $KEYCLOAK_FINAL_SERVER_YAML as ACME plugin is used"
       addHostToACMEIngress "auth.$VKDR_ENV_KEYCLOAK_DOMAIN"
     else
-      debug "configDomain: setting keycloak ingress TLS in $VKDR_KEYCLOAK_VALUES"
-      $VKDR_YQ eval ".ingress.tls = true" -i $VKDR_KEYCLOAK_VALUES
+      debug "configDomain: setting keycloak ingress TLS in $KEYCLOAK_FINAL_SERVER_YAML"
+      $VKDR_YQ eval ".spec.ingress.tlsSecret = \"keycloak-tls-secret\"" -i $KEYCLOAK_FINAL_SERVER_YAML
     fi
   fi
-  export NEW_HOSTNAME="$VKDR_PROTOCOL://auth.${VKDR_ENV_KEYCLOAK_DOMAIN}${VKDR_KEYCLOAK_PORT}"
-  debug "configDomain: fixing KC_HOSTNAME_URL to $NEW_HOSTNAME"
-  $VKDR_YQ e '( .extraEnvVars[] | select(.name == "KC_HOSTNAME_URL") ).value = env(NEW_HOSTNAME)' -i $VKDR_KEYCLOAK_VALUES
 }
 
 install() {
   debug "Keycloak install"
-  $VKDR_KUBECTL apply -f "$KEYCLOAK_SERVER_YAML" -n "$KEYCLOAK_NAMESPACE"
+  $VKDR_KUBECTL apply -f "$KEYCLOAK_FINAL_SERVER_YAML" -n "$KEYCLOAK_NAMESPACE"
 }
 
 postInstall() {

@@ -14,12 +14,16 @@ spec:
     passwordSecret:
       name: keycloak-db-secret
       key: password
+  bootstrapAdmin:
+    user:
+      secret: vkdr-keycloak-bootstrap-admin-user
   http:
     httpEnabled: true
   #  tlsSecret: example-tls-secret
   hostname:
-    hostname: auth.localhost
-    strict: true
+    #hostname: auth.localhost
+    hostname: http://auth.localhost:8000
+    strict: false
   proxy:
     headers: xforwarded # double check your reverse proxy sets and overwrites the X-Forwarded-* headers
 
