@@ -1,6 +1,9 @@
 # VKDR Changelog
 
 
+## v0.1.83 (2025-11-04)
+* added --label option to kong install (486daca)
+
 ## v0.1.82 (2025-11-03)
 * keycloak operator fixes (8bc1370)
 
