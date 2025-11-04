@@ -17,6 +17,7 @@ VKDR_ENV_KONG_ENABLE_ACME=${14}
 VKDR_ENV_KONG_ACME_SERVER=${15}
 VKDR_ENV_KONG_PROXY_TLS_SECRET=${16}
 VKDR_ENV_KONG_ENV=${17}
+VKDR_ENV_KONG_LABELS=${18}
 
 source "$(dirname "$0")/../../.util/tools-versions.sh"
 source "$(dirname "$0")/../../.util/tools-paths.sh"
@@ -47,6 +48,7 @@ startInfos() {
   boldNotice "ACME Server: $VKDR_ENV_KONG_ACME_SERVER"
   boldNotice "Proxy TLS Secret: $VKDR_ENV_KONG_PROXY_TLS_SECRET"
   boldNotice "Environment: $VKDR_ENV_KONG_ENV"
+  boldNotice "Labels: $VKDR_ENV_KONG_LABELS"
   bold "=============================="
   boldNotice "Cluster LB HTTP port: $VKDR_HTTP_PORT"
   boldNotice "Cluster LB HTTPS port: $VKDR_HTTPS_PORT"
@@ -70,6 +72,7 @@ runFormula() {
   configLogLevel
   configProxyTLSSecret
   envKong
+  configLabels
   installKong
   enableACME
   postInstallKong
@@ -330,6 +333,19 @@ envKong() {
   debug "envKong: merging kong env '$VKDR_ENV_KONG_ENV'"
   echo "$VKDR_ENV_KONG_ENV" | $VKDR_YQ -p=json -o=yaml > /tmp/kong-env-vars.yaml
   $VKDR_YQ eval '.env *= load("/tmp/kong-env-vars.yaml")' -i "$VKDR_KONG_VALUES"
+}
+
+configLabels() {
+  if [ -n "$VKDR_ENV_KONG_LABELS" ] && [ "$VKDR_ENV_KONG_LABELS" != "{}" ]; then
+    debug "configLabels: applying custom labels '$VKDR_ENV_KONG_LABELS' to Kong resources"
+    # Convert JSON labels to YAML and merge into extraLabels section
+    echo "$VKDR_ENV_KONG_LABELS" | $VKDR_YQ -p=json -o=yaml > /tmp/kong-labels.yaml
+    # Apply labels to extraLabels for all resources
+    $VKDR_YQ eval '.extraLabels *= load("/tmp/kong-labels.yaml")' -i "$VKDR_KONG_VALUES"
+    debug "configLabels: labels applied to $VKDR_KONG_VALUES"
+  else
+    debug "configLabels: no custom labels provided, skipping"
+  fi
 }
 
 installKong() {
