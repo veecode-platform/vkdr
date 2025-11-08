@@ -51,7 +51,7 @@ runFormula() {
     if [ "$VKDR_ENV_INFRA_JSON" = "true" ]; then
         echo "{\"token\":\"$TOKEN\"}"
     else
-        echo "token: $TOKEN"
+        echo "$TOKEN"
     fi
 }
 
