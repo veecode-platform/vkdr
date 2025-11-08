@@ -11,6 +11,7 @@ public final class ExitCodes {
     public static final int INFRA_STOP = 13;
     public static final int INFRA_CLEAN = 14;
     public static final int INFRA_EXPOSE = 15;
+    public static final int INFRA_CREATETOKEN = 16;
     public static final int INIT = 9;
 
     // Kong related exit codes (20-29)
