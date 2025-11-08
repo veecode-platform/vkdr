@@ -1,6 +1,9 @@
 # VKDR Changelog
 
 
+## v0.1.85 (2025-11-08)
+* add: infra createToken clean plain output (506768d)
+
 ## v0.1.84 (2025-11-08)
 * add: infra createToken (6972bbd)
 
