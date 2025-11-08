@@ -1,6 +1,9 @@
 # VKDR Changelog
 
 
+## v0.1.84 (2025-11-08)
+* add: infra createToken (6972bbd)
+
 ## v0.1.83 (2025-11-04)
 * added --label option to kong install (486daca)
 
