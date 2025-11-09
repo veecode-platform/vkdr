@@ -1,6 +1,9 @@
 # VKDR Changelog
 
 
+## v0.1.88 (2025-11-09)
+* add: option --label to whoami (101fda7)
+
 ## v0.1.87 (2025-11-09)
 * add: global --silent option (also passed down to scripts) (d4153b6)
 
