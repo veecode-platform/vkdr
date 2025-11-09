@@ -1,5 +1,6 @@
 package codes.vee.vkdr.cmd;
 
+import codes.vee.vkdr.cmd.common.SilentMixin;
 import codes.vee.vkdr.cmd.devportal.VkdrDevPortalCommand;
 import codes.vee.vkdr.cmd.keycloak.VkdrKeycloakCommand;
 import codes.vee.vkdr.cmd.kong.VkdrKongCommand;
@@ -15,6 +16,7 @@ import codes.vee.vkdr.cmd.mirror.VkdrMirrorCommand;
 import codes.vee.vkdr.cmd.traefik.VkdrTraefikCommand;
 import org.springframework.stereotype.Component;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Mixin;
 
 @Component
 @Command(name = "vkdr", mixinStandardHelpOptions = true,
@@ -46,6 +48,8 @@ import picocli.CommandLine.Command;
                 VkdrTraefikCommand.class,
                 VkdrUpgradeCommand.class})
 public class VkdrCommand {
+    @Mixin
+    private SilentMixin silentMixin;
 
 }
 

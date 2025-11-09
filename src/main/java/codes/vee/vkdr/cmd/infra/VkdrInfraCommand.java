@@ -17,5 +17,5 @@ import picocli.CommandLine.Command;
             VkdrInfraGetCACommand.class
         })
 public class VkdrInfraCommand {
-    
+
 }

@@ -46,7 +46,12 @@ public class ShellExecutor {
             // You can now safely use resolvedPath for file operations
         }
 
-        Process process = new ProcessBuilder(args).redirectErrorStream(true).start();
+        ProcessBuilder processBuilder = new ProcessBuilder(args).redirectErrorStream(true);
+        // Set VKDR_SILENT for scripts if silent mode is enabled
+        if (VkdrApplication.silentMode) {
+            processBuilder.environment().put("VKDR_SILENT", "true");
+        }
+        Process process = processBuilder.start();
         // Capture and print the script's output
         BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
         String line;
