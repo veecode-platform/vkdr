@@ -1,6 +1,9 @@
 # VKDR Changelog
 
 
+## v0.1.86 (2025-11-09)
+* add: infra getca command (4b1d7b1)
+
 ## v0.1.85 (2025-11-08)
 * add: infra createToken clean plain output (506768d)
 
