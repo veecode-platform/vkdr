@@ -1,6 +1,9 @@
 # VKDR Changelog
 
 
+## v0.1.87 (2025-11-09)
+* add: global --silent option (also passed down to scripts) (d4153b6)
+
 ## v0.1.86 (2025-11-09)
 * add: infra getca command (4b1d7b1)
 
