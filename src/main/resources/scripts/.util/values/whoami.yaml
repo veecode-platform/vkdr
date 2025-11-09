@@ -11,3 +11,5 @@ ingress:
 service:
   ports:
     http: 80
+
+commonLabels: {}

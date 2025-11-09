@@ -2,6 +2,7 @@
 
 VKDR_ENV_WHOAMI_DOMAIN=$1
 VKDR_ENV_WHOAMI_SECURE=$2
+VKDR_ENV_WHOAMI_LABELS=$3
 
 source "$(dirname "$0")/../../.util/tools-versions.sh"
 source "$(dirname "$0")/../../.util/tools-paths.sh"
@@ -15,6 +16,7 @@ startInfos() {
   bold "=============================="
   boldNotice "Domain: $VKDR_ENV_WHOAMI_DOMAIN"
   boldNotice "Secure: $VKDR_ENV_WHOAMI_SECURE"
+  boldNotice "Labels: $VKDR_ENV_WHOAMI_LABELS"
   bold "=============================="
 }
 
@@ -23,6 +25,7 @@ runFormula() {
   createNamespace
   configValues
   configDomain
+  configLabels
   install
   postInstall
 }
@@ -45,6 +48,19 @@ configDomain() {
   else
     debug "configDomain: removing ingress TLS entry in $VKDR_TMP_VALUES"
     $VKDR_YQ -i ".ingress.tls = []" $VKDR_TMP_VALUES
+  fi
+}
+
+configLabels() {
+  if [ -n "$VKDR_ENV_WHOAMI_LABELS" ] && [ "$VKDR_ENV_WHOAMI_LABELS" != "{}" ]; then
+    debug "configLabels: applying custom labels '$VKDR_ENV_WHOAMI_LABELS' to whoami resources"
+    # Convert JSON labels to YAML and merge into commonLabels section
+    echo "$VKDR_ENV_WHOAMI_LABELS" | $VKDR_YQ -p=json -o=yaml > /tmp/whoami-labels.yaml
+    # Apply labels to commonLabels for all resources
+    $VKDR_YQ eval '.commonLabels *= load("/tmp/whoami-labels.yaml")' -i "$VKDR_TMP_VALUES"
+    debug "configLabels: labels applied to $VKDR_TMP_VALUES"
+  else
+    debug "configLabels: no custom labels provided, skipping"
   fi
 }
 
