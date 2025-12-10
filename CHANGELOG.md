@@ -1,6 +1,9 @@
 # VKDR Changelog
 
 
+## v0.1.89 (2025-12-10)
+* add: openldap tasks (50e36aa)
+
 ## v0.1.88 (2025-11-09)
 * add: option --label to whoami (101fda7)
 
