@@ -1,4 +1,4 @@
-// NEXT: 160
+// NEXT: 170
 package codes.vee.vkdr.cmd.common;
 
 public final class ExitCodes {
@@ -91,6 +91,11 @@ public final class ExitCodes {
     public static final int TRAEFIK_INSTALL = 151;
     public static final int TRAEFIK_REMOVE = 152;
     public static final int TRAEFIK_EXPLAIN = 153;
+
+    // OPENLDAP related exit codes (160-169)
+    public static final int OPENLDAP_BASE = 160;
+    public static final int OPENLDAP_REMOVE = 171;
+    public static final int OPENLDAP_INSTALL = 161;
 
     // ADD_HERE
 }

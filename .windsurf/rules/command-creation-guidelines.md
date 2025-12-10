@@ -1,5 +1,5 @@
 ---
-trigger: model_decision
+trigger: always_on
 description: when asked to create a new command for vkdr CLI
 ---
 
