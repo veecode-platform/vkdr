@@ -1,6 +1,9 @@
 # VKDR Changelog
 
 
+## v0.1.90 (2025-12-10)
+* fix: updated gh action osx target archs (e44322f)
+
 ## v0.1.89 (2025-12-10)
 * add: openldap tasks (50e36aa)
 
