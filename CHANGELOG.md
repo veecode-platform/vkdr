@@ -1,6 +1,10 @@
 # VKDR Changelog
 
 
+## v0.1.91 (2025-12-11)
+* add: openldap remove --delete (delete PVC option) (92eff2a)
+* update tools versions (c3a96c4)
+
 ## v0.1.90 (2025-12-10)
 * fix: updated gh action osx target archs (e44322f)
 
