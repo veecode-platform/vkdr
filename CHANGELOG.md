@@ -1,6 +1,9 @@
 # VKDR Changelog
 
 
+## v0.1.92 (2025-12-11)
+* fix: sample org uids (08a1ee2)
+
 ## v0.1.91 (2025-12-11)
 * add: openldap remove --delete (delete PVC option) (92eff2a)
 * update tools versions (c3a96c4)
