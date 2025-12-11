@@ -31,7 +31,7 @@ customLdifFiles:
     mail: admin@vee.codes
     userPassword: {SSHA}Y885MglcAFBmOuAklK+RCh3goTq1AzCK
 
-    dn: uid=andre,ou=People,dc=vee,dc=codes
+    dn: uid=young,ou=People,dc=vee,dc=codes
     objectClass: inetOrgPerson
     objectClass: person
     cn: Young Trainee
