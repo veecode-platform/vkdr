@@ -32,8 +32,13 @@ public class VkdrInfraStartCommand implements Callable<Integer> {
     @CommandLine.Option(names = {"--nodeports"},
             defaultValue = "0",
             description = {"Number of exposed nodeports for generic services (default: 0)",
-                    "If nodeports is >0, then sequential ports starting from 9000 will be exposed."})
+                    "If nodeports is >0, then sequential ports starting from nodeport-base will be exposed."})
     private int nodeports;
+
+    @CommandLine.Option(names = {"--nodeport-base"},
+            defaultValue = "9000",
+            description = "Starting port for nodeport mapping on host (default: 9000)")
+    private int nodeport_base;
 
     @CommandLine.Option(names = {"-k", "--api-port"},
             defaultValue = "",
@@ -54,8 +59,8 @@ public class VkdrInfraStartCommand implements Callable<Integer> {
 
     @Override
     public Integer call() throws IOException, InterruptedException {
-        logger.debug("'infra start' was called, enable_traefik={}, http_port={}, https_port={}, nodeports={}, volumes={}", 
-            enable_traefik, http_port, https_port, nodeports, volumes);
+        logger.debug("'infra start' was called, enable_traefik={}, http_port={}, https_port={}, nodeports={}, nodeport_base={}, volumes={}", 
+            enable_traefik, http_port, https_port, nodeports, nodeport_base, volumes);
         return ShellExecutor.executeCommand("infra/start", 
             String.valueOf(enable_traefik), 
             String.valueOf(http_port), 
@@ -63,6 +68,7 @@ public class VkdrInfraStartCommand implements Callable<Integer> {
             String.valueOf(nodeports), 
             api_port, 
             String.valueOf(k3d_agents), 
-            volumes);
+            volumes,
+            String.valueOf(nodeport_base));
     }
 }

@@ -8,6 +8,7 @@ VKDR_ENV_NUMBER_NODEPORTS=$4
 VKDR_ENV_API_PORT=$5
 VKDR_ENV_AGENTS=$6
 VKDR_ENV_VOLUMES=$7
+VKDR_ENV_NODEPORT_BASE=$8
 # internal
 NODEPORT_FLAG=""
 NODEPORT_VALUE=""
@@ -36,7 +37,7 @@ startInfos() {
   #boldNotice "Local Registry: 6000"
   boldNotice "Local Docker Hub Registry Mirror (cache): 6001"
   if [ $VKDR_ENV_NUMBER_NODEPORTS -gt 0 ] ; then
-    boldNotice "NodePorts available: 9000-$((VKDR_ENV_NUMBER_NODEPORTS+9000-1)):30000-$((VKDR_ENV_NUMBER_NODEPORTS+30000-1))"
+    boldNotice "NodePorts available: ${VKDR_ENV_NODEPORT_BASE}-$((VKDR_ENV_NUMBER_NODEPORTS+VKDR_ENV_NODEPORT_BASE-1)):30000-$((VKDR_ENV_NUMBER_NODEPORTS+30000-1))"
   else
     boldNotice "NodePorts disabled"
   fi
@@ -115,10 +116,10 @@ startCluster() {
 
 configureCluster() {
   if [ $VKDR_ENV_NUMBER_NODEPORTS -gt 0 ] ; then
-    local PORT_LOCAL="$(($VKDR_ENV_NUMBER_NODEPORTS+9000-1))" \
+    local PORT_LOCAL="$(($VKDR_ENV_NUMBER_NODEPORTS+VKDR_ENV_NODEPORT_BASE-1))" \
           PORT_NODE="$(($VKDR_ENV_NUMBER_NODEPORTS+30000-1))"
     NODEPORT_FLAG="-p"
-    NODEPORT_VALUE="9000-$PORT_LOCAL:30000-$PORT_NODE"
+    NODEPORT_VALUE="${VKDR_ENV_NODEPORT_BASE}-$PORT_LOCAL:30000-$PORT_NODE"
   fi
   if [ "$VKDR_ENV_TRAEFIK" == false ]; then
     TRAEFIK_FLAG="--k3s-arg"
