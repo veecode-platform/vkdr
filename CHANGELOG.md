@@ -1,6 +1,9 @@
 # VKDR Changelog
 
 
+## v0.1.93 (2025-12-16)
+* feat: nodeport-base (1021d75)
+
 ## v0.1.92 (2025-12-11)
 * fix: sample org uids (08a1ee2)
 
