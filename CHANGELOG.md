@@ -1,6 +1,9 @@
 # VKDR Changelog
 
 
+## v0.1.94 (2025-12-22)
+* update devportal values for version 1.2.20+ (b6efbb1)
+
 ## v0.1.93 (2025-12-16)
 * feat: nodeport-base (1021d75)
 
