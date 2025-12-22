@@ -1,87 +1,13 @@
 #
 # setup minimo infra local (vkdr)
+# estes valores usam ainda a release "antiga" do chart (versão 1.0.14)
 #
 global:
   host: devportal.localhost
   protocol: http
   port: ':8000'
   dynamic:
-    plugins:
-      # VeeCode Homepage
-      - package: '@veecode-platform/plugin-veecode-homepage-dynamic@0.1.9'
-        disabled: false
-        integrity: sha512-MFv33GyxK+0/BqnAKPvZjC8Iw9V6fgFdUwcTGlFiSZElRM/4ncf9LVc2wo+aC5h0kO2svIuQeXVjP5q2jPlUhg==
-        pluginConfig:
-          dynamicPlugins:
-            frontend:
-              veecode-platform.plugin-veecode-homepage:
-                dynamicRoutes:
-                  - path: /
-                    importName: VeecodeHomepagePage
-                    config:
-                      props:
-                        width: 1500
-                        height: 800
-      # VeeCode GlobalHeader
-      - package: '@veecode-platform/plugin-veecode-global-header-dynamic@0.1.4'
-        disabled: false
-        integrity: sha512-ldP0qC8Jd8AIC8DRnEuT1oQq6ELUxlm90gRAaUl3TEVoenrs8Wwxyb8TqgTiZNO5akhcA8tBMHDAugUYS9+yMg==
-        pluginConfig:
-          dynamicPlugins:
-            frontend:
-              veecode-platform.plugin-veecode-global-header:
-                mountPoints:
-                  - mountPoint: application/header
-                    inportName: VeecodeGlobalHeader
-                    config:
-                      position: above-sidebar
-        # Cluster Explorer
-      - package: '@veecode-platform/backstage-plugin-cluster-explorer-dynamic@0.1.1'
-        disabled: false
-        integrity: sha512-AzQbtKUlbi3hpjynqFvyFn8gfbb6iaELUis5rgMjG7CyMCd6CxYYd1vgXMONJPXjdbfguP54A8rYSvvNCNvhdw==
-        pluginConfig:
-          dynamicPlugins:
-            frontend:
-              veecode-platform.backstage-plugin-cluster-explorer-dynamic:
-                dynamicRoutes:
-                  - path: /cluster-explorer
-                    importName: ClusterExplorerPage
-                    menuItem:
-                      icon: cluster
-                      text: Clusters
-                mountPoints:
-                  - mountPoint: entity.page.cluster-overview/cards
-                    importName: ClusterOverview
-                    config:
-                      layout:
-                        gridColumn: '1 / -1'
-                      if:
-                        anyOf:
-                          - isKind: Cluster
-                entityTabs:
-                  - path: /
-                    title: About #rewrite old overview to about
-                    #priority: -1 # remove original overview tab
-                    mountPoint: entity.page.overview
-                  - path: /overview
-                    title: Cluster Overview
-                    #priority: 10 #higher means goes first
-                    mountPoint: entity.page.cluster-overview
-      # Github Workflows
-      - package: '@veecode-platform/backstage-plugin-github-workflows-dynamic@0.1.0'
-        disabled: true
-      # Gitlab Pipelines
-      - package: '@veecode-platform/backstage-plugin-gitlab-pipelines-dynamic@0.1.0'
-        disabled: true
-      # Infracost
-      - package: '@veecode-platform/backstage-plugin-infracost-dynamic@0.1.0'
-        disabled: true
-      # Kubernetes GPT Analyzer
-      - package: '@veecode-platform/backstage-plugin-kubernetes-gpt-analyzer-dynamic@0.1.0'
-        disabled: true
-      # Zora OSS
-      - package: '@veecode-platform/backstage-plugin-zora-oss-dynamic@0.1.0'
-        disabled: true
+    plugins: []
 upstream:
   enabled: true
   fullnameOverride: veecode-devportal
@@ -92,129 +18,30 @@ upstream:
   backstage:
     image:
       repository: veecode/devportal
-      #tag: 1.0.16
+      tag: 1.2.20
+    # criar secret e profile no k8s
     extraEnvVarsSecrets:
-      - my-backstage-secrets
+      - backstage-secrets
+    extraEnvVars: []
+    command: null
+    args: null
+    containerSecurityContext:
+      readOnlyRootFilesystem: false
     podLabels:
       backstage.io/kubernetes-id: cluster-vkdr-local
+    extraVolumes:
+      - name: app-config
+        configMap:
+          name: veecode-devportal-app-config
+      - name: temp
+        emptyDir: {}
+    extraVolumeMounts:
+      - name: app-config
+        mountPath: /app/app-config.local.yaml
+        subPath: app-config.yaml
+      - name: temp
+        mountPath: /tmp
+    initContainers: []
     appConfig:
-      auth:
-        environment: "development"
-        session:
-          secret: "${BACKEND_AUTH_SECRET_KEY}"
-        providers:
-          guest:
-            userEntityRef: user:default/admin
-            ownershipEntityRefs: [group:default/admin]
-            dangerouslyAllowOutsideDevelopment: true
-          # github:
-          #   development:
-          #     clientId: ${GITHUB_CLIENT_ID}
-          #     clientSecret: ${GITHUB_CLIENT_SECRET}
-          #     signIn:
-          #       resolvers:
-          #         - resolver: usernameMatchingUserEntityName
-          #         - resolver: emailMatchingUserEntityProfileEmail
-          #         - resolver: emailLocalPartMatchingUserEntityName
-      permission:
-        enabled: false
       app:
-        #baseUrl: http://devportal.localhost
-        analytics:
-          ga4:
-            measurementId: 0000000
-            #measurementId: ${GA_ANALYTICS_ID}
-            identity: optional
-            testMode: false
-            debug: true
-      kubernetes:
-        serviceLocatorMethod:
-          type: multiTenant
-        clusterLocatorMethods:
-          - type: "catalog"
-      # kubernetes:
-      #   serviceLocatorMethod:
-      #     type: multiTenant
-      #   clusterLocatorMethods:
-      #     - type: "config"
-      #       clusters:
-      #         - name: cluster-vkdr-local
-      #           authProvider: serviceAccount
-      #           serviceAccountToken: 
-      #           skipMetricsLookup: false
-      #           skipTLSVerify: true
-      #           url: https://kubernetes.default.svc
-      backend:
-        #baseUrl: http://devportal.localhost
-        auth:
-          externalAccess:
-            - type: static
-              options:
-                token: ${BACKEND_AUTH_SECRET_KEY}
-                subject: secret
-        csp:
-          img-src: ["'self'","data:","https://raw.githubusercontent.com/","https://avatars.githubusercontent.com/","https://veecode-platform.github.io","https://platform.vee.codes","https://api.dicebear.com"]
-      scaffolder:
-        providers:
-          github:
-            - host: "github.com"
-              token: ${GITHUB_TOKEN}
-      enabledPlugins:
-        github: true
-        kubernetes: true
-      platform:
-        guest:
-          enabled: true
-      #   signInProviders:
-      #     - github
-      catalog:
-        providers:
-          # githubOrg:
-          #   id: providerId
-          #   githubUrl: https://github.com
-          #   orgs:
-          #     - "veecode-saas-tenants"
-          #   schedule:
-          #     frequency:
-          #       minutes: 20
-          #     timeout:
-          #       minutes: 3
-          github:
-            providerId:
-              organization: "veecode-platform"
-              catalogPath: "/catalog-info.yaml"
-              validateLocationsExist: true
-              filters:
-                branch: "main"
-                repository: "vkdr-catalog"
-              schedule:
-                frequency:
-                  minutes: 20
-                timeout:
-                  minutes: 3
-        locations:
-        #   - type: url
-        #     target: https://github.com/veecode-saas-tenants/tenants-catalog/blob/main/catalog-info.yaml
-      integrations:
-        github:
-          - host: "github.com"
-            token: ${GITHUB_TOKEN}
-            # apps:
-            #   - appId: ${GITHUB_APP_ID}
-            #     clientId: ${GITHUB_CLIENT_ID}
-            #     clientSecret: ${GITHUB_CLIENT_SECRET}
-            #     privateKey: |
-            #       ${GITHUB_PRIVATE_KEY}
-            #     webhookSecret: ${GITHUB_WEBHOOK_SECRET}
-      techdocs:
-        generator:
-          runIn: 'local'
-        builder: 'local'
-        publisher:
-          type: 'local'
-          local:
-            # (Optional). Set this to specify where the generated documentation is stored.
-            publishDirectory: /tmp/techdocs-publish
-      grafana:
-        domain: grafana.localhost
-        unifiedAlerting: true
+        title: "Devportal Platform (VKDR)"

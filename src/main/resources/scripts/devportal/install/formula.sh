@@ -122,7 +122,7 @@ installSampleApps() {
 # secrets usadas pelo backstage, chart veecode-devportal as monta como env vars
 createSecret() {
   debug "createSecret: creating secret"
-  $VKDR_KUBECTL create secret generic my-backstage-secrets \
+  $VKDR_KUBECTL create secret generic backstage-secrets \
     --from-literal=BACKEND_AUTH_SECRET_KEY=very_good_secret \
     --from-literal=GITHUB_TOKEN=${VKDR_ENV_DEVPORTAL_GITHUB_TOKEN} \
     --dry-run=client --save-config -o yaml | $VKDR_KUBECTL apply -n "$DEVPORTAL_NAMESPACE" -f -
