@@ -3,13 +3,19 @@
 VKDR_ENV_DEVPORTAL_DOMAIN=$1
 VKDR_ENV_DEVPORTAL_SECURE=$2
 VKDR_ENV_DEVPORTAL_GITHUB_TOKEN=$3
-#VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_ID=$4
-#VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_SECRET=$5
-VKDR_ENV_DEVPORTAL_INSTALL_SAMPLES=$4
-VKDR_ENV_DEVPORTAL_CATALOG_LOCATION=$5
-VKDR_ENV_DEVPORTAL_NPM_REGISTRY=$6
-VKDR_ENV_DEVPORTAL_MERGE_VALUES=$7
-#VKDR_ENV_DEVPORTAL_GRAFANA_TOKEN=$7
+VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_ID=$4
+VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_SECRET=$5
+VKDR_ENV_DEVPORTAL_GITHUB_AUTH_CLIENT_ID=$6
+VKDR_ENV_DEVPORTAL_GITHUB_AUTH_CLIENT_SECRET=$7
+VKDR_ENV_DEVPORTAL_GITHUB_APP_ID=$8
+VKDR_ENV_DEVPORTAL_GITHUB_ORG=$9
+VKDR_ENV_DEVPORTAL_GITHUB_PRIVATE_KEY_BASE64=${10}
+VKDR_ENV_DEVPORTAL_INSTALL_SAMPLES=${11}
+VKDR_ENV_DEVPORTAL_CATALOG_LOCATION=${12}
+VKDR_ENV_DEVPORTAL_NPM_REGISTRY=${13}
+VKDR_ENV_DEVPORTAL_MERGE_VALUES=${14}
+VKDR_ENV_DEVPORTAL_PROFILE=${15}
+VKDR_ENV_DEVPORTAL_LOAD_ENV=${16}
 
 source "$(dirname "$0")/../../.util/tools-versions.sh"
 source "$(dirname "$0")/../../.util/tools-paths.sh"
@@ -20,6 +26,7 @@ source "$(dirname "$0")/../../.util/docker-tools.sh"
 
 VKDR_DEVPORTAL_VALUES_SRC="$(dirname "$0")/../../.util/values/devportal-common.yaml"
 VKDR_DEVPORTAL_VALUES="/tmp/devportal.yaml"
+VKDR_DEVPORTAL_GITHUB_PRIVATE_KEY=""
 
 # port values override by detectClusterPorts
 VKDR_HTTP_PORT=8000
@@ -28,19 +35,73 @@ VKDR_HTTPS_PORT=8001
 # nao é vkdr, é platform
 DEVPORTAL_NAMESPACE=platform
 
+prepareGitHubEnv() {
+  # if auth client vars not provided, fallback to regular client vars
+  if [ -z "$VKDR_ENV_DEVPORTAL_GITHUB_AUTH_CLIENT_ID" ]; then
+    VKDR_ENV_DEVPORTAL_GITHUB_AUTH_CLIENT_ID="$VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_ID"
+    debug "prepareGitHubEnv: GITHUB_AUTH_CLIENT_ID not provided, using GITHUB_CLIENT_ID for auth"
+  fi
+  if [ -z "$VKDR_ENV_DEVPORTAL_GITHUB_AUTH_CLIENT_SECRET" ]; then
+    VKDR_ENV_DEVPORTAL_GITHUB_AUTH_CLIENT_SECRET="$VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_SECRET"
+    debug "prepareGitHubEnv: GITHUB_AUTH_CLIENT_SECRET not provided, using GITHUB_CLIENT_SECRET for auth"
+  fi
+  # read pk from base64 value
+  if [ -n "$VKDR_ENV_DEVPORTAL_GITHUB_PRIVATE_KEY_BASE64" ]; then
+    VKDR_DEVPORTAL_GITHUB_PRIVATE_KEY=$(echo "$VKDR_ENV_DEVPORTAL_GITHUB_PRIVATE_KEY_BASE64" | base64 --decode)
+    # check if private key starts with "-----BEGIN.*PRIVATE KEY-----"
+    if [[ ! "$VKDR_DEVPORTAL_GITHUB_PRIVATE_KEY" =~ ^-----BEGIN.*PRIVATE\ KEY----- ]]; then
+      error "prepareGitHubEnv: GITHUB_PRIVATE_KEY_BASE64 is not a valid private key"
+      return 1
+    fi
+  else
+    debug "prepareGitHubEnv: GITHUB_PRIVATE_KEY_BASE64 not provided, skipping..."
+  fi
+}
+
+prepareEnv() {
+  # prepare env vars
+  # load from environment variables if --load-env is true
+  if [[ "$VKDR_ENV_DEVPORTAL_LOAD_ENV" == "true" ]]; then
+    debug "prepareEnv: loading profile values from environment variables"
+    
+    # GitHub-related environment variables
+    [ -z "$VKDR_ENV_DEVPORTAL_GITHUB_TOKEN" ] && [ -n "$GITHUB_TOKEN" ] && VKDR_ENV_DEVPORTAL_GITHUB_TOKEN="$GITHUB_TOKEN"
+    [ -z "$VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_ID" ] && [ -n "$GITHUB_CLIENT_ID" ] && VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_ID="$GITHUB_CLIENT_ID"
+    [ -z "$VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_SECRET" ] && [ -n "$GITHUB_CLIENT_SECRET" ] && VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_SECRET="$GITHUB_CLIENT_SECRET"
+    [ -z "$VKDR_ENV_DEVPORTAL_GITHUB_AUTH_CLIENT_ID" ] && [ -n "$GITHUB_AUTH_CLIENT_ID" ] && VKDR_ENV_DEVPORTAL_GITHUB_AUTH_CLIENT_ID="$GITHUB_AUTH_CLIENT_ID"
+    [ -z "$VKDR_ENV_DEVPORTAL_GITHUB_AUTH_CLIENT_SECRET" ] && [ -n "$GITHUB_AUTH_CLIENT_SECRET" ] && VKDR_ENV_DEVPORTAL_GITHUB_AUTH_CLIENT_SECRET="$GITHUB_AUTH_CLIENT_SECRET"
+    [ -z "$VKDR_ENV_DEVPORTAL_GITHUB_APP_ID" ] && [ -n "$GITHUB_APP_ID" ] && VKDR_ENV_DEVPORTAL_GITHUB_APP_ID="$GITHUB_APP_ID"
+    [ -z "$VKDR_ENV_DEVPORTAL_GITHUB_ORG" ] && [ -n "$GITHUB_ORG" ] && VKDR_ENV_DEVPORTAL_GITHUB_ORG="$GITHUB_ORG"
+    [ -z "$VKDR_ENV_DEVPORTAL_GITHUB_PRIVATE_KEY_BASE64" ] && [ -n "$GITHUB_PRIVATE_KEY_BASE64" ] && VKDR_ENV_DEVPORTAL_GITHUB_PRIVATE_KEY_BASE64="$GITHUB_PRIVATE_KEY_BASE64"
+  fi
+  
+  if [[ "$VKDR_ENV_DEVPORTAL_PROFILE" == "github" ]]; then
+    prepareGitHubEnv
+  fi
+}
+
 startInfos() {
   boldInfo "DevPortal Install"
   bold "=============================="
   boldNotice "Domain: $VKDR_ENV_DEVPORTAL_DOMAIN"
   boldNotice "Secure: $VKDR_ENV_DEVPORTAL_SECURE"
-  boldNotice "Github Token: *****${VKDR_ENV_DEVPORTAL_GITHUB_TOKEN: -3}"
-#  boldNotice "Github Client ID: *****${VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_ID: -3}"
-#  boldNotice "Github Client Secret: *****${VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_SECRET: -3}"
+  boldNotice "Profile: $VKDR_ENV_DEVPORTAL_PROFILE"
+  if [[ "$VKDR_ENV_DEVPORTAL_PROFILE" == "github" || "$VKDR_ENV_DEVPORTAL_PROFILE" == "github-pat" ]]; then
+    boldNotice "Github Org: $VKDR_ENV_DEVPORTAL_GITHUB_ORG"
+    boldNotice "Github Token: *****${VKDR_ENV_DEVPORTAL_GITHUB_TOKEN: -3}"
+  fi
+  if [[ "$VKDR_ENV_DEVPORTAL_PROFILE" == "github" ]]; then
+    boldNotice "Github Client ID: *****${VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_ID: -3}"
+    boldNotice "Github Client Secret: *****${VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_SECRET: -3}"
+    boldNotice "Github Auth Client ID: *****${VKDR_ENV_DEVPORTAL_GITHUB_AUTH_CLIENT_ID: -3}"
+    boldNotice "Github Auth Client Secret: *****${VKDR_ENV_DEVPORTAL_GITHUB_AUTH_CLIENT_SECRET: -3}"
+    boldNotice "Github App ID: $VKDR_ENV_DEVPORTAL_GITHUB_APP_ID"
+    boldNotice "Github Private Key (base64): *****${VKDR_ENV_DEVPORTAL_GITHUB_PRIVATE_KEY_BASE64: -3}"
+  fi
   boldNotice "Install Sample apps: $VKDR_ENV_DEVPORTAL_INSTALL_SAMPLES"
   boldNotice "Catalog location: $VKDR_ENV_DEVPORTAL_CATALOG_LOCATION"
   boldNotice "NPM registry: $VKDR_ENV_DEVPORTAL_NPM_REGISTRY"
   boldNotice "Merge values file: $VKDR_ENV_DEVPORTAL_MERGE_VALUES"
-#  boldNotice "Grafana Cloud token: *****${VKDR_ENV_DEVPORTAL_GRAFANA_TOKEN: -5}"
   bold "=============================="
   boldNotice "Cluster LB HTTP port: $VKDR_HTTP_PORT"
   boldNotice "Cluster LB HTTPS port: $VKDR_HTTPS_PORT"
@@ -121,11 +182,60 @@ installSampleApps() {
 
 # secrets usadas pelo backstage, chart veecode-devportal as monta como env vars
 createSecret() {
-  debug "createSecret: creating secret"
-  $VKDR_KUBECTL create secret generic backstage-secrets \
-    --from-literal=BACKEND_AUTH_SECRET_KEY=very_good_secret \
-    --from-literal=GITHUB_TOKEN=${VKDR_ENV_DEVPORTAL_GITHUB_TOKEN} \
-    --dry-run=client --save-config -o yaml | $VKDR_KUBECTL apply -n "$DEVPORTAL_NAMESPACE" -f -
+  debug "createSecret: creating secret for profile '$VKDR_ENV_DEVPORTAL_PROFILE'"
+  
+  case "$VKDR_ENV_DEVPORTAL_PROFILE" in
+    github-pat)
+      debug "createSecret: creating secret for github-pat profile"
+      $VKDR_KUBECTL create secret generic backstage-secrets \
+        --from-literal=VEECODE_PROFILE=github-pat \
+        --from-literal=GITHUB_TOKEN=${VKDR_ENV_DEVPORTAL_GITHUB_TOKEN} \
+        --from-literal=GITHUB_ORG=${VKDR_ENV_DEVPORTAL_GITHUB_ORG} \
+        --dry-run=client --save-config -o yaml | $VKDR_KUBECTL apply -n "$DEVPORTAL_NAMESPACE" -f -
+      ;;
+    github)
+      debug "createSecret: creating secret for github profile"
+      # write private key to temp file for kubectl
+      local TEMP_PK_FILE="/tmp/github-pk-$$.pem"
+      echo "$VKDR_DEVPORTAL_GITHUB_PRIVATE_KEY" > "$TEMP_PK_FILE"
+      # ensure cleanup even if command fails
+      trap "rm -f '$TEMP_PK_FILE'" EXIT
+      
+      $VKDR_KUBECTL create secret generic backstage-secrets \
+        --from-literal=VEECODE_PROFILE=github \
+        --from-literal=GITHUB_TOKEN=${VKDR_ENV_DEVPORTAL_GITHUB_TOKEN} \
+        --from-literal=GITHUB_CLIENT_ID=${VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_ID} \
+        --from-literal=GITHUB_CLIENT_SECRET=${VKDR_ENV_DEVPORTAL_GITHUB_CLIENT_SECRET} \
+        --from-literal=GITHUB_AUTH_CLIENT_ID=${VKDR_ENV_DEVPORTAL_GITHUB_AUTH_CLIENT_ID} \
+        --from-literal=GITHUB_AUTH_CLIENT_SECRET=${VKDR_ENV_DEVPORTAL_GITHUB_AUTH_CLIENT_SECRET} \
+        --from-literal=GITHUB_APP_ID=${VKDR_ENV_DEVPORTAL_GITHUB_APP_ID} \
+        --from-literal=GITHUB_ORG=${VKDR_ENV_DEVPORTAL_GITHUB_ORG} \
+        --from-file=GITHUB_PRIVATE_KEY="$TEMP_PK_FILE" \
+        --dry-run=client --save-config -o yaml | $VKDR_KUBECTL apply -n "$DEVPORTAL_NAMESPACE" -f -
+      
+      # cleanup temp file
+      rm -f "$TEMP_PK_FILE"
+      trap - EXIT
+      ;;
+    gitlab)
+      error "Profile 'gitlab' is not implemented yet"
+      return 1
+      ;;
+    azure)
+      error "Profile 'azure' is not implemented yet"
+      return 1
+      ;;
+    ldap)
+      error "Profile 'ldap' is not implemented yet"
+      return 1
+      ;;
+    *)
+      debug "createSecret: creating secret for default/no profile"
+      $VKDR_KUBECTL create secret generic backstage-secrets \
+        --from-literal=VEECODE_PROFILE=local \
+        --dry-run=client --save-config -o yaml | $VKDR_KUBECTL apply -n "$DEVPORTAL_NAMESPACE" -f -
+      ;;
+  esac
 }
 
 createDevPortalNamespace() {
@@ -182,6 +292,7 @@ setRegistry() {
 
 runFormula() {
   detectClusterPorts
+  prepareEnv
   startInfos
   checkDockerEngine
   settingDevPortal
