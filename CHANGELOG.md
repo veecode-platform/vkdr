@@ -1,6 +1,9 @@
 # VKDR Changelog
 
 
+## v0.1.95 (2025-12-22)
+* fix: github profile, add: --load-env option (a0db72d)
+
 ## v0.1.94 (2025-12-22)
 * update devportal values for version 1.2.20+ (b6efbb1)
 
