@@ -83,11 +83,11 @@ teardown_file() {
 # ============================================================================
 
 @test "nginx install: as default ingress controller" {
-  # Clean previous
+  # Clean previous installation
   helm_delete_if_exists "default" "ingress-nginx" || true
   sleep 5
 
-  run vkdr nginx install --default
+  run vkdr nginx install --default-ic
   assert_success
 
   run wait_for_deployment "default" "ingress-nginx-controller" 180
