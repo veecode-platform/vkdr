@@ -6,7 +6,8 @@ Também disponível em: 🇺🇸 [English](README.md)
 - [Instalação](#instalação)
 - [Executar no shell via Maven](#executar-no-shell-via-maven)
 - [Build nativo](#build-nativo)
-- [Pasta de scripts](#pasta-de-scripts)
+- [Pasta de fórmulas](#pasta-de-fórmulas)
+- [Executando testes](#executando-testes)
 - [Publicar Releases](#publicar-releases)
 - [Instalando o Java](#instalando-o-java)
 - [Atualizando dependências](#atualizando-dependências)
@@ -19,13 +20,13 @@ Esta é uma CLI para acelerar o desenvolvimento local usando Kubernetes sem maio
 Este projeto usa:
 
 - Spring Boot 3.1.9
-- Picoli 4.7.6
+- Picocli 4.7.6
 - GraalVM Native Support
-- Shell scripts
+- Shell scripts (fórmulas)
 
-Cada uma das ações da CLI é implementada por um script shell que é empacotado dentro do binário final. Escolhemos esta estratégia para iterar mais rapidamente em cada nova fórmula.
+Cada uma das ações da CLI é implementada por um script shell (fórmula) que é empacotado dentro do binário final. Escolhemos esta estratégia para iterar mais rapidamente em cada nova fórmula.
 
-Exemplo: o comando `infra start` é implementado pelo script `./infra/start/formula.sh` que reside na pasta `src/main/resources/scripts`. Este script é empacotado no binário final e é executado quando o comando `vkdr infra start` é chamado.
+Exemplo: o comando `infra start` é implementado pelo script `./infra/start/formula.sh` que reside na pasta `src/main/resources/formulas`. Este script é empacotado no binário final e é executado quando o comando `vkdr infra start` é chamado.
 
 ## Instalação
 
@@ -57,14 +58,32 @@ Para executar o binário nativo gerado:
 ./target/vkdr
 ```
 
-## Pasta de scripts
+## Pasta de fórmulas
 
-Durante o desenvolvimento queremos usar os scripts diretamente na pasta do projeto (e não os que residem em `~/.vkdr/scripts`). A variável `VKDR_SCRIPT_HOME` pode apontar para a pasta `src/main/resources/scripts` deste projeto, o que fará o `vkdr` ignorar o local padrão.
+Durante o desenvolvimento queremos usar as fórmulas diretamente na pasta do projeto (e não as que residem em `~/.vkdr/formulas`). A variável `VKDR_FORMULA_HOME` pode apontar para a pasta `src/main/resources/formulas` deste projeto, o que fará o `vkdr` ignorar o local padrão.
 
-Assim é possível testar mudanças nos scripts sem precisar fazer um build binário. O comando abaixo equivale ao `vkdr kong install -h`:
+Assim é possível testar mudanças nas fórmulas sem precisar fazer um build binário. O comando abaixo equivale ao `vkdr kong install -h`:
 
 ```sh
+export VKDR_FORMULA_HOME=$PWD/src/main/resources/formulas
 mvn exec:java -Dexec.mainClass=codes.vee.vkdr.VkdrApplication -Dexec.args="kong install -h"
+```
+
+## Executando testes
+
+Os testes de fórmulas utilizam BATS (Bash Automated Testing System):
+
+```sh
+# Configurar BATS (apenas na primeira vez)
+make setup-bats
+
+# Executar todos os testes (requer cluster ativo)
+make test
+
+# Executar testes de fórmulas específicas
+make test-whoami
+make test-kong
+make test-postgres
 ```
 
 ## Publicar Releases
@@ -121,7 +140,7 @@ mvn versions:display-plugin-updates
 
 ## Notas sobre o Maven
 
-Warnings de unsafe memory access podem ser suspendidos por enquanto com:
+Warnings de unsafe memory access podem ser suprimidos por enquanto com:
 
 ```shell
 export MAVEN_OPTS="--enable-native-access=ALL-UNNAMED --sun-misc-unsafe-memory-access=allow"

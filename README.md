@@ -6,7 +6,8 @@ Also available in: 🇧🇷 [Português](README-pt.md)
 - [Installation](#installation)
 - [Run in the shell via Maven](#run-in-the-shell-via-maven)
 - [Native build](#native-build)
-- [Scripts folder](#scripts-folder)
+- [Formulas folder](#formulas-folder)
+- [Running tests](#running-tests)
 - [Publish Releases](#publish-releases)
 - [Installing Java](#installing-java)
 - [Updating dependencies](#updating-dependencies)
@@ -19,13 +20,13 @@ This is a CLI to accelerate local development using Kubernetes without unnecessa
 This project uses:
 
 - Spring Boot 3.1.9
-- Picoli 4.7.6
+- Picocli 4.7.6
 - GraalVM Native Support
-- Shell scripts
+- Shell scripts (formulas)
 
-Each CLI action is implemented by a shell script that is packaged inside the final binary. We chose this strategy to iterate faster on each new formula.
+Each CLI action is implemented by a shell script (formula) that is packaged inside the final binary. We chose this strategy to iterate faster on each new formula.
 
-Example: the `infra start` command is implemented by the `./infra/start/formula.sh` script that lives in the `src/main/resources/scripts` folder. This script is packaged in the final binary and executed when `vkdr infra start` is invoked.
+Example: the `infra start` command is implemented by the `./infra/start/formula.sh` script that lives in the `src/main/resources/formulas` folder. This script is packaged in the final binary and executed when `vkdr infra start` is invoked.
 
 ## Installation
 
@@ -57,14 +58,32 @@ To run the generated native binary:
 ./target/vkdr
 ```
 
-## Scripts folder
+## Formulas folder
 
-During development we want to use the scripts directly from the project folder (not the ones under `~/.vkdr/scripts`). The `VKDR_SCRIPT_HOME` variable can point to this project's `src/main/resources/scripts` folder, which will make `vkdr` ignore the default location.
+During development we want to use the formulas directly from the project folder (not the ones under `~/.vkdr/formulas`). The `VKDR_FORMULA_HOME` variable can point to this project's `src/main/resources/formulas` folder, which will make `vkdr` ignore the default location.
 
-This allows you to test script changes without building a new binary. The command below is equivalent to `vkdr kong install -h`:
+This allows you to test formula changes without building a new binary. The command below is equivalent to `vkdr kong install -h`:
 
 ```sh
+export VKDR_FORMULA_HOME=$PWD/src/main/resources/formulas
 mvn exec:java -Dexec.mainClass=codes.vee.vkdr.VkdrApplication -Dexec.args="kong install -h"
+```
+
+## Running tests
+
+Formula tests use BATS (Bash Automated Testing System):
+
+```sh
+# Setup BATS (first time only)
+make setup-bats
+
+# Run all tests (requires running cluster)
+make test
+
+# Run specific formula tests
+make test-whoami
+make test-kong
+make test-postgres
 ```
 
 ## Publish Releases
