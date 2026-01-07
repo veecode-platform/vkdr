@@ -8,6 +8,7 @@ import picocli.CommandLine.Command;
 @Command(name = "eso", mixinStandardHelpOptions = true, exitCodeOnExecutionException = ExitCodes.ESO_BASE,
         description = "manage External Secrets Operator",
         subcommands = {
+            VkdrEsoExplainCommand.class,
             VkdrEsoInstallCommand.class,
             VkdrEsoRemoveCommand.class
         })

@@ -8,6 +8,7 @@ import picocli.CommandLine;
 @CommandLine.Command(name = "keycloak", mixinStandardHelpOptions = true, exitCodeOnExecutionException = ExitCodes.KEYCLOAK_BASE,
         description = "manage Keycloak",
         subcommands = {
+            VkdrKeycloakExplainCommand.class,
             VkdrKeycloakExportCommand.class,
             VkdrKeycloakImportCommand.class,
             VkdrKeycloakInstallCommand.class,

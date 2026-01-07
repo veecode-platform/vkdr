@@ -13,6 +13,7 @@ public final class ExitCodes {
     public static final int INFRA_EXPOSE = 15;
     public static final int INFRA_CREATETOKEN = 16;
     public static final int INFRA_GETCA = 17;
+    public static final int INFRA_EXPLAIN = 18;
     public static final int INIT = 9;
 
     // Kong related exit codes (20-29)
@@ -25,12 +26,14 @@ public final class ExitCodes {
     public static final int NGINX_BASE = 30;
     public static final int NGINX_INSTALL = 31;
     public static final int NGINX_REMOVE = 32;
+    public static final int NGINX_EXPLAIN = 33;
 
     // Keycloak related exit codes (40-49)
     public static final int KEYCLOAK_BASE = 40;
     public static final int KEYCLOAK_INSTALL = 41;
     public static final int KEYCLOAK_REMOVE = 42;
     public static final int KEYCLOAK_IMPORT_EXPORT = 43;
+    public static final int KEYCLOAK_EXPLAIN = 44;
 
     // Postgres related exit codes (50-59)
     public static final int POSTGRES_BASE = 50;
@@ -54,6 +57,7 @@ public final class ExitCodes {
     public static final int WHOAMI_BASE = 90;
     public static final int WHOAMI_INSTALL = 91;
     public static final int WHOAMI_REMOVE = 92;
+    public static final int WHOAMI_EXPLAIN = 93;
 
     // Vault related exit codes (100-109)
     public static final int VAULT_BASE = 100;
@@ -67,13 +71,15 @@ public final class ExitCodes {
     public static final int ESO_BASE = 110;
     public static final int ESO_INSTALL = 111;
     public static final int ESO_REMOVE = 112;
+    public static final int ESO_EXPLAIN = 113;
 
     // Grafana Cloud related exit codes (130-139)
     public static final int GRAFANA_CLOUD_BASE = 130;
     public static final int GRAFANA_CLOUD_INSTALL = 131;
     public static final int GRAFANA_CLOUD_REMOVE = 132;
     public static final int GRAFANA_CLOUD_CLEAN = 133;
-    
+    public static final int GRAFANA_CLOUD_EXPLAIN = 134;
+
     // Mirror related exit codes (140-149)
     public static final int MIRROR_BASE = 140;
     public static final int MIRROR_LIST = 141;
@@ -89,8 +95,9 @@ public final class ExitCodes {
 
     // OPENLDAP related exit codes (160-169)
     public static final int OPENLDAP_BASE = 160;
-    public static final int OPENLDAP_REMOVE = 171;
     public static final int OPENLDAP_INSTALL = 161;
+    public static final int OPENLDAP_EXPLAIN = 162;
+    public static final int OPENLDAP_REMOVE = 163;
 
     // ADD_HERE
 }

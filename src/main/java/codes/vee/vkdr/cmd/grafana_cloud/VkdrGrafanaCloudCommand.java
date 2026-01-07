@@ -8,6 +8,7 @@ import picocli.CommandLine;
 @CommandLine.Command(name = "grafana-cloud", mixinStandardHelpOptions = true, exitCodeOnExecutionException = ExitCodes.GRAFANA_CLOUD_BASE,
         description = "manage Grafana Cloud integration (BROKEN, do not use yet)",
         subcommands = {
+            VkdrGrafanaCloudExplainCommand.class,
             VkdrGrafanaCloudInstallCommand.class,
             VkdrGrafanaCloudRemoveCommand.class
         })

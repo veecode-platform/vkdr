@@ -8,6 +8,7 @@ import picocli.CommandLine;
 @CommandLine.Command(name = "nginx", mixinStandardHelpOptions = true, exitCodeOnExecutionException = ExitCodes.NGINX_BASE,
         description = "manage nginx ingress controller",
         subcommands = {
+            VkdrNginxExplainCommand.class,
             VkdrNginxInstallCommand.class,
             VkdrNginxRemoveCommand.class
         })

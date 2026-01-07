@@ -8,6 +8,7 @@ import picocli.CommandLine.Command;
 @Command(name = "infra", mixinStandardHelpOptions = true, exitCodeOnExecutionException = ExitCodes.INFRA_BASE,
         description = "manage a local vkdr infra (k3d-based cluster)",
         subcommands = {
+            VkdrInfraExplainCommand.class,
             VkdrInfraDownCommand.class,
             VkdrInfraExposeCommand.class,
             VkdrInfraStartCommand.class,

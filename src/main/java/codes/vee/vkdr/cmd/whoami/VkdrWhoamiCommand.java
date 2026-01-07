@@ -9,6 +9,7 @@ import picocli.CommandLine;
         exitCodeOnExecutionException = ExitCodes.WHOAMI_BASE,
         description = "manage whoami service",
         subcommands = {
+            VkdrWhoamiExplainCommand.class,
             VkdrWhoamiInstallCommand.class,
             VkdrWhoamiRemoveCommand.class
         })

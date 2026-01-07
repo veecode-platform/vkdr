@@ -9,9 +9,9 @@ import picocli.CommandLine;
         exitCodeOnExecutionException = ExitCodes.OPENLDAP_BASE,
         description = "manage openldap service",
         subcommands = {
-            // ADD_HERE
-            VkdrOpenldapRemoveCommand.class,
-            VkdrOpenldapInstallCommand.class
+            VkdrOpenldapExplainCommand.class,
+            VkdrOpenldapInstallCommand.class,
+            VkdrOpenldapRemoveCommand.class
         })
 public class VkdrOpenldapCommand {
 }
