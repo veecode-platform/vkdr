@@ -4,7 +4,6 @@ import codes.vee.vkdr.cmd.common.SilentMixin;
 import codes.vee.vkdr.cmd.devportal.VkdrDevPortalCommand;
 import codes.vee.vkdr.cmd.keycloak.VkdrKeycloakCommand;
 import codes.vee.vkdr.cmd.kong.VkdrKongCommand;
-import codes.vee.vkdr.cmd.minio.VkdrMinioCommand;
 import codes.vee.vkdr.cmd.nginx.VkdrNginxCommand;
 import codes.vee.vkdr.cmd.postgres.VkdrPostgresCommand;
 import codes.vee.vkdr.cmd.whoami.VkdrWhoamiCommand;
@@ -43,7 +42,6 @@ import picocli.CommandLine.Mixin;
                 VkdrWhoamiCommand.class,
                 VkdrVaultCommand.class,
                 VkdrEsoCommand.class,
-                VkdrMinioCommand.class,
                 VkdrGrafanaCloudCommand.class,
                 VkdrMirrorCommand.class,
                 VkdrTraefikCommand.class,

@@ -16,7 +16,7 @@ BATS_BIN             := $(BATS_LIBS_DIR)/bats-core/bin/bats
 .PHONY: release bump generate-release-notes command update-tools-versions \
         setup-bats check-cluster test test-formula test-binary test-verbose test-debug clean-bats \
         test-whoami test-kong test-infra test-infra-lifecycle test-postgres test-nginx test-traefik \
-        test-keycloak test-vault test-eso test-minio test-grafana-cloud \
+        test-keycloak test-vault test-eso test-grafana-cloud \
         test-openldap test-devportal test-mirror
 
 # Default target
@@ -178,11 +178,6 @@ test-vault: setup-bats check-cluster
 test-eso: setup-bats check-cluster
 	@echo "Running eso tests in $(or $(VKDR_TEST_MODE),dev) mode..."
 	@$(BATS_BIN) --tap src/test/bats/formulas/eso/
-
-# Shortcut for minio tests
-test-minio: setup-bats check-cluster
-	@echo "Running minio tests in $(or $(VKDR_TEST_MODE),dev) mode..."
-	@$(BATS_BIN) --tap src/test/bats/formulas/minio/
 
 # Shortcut for grafana-cloud tests
 test-grafana-cloud: setup-bats check-cluster

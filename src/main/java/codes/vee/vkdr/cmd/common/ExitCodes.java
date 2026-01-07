@@ -68,11 +68,6 @@ public final class ExitCodes {
     public static final int ESO_INSTALL = 111;
     public static final int ESO_REMOVE = 112;
 
-    // Minio related exit codes (120-129)
-    public static final int MINIO_BASE = 120;
-    public static final int MINIO_INSTALL = 121;
-    public static final int MINIO_REMOVE = 122;
-
     // Grafana Cloud related exit codes (130-139)
     public static final int GRAFANA_CLOUD_BASE = 130;
     public static final int GRAFANA_CLOUD_INSTALL = 131;
