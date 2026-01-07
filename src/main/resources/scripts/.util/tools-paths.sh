@@ -1,9 +1,0 @@
-VKDR_HOME=~/.vkdr
-VKDR_ARKADE=$VKDR_HOME/bin/arkade
-VKDR_K3D=$VKDR_HOME/bin/k3d
-VKDR_HELM=$VKDR_HOME/bin/helm
-VKDR_KUBECTL=$VKDR_HOME/bin/kubectl
-VKDR_YQ=$VKDR_HOME/bin/yq
-VKDR_JQ=$VKDR_HOME/bin/jq
-VKDR_GLOW=$VKDR_HOME/bin/glow
-VKDR_VAULT=$VKDR_HOME/bin/vault

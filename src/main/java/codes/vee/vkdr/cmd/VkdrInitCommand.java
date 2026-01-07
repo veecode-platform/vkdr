@@ -22,12 +22,12 @@ public class VkdrInitCommand implements Callable<Integer> {
     @Override
     public Integer call() throws Exception {
         logger.debug("'init' was called...");
-        String envHomeDir = System.getenv("VKDR_SCRIPT_HOME");
+        String envHomeDir = System.getenv("VKDR_FORMULA_HOME");
         if (envHomeDir == null || envHomeDir.isEmpty()) {
-            // unpacks scripts
+            // unpacks formulas
             ScriptsExtractor.unpackScripts();
         } else {
-            logger.info("Environment variable VKDR_SCRIPT_HOME is set to: " + envHomeDir + ", skipping unpackScripts() call.");
+            logger.info("Environment variable VKDR_FORMULA_HOME is set to: " + envHomeDir + ", skipping unpackScripts() call.");
         }
         // runs init script with force flag if specified
         if (force) {
