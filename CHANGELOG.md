@@ -1,6 +1,11 @@
 # VKDR Changelog
 
 
+## v2.0.2 (2026-01-07)
+* add: top-level explain command and comprehensive docs (97c52cc)
+* add: explain command to all formulas (48b065c)
+* remove: minio command - no longer a useable tool (92eba25)
+
 ## v2.0.1 (2026-01-07)
 * fix: correct log.sh path in generate-release-notes.sh (d34e59c)
 * chore: bump version to 2.0.1-SNAPSHOT for V2 release (eac8561)
