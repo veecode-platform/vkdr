@@ -1,6 +1,25 @@
 # VKDR Changelog
 
 
+## v2.0.1 (2026-01-07)
+* fix: correct log.sh path in generate-release-notes.sh (d34e59c)
+* chore: bump version to 2.0.1-SNAPSHOT for V2 release (eac8561)
+* chore: add update-tools-versions target and fix Makefile paths (81a9648)
+* fix: update generate-tools-versions.sh and document in READMEs (a367254)
+* docs: update READMEs for V2 formulas structure (8185c00)
+* refactor(v2): remove legacy scripts/ directory, use formulas/ only (061241a)
+* fix(tests): correct CLI flag names in BATS tests (f350c56)
+* fix(tests): correct nginx install flag --default-ic (15cd793)
+* fix(postgres): dropdb now actually drops database from PostgreSQL (49be41d)
+* fix(tests): improve postgres tests for operator reconciliation (230a2b3)
+* fix(tests): improve postgres test robustness (cfada1c)
+* feat(v2): add infra lifecycle tests (up/down/start/stop) (b006ec2)
+* feat(v2): add BATS tests for all formulas (e3da290)
+* feat(v2): migrate all formulas to new structure (e3ee213)
+* feat(v2): migrate kong formula to new structure (57efcc8)
+* feat(v2): reorganize project structure with formulas/ and BATS testing (fe19506)
+* add: CLAUDE.md for Claude Code guidance (b0a5f1e)
+
 ## v0.1.95 (2025-12-22)
 * fix: github profile, add: --load-env option (a0db72d)
 
