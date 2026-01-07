@@ -10,6 +10,7 @@ Também disponível em: 🇺🇸 [English](README.md)
 - [Executando testes](#executando-testes)
 - [Publicar Releases](#publicar-releases)
 - [Instalando o Java](#instalando-o-java)
+- [Atualizando versões das ferramentas](#atualizando-versões-das-ferramentas)
 - [Atualizando dependências](#atualizando-dependências)
 - [Notas sobre o Maven](#notas-sobre-o-maven)
 
@@ -123,6 +124,16 @@ a JDK localmente. Para este projeto utilizamos a GraalVM 21:
 ```shell
 sdk install java 24.0.2-graalce
 ```
+
+## Atualizando versões das ferramentas
+
+O VKDR baixa e gerencia várias ferramentas CLI (kubectl, helm, k3d, etc.). Para atualizar as versões fixadas para os releases mais recentes:
+
+```sh
+./src/main/resources/formulas/_shared/bin/generate-tools-versions.sh
+```
+
+Este script busca as versões mais recentes nos releases do GitHub e atualiza o arquivo `_shared/lib/tools-versions.sh`. Execute periodicamente para manter as versões das ferramentas atualizadas.
 
 ## Atualizando dependências
 

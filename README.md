@@ -10,6 +10,7 @@ Also available in: 🇧🇷 [Português](README-pt.md)
 - [Running tests](#running-tests)
 - [Publish Releases](#publish-releases)
 - [Installing Java](#installing-java)
+- [Updating tool versions](#updating-tool-versions)
 - [Updating dependencies](#updating-dependencies)
 - [Notes about Maven](#notes-about-maven)
 
@@ -123,6 +124,16 @@ the JDK locally. For this project we use GraalVM 21:
 ```shell
 sdk install java 24.0.2-graalce
 ```
+
+## Updating tool versions
+
+VKDR downloads and manages several CLI tools (kubectl, helm, k3d, etc.). To update the pinned versions to the latest releases:
+
+```sh
+./src/main/resources/formulas/_shared/bin/generate-tools-versions.sh
+```
+
+This fetches the latest versions from GitHub releases and updates `_shared/lib/tools-versions.sh`. Run this periodically to keep tool versions current.
 
 ## Updating dependencies
 
