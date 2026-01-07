@@ -1,0 +1,47 @@
+#
+# setup minimo infra local (vkdr)
+# estes valores usam ainda a release "antiga" do chart (versão 1.0.14)
+#
+global:
+  host: devportal.localhost
+  protocol: http
+  port: ':8000'
+  dynamic:
+    plugins: []
+upstream:
+  enabled: true
+  fullnameOverride: veecode-devportal
+  commonLabels:
+    backstage.io/kubernetes-id: cluster-vkdr-local
+  ingress:
+    enabled: true
+  backstage:
+    image:
+      repository: veecode/devportal
+      tag: 1.2.20
+    # criar secret e profile no k8s
+    extraEnvVarsSecrets:
+      - backstage-secrets
+    extraEnvVars: []
+    command: null
+    args: null
+    containerSecurityContext:
+      readOnlyRootFilesystem: false
+    podLabels:
+      backstage.io/kubernetes-id: cluster-vkdr-local
+    extraVolumes:
+      - name: app-config
+        configMap:
+          name: veecode-devportal-app-config
+      - name: temp
+        emptyDir: {}
+    extraVolumeMounts:
+      - name: app-config
+        mountPath: /app/app-config.local.yaml
+        subPath: app-config.yaml
+      - name: temp
+        mountPath: /tmp
+    initContainers: []
+    appConfig:
+      app:
+        title: "Devportal Platform (VKDR)"

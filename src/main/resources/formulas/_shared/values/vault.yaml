@@ -1,0 +1,14 @@
+
+ui:
+  enabled: true
+server:
+  dev:
+    enabled: false
+  ingress:
+    enabled: true
+    hosts:
+      - host: vault.localhost
+    tls:
+      - secretName: vault-tls
+        hosts:
+          - vault.localhost

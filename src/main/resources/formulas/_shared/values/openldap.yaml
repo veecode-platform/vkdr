@@ -1,0 +1,53 @@
+env:
+  LDAP_ENABLE_TLS: "no"
+
+customLdifFiles:
+  00-base.ldif: |-
+    dn: dc=vee,dc=codes
+    objectClass: top
+    objectClass: dcObject
+    objectClass: organization
+    o: Vee Codes
+    dc: vee
+
+    dn: ou=People,dc=vee,dc=codes
+    objectClass: top
+    objectClass: organizationalUnit
+    ou: People
+
+    dn: ou=Groups,dc=vee,dc=codes
+    objectClass: top
+    objectClass: organizationalUnit
+    ou: Groups
+
+  10-users.ldif: |-
+    dn: uid=admin,ou=People,dc=vee,dc=codes
+    objectClass: inetOrgPerson
+    objectClass: organizationalPerson
+    objectClass: person
+    cn: Admin Superuser
+    sn: Superuser
+    uid: admin
+    mail: admin@vee.codes
+    userPassword: {SSHA}Y885MglcAFBmOuAklK+RCh3goTq1AzCK
+
+    dn: uid=young,ou=People,dc=vee,dc=codes
+    objectClass: inetOrgPerson
+    objectClass: person
+    cn: Young Trainee
+    sn: Trainee
+    uid: young
+    mail: young@vee.codes
+    userPassword: {SSHA}Y885MglcAFBmOuAklK+RCh3goTq1AzCK
+
+  20-groups.ldif: |-
+    dn: cn=developers,ou=Groups,dc=vee,dc=codes
+    objectClass: groupOfNames
+    cn: developers
+    member: uid=admin,ou=People,dc=vee,dc=codes
+    member: uid=young,ou=People,dc=vee,dc=codes
+
+    dn: cn=admins,ou=Groups,dc=vee,dc=codes
+    objectClass: groupOfNames
+    cn: admins
+    member: uid=admin,ou=People,dc=vee,dc=codes
