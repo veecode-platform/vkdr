@@ -40,3 +40,5 @@ pom.xml.versionsBackup
 
 license.json
 
+### BATS testing ###
+.bats-libs/

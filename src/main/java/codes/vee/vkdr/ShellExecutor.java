@@ -1,10 +1,8 @@
 package codes.vee.vkdr;
 /*
  * ShellExecutor.java
- * Executa shell scripts associado ao Command (inferido pelo path)
- * output coletado e retornado via console
- * estudar se devemos separar err e out
- * https://github.com/hotblac/process_output_stream/blob/main/src/HandledBothStreams.java
+ * Executes shell scripts associated with Commands (inferred by path)
+ * V2: Uses formulas/ directory structure and VKDR_FORMULA_HOME env var
  */
 import java.io.BufferedReader;
 import java.io.File;
@@ -19,6 +17,30 @@ public class ShellExecutor {
     private static final Logger logger = LoggerFactory.getLogger(ShellExecutor.class);
 
     /**
+     * Resolves the formula script path.
+     * V2: Uses VKDR_FORMULA_HOME env var and ~/.vkdr/formulas/ directory.
+     * @param cmdName The command name (e.g., "whoami/install")
+     * @return The resolved script path, or null if invalid
+     */
+    private static String resolveFormulaPath(String cmdName) {
+        String homeDir = System.getProperty("user.home");
+        // VKDR_FORMULA_HOME = project "formulas" directory during dev
+        String envHomeDir = System.getenv("VKDR_FORMULA_HOME");
+        boolean hasEnvHomeDir = envHomeDir != null && !envHomeDir.isEmpty();
+        Path safeBaseDir = hasEnvHomeDir ? Paths.get(envHomeDir) : Paths.get(homeDir).normalize().toAbsolutePath();
+        String formulaHomeDir = hasEnvHomeDir ? envHomeDir : homeDir + File.separator + ".vkdr/formulas";
+        String formulaFileName = formulaHomeDir + File.separator + cmdName + File.separator + "formula.sh";
+        Path resolvedPath = safeBaseDir.resolve(formulaFileName).normalize().toAbsolutePath();
+
+        if (!resolvedPath.startsWith(safeBaseDir)) {
+            logger.error("Invalid file access attempt for " + resolvedPath + "!");
+            return null;
+        }
+        logger.debug("Safe formula path: " + resolvedPath);
+        return resolvedPath.toString();
+    }
+
+    /**
      * Executes a shell script and prints its output to the console.
      * This is the default behavior of executeCommand, capturing the output and printing it to the console.
      * @param args The arguments to pass to the script.
@@ -28,23 +50,11 @@ public class ShellExecutor {
      */
     public static int executeCommand(String... args) throws IOException, InterruptedException {
         String cmdName = args[0];
-        String homeDir = System.getProperty("user.home");
-        // VKDR_SCRIPT_HOME = project "scripts" directory during dev
-        String envHomeDir = System.getenv("VKDR_SCRIPT_HOME");
-        boolean hasEnvHomeDir = envHomeDir != null && !envHomeDir.isEmpty();
-        Path safeBaseDir = hasEnvHomeDir ? Paths.get(envHomeDir) : Paths.get(homeDir).normalize().toAbsolutePath();
-        String scriptHomeDir = hasEnvHomeDir ? envHomeDir : homeDir + File.separator + ".vkdr/scripts";
-        String scriptFileName = scriptHomeDir + File.separator + cmdName + File.separator + "formula.sh";
-        Path resolvedPath = safeBaseDir.resolve(scriptFileName).normalize().toAbsolutePath();
-        if (!resolvedPath.startsWith(safeBaseDir)) {
-            logger.error("Invalid file access attempt for " + resolvedPath + "!");
+        String formulaPath = resolveFormulaPath(cmdName);
+        if (formulaPath == null) {
             return -1;
-        } else {
-            // Proceed with file operations, as the path is deemed safe
-            logger.debug("Safe file path: " + resolvedPath);
-            args[0] = resolvedPath.toString();
-            // You can now safely use resolvedPath for file operations
         }
+        args[0] = formulaPath;
 
         ProcessBuilder processBuilder = new ProcessBuilder(args).redirectErrorStream(true);
         // Set VKDR_SILENT for scripts if silent mode is enabled
@@ -61,16 +71,16 @@ public class ShellExecutor {
         // Wait for the process to complete
         int exitVal = process.waitFor();
         if (exitVal == 0) {
-            logger.info("Script executed successfully.");
+            logger.info("Formula executed successfully.");
         } else {
-            logger.error("Script execution failed.");
+            logger.error("Formula execution failed.");
         }
         return exitVal;
     }
 
     /**
-     * Executes a shell script and prints its output to the console. 
-     * This is different from executeCommand in that it does not wait for the script to finish (returns immediately).
+     * Executes a shell script with inherited IO (for interactive commands like explain).
+     * This is different from executeCommand in that it inherits IO streams directly.
      * @param args The arguments to pass to the script.
      * @return The exit value of the script.
      * @throws IOException If an I/O error occurs.
@@ -78,29 +88,18 @@ public class ShellExecutor {
      */
     public static int explainCommand(String... args) throws IOException, InterruptedException {
         String cmdName = args[0];
-        String homeDir = System.getProperty("user.home");
-        // VKDR_SCRIPT_HOME = project "scripts" directory during dev
-        String envHomeDir = System.getenv("VKDR_SCRIPT_HOME");
-        boolean hasEnvHomeDir = envHomeDir != null && !envHomeDir.isEmpty();
-        Path safeBaseDir = hasEnvHomeDir ? Paths.get(envHomeDir) : Paths.get(homeDir).normalize().toAbsolutePath();
-        String scriptHomeDir = hasEnvHomeDir ? envHomeDir : homeDir + File.separator + ".vkdr/scripts";
-        String scriptFileName = scriptHomeDir + File.separator + cmdName + File.separator + "formula.sh";
-        Path resolvedPath = safeBaseDir.resolve(scriptFileName).normalize().toAbsolutePath();
-        if (!resolvedPath.startsWith(safeBaseDir)) {
-            logger.error("Invalid file access attempt for " + resolvedPath + "!");
+        String formulaPath = resolveFormulaPath(cmdName);
+        if (formulaPath == null) {
             return -1;
-        } else {
-            // Proceed with file operations, as the path is deemed safe
-            logger.debug("Safe file path: " + resolvedPath);
-            args[0] = resolvedPath.toString();
-            // You can now safely use resolvedPath for file operations
         }
+        args[0] = formulaPath;
+
         Process process = new ProcessBuilder().inheritIO().command(args).start();
         int exitVal = process.waitFor();
         if (exitVal == 0) {
-            logger.info("Script executed successfully.");
+            logger.info("Formula executed successfully.");
         } else {
-            logger.error("Script execution failed.");
+            logger.error("Formula execution failed.");
         }
         return exitVal;
     }

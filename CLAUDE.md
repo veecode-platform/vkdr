@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-VKDR (VeeCode Kubernetes Developer Runtime) is a CLI tool to accelerate local Kubernetes development. It's a Spring Boot application compiled to native binary using GraalVM. The architecture is hybrid: Java handles CLI parsing (Picocli), shell scripts handle implementation logic.
+VKDR (VeeCode Kubernetes Developer Runtime) is a CLI tool to accelerate local Kubernetes development. It's a Spring Boot application compiled to native binary using GraalVM. The architecture is hybrid: Java handles CLI parsing (Picocli), shell scripts (formulas) handle implementation logic.
 
 ## Build Commands
 
@@ -15,8 +15,13 @@ VKDR (VeeCode Kubernetes Developer Runtime) is a CLI tool to accelerate local Ku
 # Run via Maven (for development)
 mvn exec:java -Dexec.mainClass=codes.vee.vkdr.VkdrApplication -Dexec.args="infra up"
 
-# Run tests
+# Run tests (Java unit tests)
 ./mvnw test
+
+# Run formula tests (BATS)
+make test              # All formula tests
+make test-whoami       # Just whoami tests
+make test-formula formula=kong  # Specific formula
 
 # Suppress Maven memory warnings
 export MAVEN_OPTS="--enable-native-access=ALL-UNNAMED --sun-misc-unsafe-memory-access=allow"
@@ -24,37 +29,55 @@ export MAVEN_OPTS="--enable-native-access=ALL-UNNAMED --sun-misc-unsafe-memory-a
 
 ## Development Mode
 
-Use `VKDR_SCRIPT_HOME` to test script changes without recompiling:
+Use `VKDR_FORMULA_HOME` to test formula changes without recompiling:
 
 ```bash
-export VKDR_SCRIPT_HOME=/full/path/to/src/main/resources/scripts
-mvn exec:java -Dexec.mainClass=codes.vee.vkdr.VkdrApplication -Dexec.args="kong install -h"
+export VKDR_FORMULA_HOME=/full/path/to/src/main/resources/formulas
+mvn exec:java -Dexec.mainClass=codes.vee.vkdr.VkdrApplication -Dexec.args="whoami install -h"
 ```
 
-## Architecture
+## Architecture (V2)
 
 **Command Flow:**
-1. User runs `vkdr <service> <action>` (e.g., `vkdr kong install`)
+1. User runs `vkdr <service> <action>` (e.g., `vkdr whoami install`)
 2. Picocli parses arguments into Java command class
 3. Java calls `ShellExecutor.executeCommand("service/action", args...)`
-4. Shell script at `scripts/service/action/formula.sh` executes
+4. Formula script at `formulas/service/action/formula.sh` executes
 
-**Directory Structure:**
+**Directory Structure (V2):**
+```
+src/main/resources/formulas/
+├── _shared/                    # Shared utilities and configs
+│   ├── lib/                    # Shell libraries (log.sh, tools-paths.sh, etc.)
+│   ├── bin/                    # Utility scripts (create-command.sh, etc.)
+│   ├── values/                 # Helm values templates
+│   ├── operators/              # Kubernetes operator manifests
+│   └── configs/                # Miscellaneous configs
+├── whoami/                     # Service: whoami
+│   ├── _meta/
+│   │   ├── docs.md            # Service documentation
+│   │   └── values/            # Service-specific helm values
+│   ├── install/
+│   │   └── formula.sh         # Install implementation
+│   └── remove/
+│       └── formula.sh         # Remove implementation
+└── kong/                       # Service: kong (and other services...)
+    └── ...
+```
+
+**Java Command Classes:**
 - `src/main/java/codes/vee/vkdr/cmd/` - Picocli command classes organized by service
-- `src/main/resources/scripts/` - Shell script implementations
-- `src/main/resources/scripts/.util/` - Shared utilities (log.sh, tools-paths.sh)
-- `src/main/resources/scripts/.docs/` - Markdown docs for "explain" commands
 
 ## Creating New Commands
 
 **ALWAYS use the bootstrap script** - never create commands manually:
 
 ```bash
-./src/main/resources/scripts/.util/create-command.sh <task> <subtask>
-# Example: ./src/main/resources/scripts/.util/create-command.sh metrics collect
+./src/main/resources/formulas/_shared/bin/create-command.sh <task> <subtask>
+# Example: ./src/main/resources/formulas/_shared/bin/create-command.sh metrics collect
 ```
 
-This creates Java classes, shell script template, and updates ExitCodes.java automatically.
+This creates Java classes, formula template, and updates ExitCodes.java automatically.
 
 **After running the script, manually:**
 1. Add import to `VkdrCommand.java`:
@@ -66,12 +89,45 @@ This creates Java classes, shell script template, and updates ExitCodes.java aut
    VkdrMetricsCommand.class,
    ```
 
-## Shell Script Conventions
+## Formula Script Conventions (V2)
 
-- Always source utilities: `source "$(dirname "$0")/../../.util/log.sh"`
+- **Path to shared libs:** `source "$FORMULA_DIR/../../_shared/lib/log.sh"`
+- **Standard preamble:**
+  ```bash
+  FORMULA_DIR="$(dirname "$0")"
+  SHARED_DIR="$FORMULA_DIR/../../_shared"
+  META_DIR="$FORMULA_DIR/../_meta"
+
+  source "$SHARED_DIR/lib/tools-versions.sh"
+  source "$SHARED_DIR/lib/tools-paths.sh"
+  source "$SHARED_DIR/lib/log.sh"
+  ```
 - Use logging functions: `bold`, `boldInfo`, `boldWarn`, `boldNotice`
-- Use tool env vars instead of raw commands: `$VKDR_KUBECTL` not `kubectl`, `$VKDR_YQ` not `yq`
+- Use tool env vars: `$VKDR_KUBECTL` not `kubectl`, `$VKDR_YQ` not `yq`
 - Parameters come as positional args: `PARAM=$1`
+
+## Testing with BATS
+
+Formula tests use BATS (Bash Automated Testing System):
+
+```bash
+# Setup BATS (first time only)
+make setup-bats
+
+# Run all tests
+make test
+
+# Run specific formula tests
+make test-whoami
+make test-formula formula=kong
+
+# Debug mode (keep resources on failure)
+make test-debug
+```
+
+**Test location:** `src/test/bats/formulas/<service>/<action>.bats`
+
+**Tests serve as documentation:** Use `@doc:` and `@example:` annotations in tests.
 
 ## Exit Codes
 

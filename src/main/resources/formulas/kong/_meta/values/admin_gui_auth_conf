@@ -1,0 +1,22 @@
+{
+     "issuer": "http://auth.localhost/realms/vkdr",
+     "authorization_endpoint": "http://auth.localhost/realms/vkdr/protocol/openid-connect/auth",
+     "token_endpoint": "http://auth.localhost/realms/vkdr/protocol/openid-connect/token",
+     "introspection_endpoint": "http://auth.localhost/realms/vkdr/protocol/openid-connect/token/introspect",
+     "userinfo_endpoint": "http://auth.localhost/realms/vkdr/protocol/openid-connect/userinfo",
+     "end_session_endpoint": "http://auth.localhost/realms/vkdr/protocol/openid-connect/logout",
+     "admin_claim": "email",
+     "client_id": ["kong-auth"],
+     "client_secret": ["LZq8kM9lHtGdV0dTey3Hf3026e4Dnq5M"],
+     "ssl_verify": false,
+     "redirect_uri": ["http://manager.localhost/auth"],
+     "login_redirect_uri": ["http://manager.localhost/manager"],
+     "logout_redirect_uri": ["http://manager.localhost/manager"],
+     "scopes": ["profile", "email", "offline_access"],
+     "authenticated_groups_claim": ["realm_access.roles"],
+     "admin_auto_create_rbac_token_disabled": false,
+     "admin_auto_create": true,
+     "display_errors": true,
+     "session_cookie_secure": false,
+     "session_cookie_same_site": "Strict"
+}

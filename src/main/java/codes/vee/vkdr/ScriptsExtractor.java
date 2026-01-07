@@ -12,27 +12,31 @@ import java.util.zip.ZipInputStream;
 public class ScriptsExtractor {
     private static final Logger logger = LoggerFactory.getLogger(ScriptsExtractor.class);
 
+    /**
+     * Unpacks formulas.zip to ~/.vkdr/formulas/
+     * V2: Changed from scripts.zip to formulas.zip for new directory structure.
+     */
     public static void unpackScripts() throws Exception {
         String homeDir = System.getProperty("user.home");
-        File scriptsDir = new File(homeDir + File.separator + ".vkdr/scripts");
-        File scriptsOldDir = new File(homeDir + File.separator + ".vkdr/scripts.old");
-        logger.debug("unpackScripts: Home directory is " + homeDir);
-        logger.debug("unpackScripts: scriptsDir is " + scriptsDir.getAbsolutePath());
-        logger.debug("unpackScripts: scriptsOldDir is " + scriptsOldDir.getAbsolutePath());
-        if (scriptsOldDir.exists()) {
-            logger.debug("Wiping old scripts folder backup: " + scriptsOldDir.getAbsolutePath());
-            PathUtils.deletePath(scriptsOldDir.toPath());
+        File formulasDir = new File(homeDir + File.separator + ".vkdr/formulas");
+        File formulasOldDir = new File(homeDir + File.separator + ".vkdr/formulas.old");
+        logger.debug("unpackFormulas: Home directory is " + homeDir);
+        logger.debug("unpackFormulas: formulasDir is " + formulasDir.getAbsolutePath());
+        logger.debug("unpackFormulas: formulasOldDir is " + formulasOldDir.getAbsolutePath());
+        if (formulasOldDir.exists()) {
+            logger.debug("Wiping old formulas folder backup: " + formulasOldDir.getAbsolutePath());
+            PathUtils.deletePath(formulasOldDir.toPath());
         }
-        if (scriptsDir.exists()) {
-            logger.debug("Renaming current scripts folder from " + scriptsDir.getAbsolutePath() + " to " + scriptsOldDir.getAbsolutePath());
-            scriptsDir.renameTo(scriptsOldDir);
+        if (formulasDir.exists()) {
+            logger.debug("Renaming current formulas folder from " + formulasDir.getAbsolutePath() + " to " + formulasOldDir.getAbsolutePath());
+            formulasDir.renameTo(formulasOldDir);
         }
-        scriptsDir.mkdir();
-        try (InputStream is = ScriptsExtractor.class.getClassLoader().getResourceAsStream("scripts.zip");
+        formulasDir.mkdir();
+        try (InputStream is = ScriptsExtractor.class.getClassLoader().getResourceAsStream("formulas.zip");
              ZipInputStream zis = new ZipInputStream(is)) {
             ZipEntry entry;
             while ((entry = zis.getNextEntry()) != null) {
-                File file = new File(scriptsDir, entry.getName());
+                File file = new File(formulasDir, entry.getName());
                 if (entry.isDirectory()) {
                     logger.debug("Creating directory: " + file.getAbsolutePath());
                     file.mkdirs();
