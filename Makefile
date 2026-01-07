@@ -14,7 +14,10 @@ BATS_BIN             := $(BATS_LIBS_DIR)/bats-core/bin/bats
 
 # Targets
 .PHONY: release bump generate-release-notes command \
-        setup-bats check-cluster test test-whoami test-kong test-formula test-binary test-verbose test-debug clean-bats
+        setup-bats check-cluster test test-formula test-binary test-verbose test-debug clean-bats \
+        test-whoami test-kong test-infra test-postgres test-nginx test-traefik \
+        test-keycloak test-vault test-eso test-minio test-grafana-cloud \
+        test-openldap test-devportal test-mirror
 
 # Default target
 release: set-release-version generate-release-notes git-tag bump-version
@@ -126,6 +129,66 @@ test-whoami: setup-bats check-cluster
 test-kong: setup-bats check-cluster
 	@echo "Running kong tests in $(or $(VKDR_TEST_MODE),dev) mode..."
 	@$(BATS_BIN) --tap src/test/bats/formulas/kong/
+
+# Shortcut for infra tests (cluster operations)
+test-infra: setup-bats
+	@echo "Running infra tests in $(or $(VKDR_TEST_MODE),dev) mode..."
+	@$(BATS_BIN) --tap src/test/bats/formulas/infra/
+
+# Shortcut for postgres tests
+test-postgres: setup-bats check-cluster
+	@echo "Running postgres tests in $(or $(VKDR_TEST_MODE),dev) mode..."
+	@$(BATS_BIN) --tap src/test/bats/formulas/postgres/
+
+# Shortcut for nginx tests
+test-nginx: setup-bats check-cluster
+	@echo "Running nginx tests in $(or $(VKDR_TEST_MODE),dev) mode..."
+	@$(BATS_BIN) --tap src/test/bats/formulas/nginx/
+
+# Shortcut for traefik tests
+test-traefik: setup-bats check-cluster
+	@echo "Running traefik tests in $(or $(VKDR_TEST_MODE),dev) mode..."
+	@$(BATS_BIN) --tap src/test/bats/formulas/traefik/
+
+# Shortcut for keycloak tests
+test-keycloak: setup-bats check-cluster
+	@echo "Running keycloak tests in $(or $(VKDR_TEST_MODE),dev) mode..."
+	@$(BATS_BIN) --tap src/test/bats/formulas/keycloak/
+
+# Shortcut for vault tests
+test-vault: setup-bats check-cluster
+	@echo "Running vault tests in $(or $(VKDR_TEST_MODE),dev) mode..."
+	@$(BATS_BIN) --tap src/test/bats/formulas/vault/
+
+# Shortcut for eso (external-secrets) tests
+test-eso: setup-bats check-cluster
+	@echo "Running eso tests in $(or $(VKDR_TEST_MODE),dev) mode..."
+	@$(BATS_BIN) --tap src/test/bats/formulas/eso/
+
+# Shortcut for minio tests
+test-minio: setup-bats check-cluster
+	@echo "Running minio tests in $(or $(VKDR_TEST_MODE),dev) mode..."
+	@$(BATS_BIN) --tap src/test/bats/formulas/minio/
+
+# Shortcut for grafana-cloud tests
+test-grafana-cloud: setup-bats check-cluster
+	@echo "Running grafana-cloud tests in $(or $(VKDR_TEST_MODE),dev) mode..."
+	@$(BATS_BIN) --tap src/test/bats/formulas/grafana-cloud/
+
+# Shortcut for openldap tests
+test-openldap: setup-bats check-cluster
+	@echo "Running openldap tests in $(or $(VKDR_TEST_MODE),dev) mode..."
+	@$(BATS_BIN) --tap src/test/bats/formulas/openldap/
+
+# Shortcut for devportal tests
+test-devportal: setup-bats check-cluster
+	@echo "Running devportal tests in $(or $(VKDR_TEST_MODE),dev) mode..."
+	@$(BATS_BIN) --tap src/test/bats/formulas/devportal/
+
+# Shortcut for mirror tests (no cluster required)
+test-mirror: setup-bats
+	@echo "Running mirror tests in $(or $(VKDR_TEST_MODE),dev) mode..."
+	@$(BATS_BIN) --tap src/test/bats/formulas/mirror/
 
 # Test using compiled native binary (release testing)
 test-binary: setup-bats check-cluster
