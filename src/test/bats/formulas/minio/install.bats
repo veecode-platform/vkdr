@@ -50,7 +50,7 @@ teardown_file() {
 # ============================================================================
 
 @test "minio install: installs minio storage" {
-  run vkdr minio install --password minio123
+  run vkdr minio install --admin minio123
   assert_success
 
   run wait_for_helm_release "vkdr" "minio" 180
@@ -88,7 +88,7 @@ teardown_file() {
   helm_delete_if_exists "vkdr" "minio" || true
   sleep 5
 
-  run vkdr minio install --password minio123 --domain example.com
+  run vkdr minio install --admin minio123 --domain example.com
   assert_success
 
   run wait_for_deployment "vkdr" "minio" 180

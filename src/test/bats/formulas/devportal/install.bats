@@ -73,14 +73,16 @@ teardown_file() {
 }
 
 @test "devportal install: backstage deployment is created" {
-  local max_wait=300
+  # Backstage takes a long time to start, just verify deployment exists
+  # Wait up to 60s for deployment to be created (not necessarily ready)
+  local max_wait=60
   local waited=0
   while [ $waited -lt $max_wait ]; do
     if $VKDR_KUBECTL get deployment -n $DEVPORTAL_NAMESPACE -l app.kubernetes.io/name=backstage 2>/dev/null | grep -q "backstage"; then
       break
     fi
-    sleep 15
-    waited=$((waited + 15))
+    sleep 5
+    waited=$((waited + 5))
   done
 
   run $VKDR_KUBECTL get deployment -n $DEVPORTAL_NAMESPACE -l app.kubernetes.io/name=backstage

@@ -50,7 +50,7 @@ teardown_file() {
 # ============================================================================
 
 @test "openldap install: installs openldap server" {
-  run vkdr openldap install --admin-user admin --admin-password admin123
+  run vkdr openldap install --admin_user admin --admin_password admin123
   assert_success
 
   run wait_for_helm_release "vkdr" "openldap" 180
@@ -96,7 +96,7 @@ teardown_file() {
   helm_delete_if_exists "vkdr" "openldap" || true
   sleep 5
 
-  run vkdr openldap install --admin-user admin --admin-password admin123 --ldap-admin
+  run vkdr openldap install --admin_user admin --admin_password admin123 --ldap-admin
   assert_success
 
   run wait_for_helm_release "vkdr" "openldap" 180

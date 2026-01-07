@@ -97,7 +97,7 @@ teardown_file() {
   helm_delete_if_exists "default" "traefik" || true
   sleep 5
 
-  run vkdr traefik install --default
+  run vkdr traefik install --default-ic
   assert_success
 
   run wait_for_deployment "default" "traefik" 180

@@ -54,7 +54,7 @@ teardown_file() {
 # ============================================================================
 
 @test "vault install: dev mode installation" {
-  run vkdr vault install --dev --dev-token root
+  run vkdr vault install --dev --dev-root-token root
   assert_success
 
   run wait_for_helm_release "vkdr" "vault" 180
@@ -108,7 +108,7 @@ teardown_file() {
   $VKDR_KUBECTL delete secret vault-keys -n vkdr --ignore-not-found=true 2>/dev/null || true
   sleep 5
 
-  run vkdr vault install --dev --dev-token root --domain example.com
+  run vkdr vault install --dev --dev-root-token root --domain example.com
   assert_success
 
   run wait_for_pods "vkdr" "app.kubernetes.io/name=vault" 120

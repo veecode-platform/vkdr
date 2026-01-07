@@ -20,7 +20,7 @@ setup_file() {
   fi
 
   if ! $VKDR_HELM list -n vkdr | grep -q "^openldap"; then
-    vkdr openldap install --admin-user admin --admin-password admin123
+    vkdr openldap install --admin_user admin --admin_password admin123
     wait_for_helm_release "vkdr" "openldap" 180
   fi
 }

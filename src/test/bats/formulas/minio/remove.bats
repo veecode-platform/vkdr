@@ -20,7 +20,7 @@ setup_file() {
   fi
 
   if ! $VKDR_HELM list -n vkdr | grep -q "^minio"; then
-    vkdr minio install --password minio123
+    vkdr minio install --admin minio123
     wait_for_deployment "vkdr" "minio" 180
   fi
 }

@@ -23,7 +23,7 @@ setup_file() {
 
   # Ensure keycloak is installed before removal tests
   if ! $VKDR_KUBECTL get keycloak vkdr-keycloak -n $KEYCLOAK_NAMESPACE 2>/dev/null; then
-    vkdr keycloak install --admin-user admin --admin-password admin123
+    vkdr keycloak install --admin_user admin --admin_password admin123
     # Wait for keycloak to be ready
     local max_wait=300
     local waited=0

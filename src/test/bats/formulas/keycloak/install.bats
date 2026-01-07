@@ -58,7 +58,7 @@ teardown_file() {
 # ============================================================================
 
 @test "keycloak install: installs keycloak with postgres" {
-  run vkdr keycloak install --admin-user admin --admin-password admin123
+  run vkdr keycloak install --admin_user admin --admin_password admin123
   assert_success
 }
 

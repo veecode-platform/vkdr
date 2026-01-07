@@ -21,7 +21,7 @@ setup_file() {
 
   # Ensure vault is installed before testing removal
   if ! $VKDR_HELM list -n vkdr | grep -q "^vault"; then
-    vkdr vault install --dev --dev-token root
+    vkdr vault install --dev --dev-root-token root
     wait_for_pods "vkdr" "app.kubernetes.io/name=vault" 120
   fi
 }
