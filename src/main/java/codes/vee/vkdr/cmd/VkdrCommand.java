@@ -32,6 +32,7 @@ import picocli.CommandLine.Mixin;
         */
         description = "VKDR cli, your friendly local kubernetes",
         subcommands = {
+                VkdrExplainCommand.class,
                 VkdrInfraCommand.class,
                 VkdrInitCommand.class,
                 VkdrNginxCommand.class,

@@ -1,75 +1,147 @@
-# Whoami
+# vkdr whoami
 
-A simple HTTP service that returns information about the incoming request. Useful for testing ingress, load balancing, and network configurations.
+Use these commands to install and manage a sample `whoami` application to test cluster ingress behavior.
 
-## Overview
+The whoami service is a simple HTTP server that returns information about the request and the container it's running in. It's useful for testing ingress configuration, load balancing, and debugging network issues.
 
-The whoami service deploys a lightweight container that echoes back HTTP request details including headers, hostname, and IP address. This makes it invaluable for debugging Kubernetes networking.
+## vkdr whoami install
 
-## Installation
-
-### Basic Install (localhost)
+Install the whoami test service in your cluster.
 
 ```bash
+vkdr whoami install [-s] [-d=<domain>] [--label=<String=String>]...
+```
+
+### Flags
+
+| Flag | Shorthand | Description | Default |
+|------|-----------|-------------|---------|
+| `--domain` | `-d` | Domain name for the generated ingress | `localhost` |
+| `--secure` | `-s` | Enable HTTPS | `false` |
+| `--label` | | Custom labels for whoami resources (repeatable) | (none) |
+
+### Examples
+
+#### Basic Installation
+
+```bash
+vkdr infra up
+vkdr nginx install --default-ic
 vkdr whoami install
+curl http://whoami.localhost:8000
 ```
 
-This installs whoami accessible at `http://whoami.localhost`.
-
-### Custom Domain
+#### With Custom Domain
 
 ```bash
-vkdr whoami install --domain example.com
+vkdr whoami install -d myapp.local
+curl http://myapp.local:8000
 ```
 
-Installs whoami accessible at `http://whoami.example.com`.
-
-### With TLS
+#### With HTTPS
 
 ```bash
-vkdr whoami install --domain example.com --secure
+vkdr whoami install -s
+curl -k https://whoami.localhost:8001
 ```
 
-Installs whoami with HTTPS enabled at `https://whoami.example.com`.
+#### With Custom Labels
 
-### With Custom Labels
+Add labels for service mesh integration or monitoring:
 
 ```bash
-vkdr whoami install --labels '{"team":"platform","env":"dev"}'
+vkdr whoami install --label app=test --label version=v1
 ```
 
-Adds custom labels to all whoami resources.
+## vkdr whoami remove
 
-## Removal
+Remove the whoami service from your cluster.
 
 ```bash
 vkdr whoami remove
 ```
 
-## Testing the Service
-
-After installation, test the service:
+### Example
 
 ```bash
-# Via curl (if using localhost)
-curl http://whoami.localhost
-
-# Via kubectl port-forward
-kubectl port-forward svc/whoami -n vkdr 8080:80
-curl http://localhost:8080
+vkdr whoami remove
 ```
 
-## Expected Output
+## vkdr whoami explain
+
+Explain whoami service setup and configuration options.
+
+```bash
+vkdr whoami explain
+```
+
+## Complete Examples
+
+### Testing Ingress Controllers
+
+Test different ingress controllers with whoami:
+
+```bash
+# Start cluster
+vkdr infra up
+
+# Test with NGinx
+vkdr nginx install --default-ic
+vkdr whoami install
+curl http://whoami.localhost:8000
+vkdr whoami remove
+vkdr nginx remove
+
+# Test with Traefik
+vkdr traefik install --default-ic
+vkdr whoami install
+curl http://whoami.localhost:8000
+vkdr whoami remove
+vkdr traefik remove
+```
+
+### Testing Load Balancing
+
+Scale the whoami deployment to test load balancing:
+
+```bash
+vkdr infra up
+vkdr nginx install --default-ic
+vkdr whoami install
+
+# Scale to multiple replicas
+kubectl scale deployment whoami -n whoami --replicas=3
+
+# Make multiple requests to see different pod responses
+for i in {1..10}; do curl -s http://whoami.localhost:8000 | grep Hostname; done
+
+# Clean up
+vkdr whoami remove
+```
+
+## Response Format
+
+The whoami service returns useful debugging information:
 
 ```
-Hostname: whoami-xxxxx-xxxxx
-IP: 10.42.x.x
-RemoteAddr: 10.42.x.x:xxxxx
+Hostname: whoami-6d5b9b9c9f-abc12
+IP: 10.42.0.15
+RemoteAddr: 10.42.0.1:54321
 GET / HTTP/1.1
-Host: whoami.localhost
-User-Agent: curl/x.x.x
+Host: whoami.localhost:8000
+User-Agent: curl/7.79.1
 Accept: */*
+X-Forwarded-For: 10.42.0.1
+X-Forwarded-Host: whoami.localhost:8000
+X-Forwarded-Port: 80
+X-Forwarded-Proto: http
+X-Real-Ip: 10.42.0.1
 ```
+
+This information helps verify:
+- Which pod is handling the request (Hostname)
+- Request headers are being passed correctly
+- Ingress proxy headers are set properly
 
 ## Resources Created
 
