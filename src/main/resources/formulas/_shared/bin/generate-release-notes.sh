@@ -11,7 +11,7 @@ if [ -z "$VERSION" ]; then
 fi
 
 # Source the log utilities
-source "$(dirname "$0")/log.sh"
+source "$(dirname "$0")/../lib/log.sh"
 
 info "Generating release notes for v$VERSION"
 
