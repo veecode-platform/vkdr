@@ -13,7 +13,7 @@ BATS_LIBS_DIR        := .bats-libs
 BATS_BIN             := $(BATS_LIBS_DIR)/bats-core/bin/bats
 
 # Targets
-.PHONY: release bump generate-release-notes command \
+.PHONY: release bump generate-release-notes command update-tools-versions \
         setup-bats check-cluster test test-formula test-binary test-verbose test-debug clean-bats \
         test-whoami test-kong test-infra test-infra-lifecycle test-postgres test-nginx test-traefik \
         test-keycloak test-vault test-eso test-minio test-grafana-cloud \
@@ -44,7 +44,7 @@ bump-version:
 
 # Generate release notes
 generate-release-notes:
-	./src/main/resources/scripts/.util/generate-release-notes.sh $(RELEASE_VERSION)
+	./src/main/resources/formulas/_shared/bin/generate-release-notes.sh $(RELEASE_VERSION)
 	git add CHANGELOG.md
 
 # Rollback changes made by versions:set in case of error
@@ -59,7 +59,11 @@ command:
 		echo "Usage: make command task=<command> subtask=<subcommand>"; \
 		exit 1; \
 	fi
-	./src/main/resources/scripts/.util/create-command.sh "$(task)" "$(subtask)"
+	./src/main/resources/formulas/_shared/bin/create-command.sh "$(task)" "$(subtask)"
+
+# Update tool versions (kubectl, helm, k3d, etc.) to latest releases
+update-tools-versions:
+	./src/main/resources/formulas/_shared/bin/generate-tools-versions.sh
 
 # ============================================================================
 # BATS Testing

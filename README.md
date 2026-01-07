@@ -130,7 +130,7 @@ sdk install java 24.0.2-graalce
 VKDR downloads and manages several CLI tools (kubectl, helm, k3d, etc.). To update the pinned versions to the latest releases:
 
 ```sh
-./src/main/resources/formulas/_shared/bin/generate-tools-versions.sh
+make update-tools-versions
 ```
 
 This fetches the latest versions from GitHub releases and updates `_shared/lib/tools-versions.sh`. Run this periodically to keep tool versions current.
