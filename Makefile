@@ -14,7 +14,7 @@ BATS_BIN             := $(BATS_LIBS_DIR)/bats-core/bin/bats
 
 # Targets
 .PHONY: release bump generate-release-notes command \
-        setup-bats check-cluster test test-whoami test-formula test-binary test-verbose test-debug clean-bats
+        setup-bats check-cluster test test-whoami test-kong test-formula test-binary test-verbose test-debug clean-bats
 
 # Default target
 release: set-release-version generate-release-notes git-tag bump-version
@@ -121,6 +121,11 @@ test-formula: setup-bats check-cluster
 test-whoami: setup-bats check-cluster
 	@echo "Running whoami tests in $(or $(VKDR_TEST_MODE),dev) mode..."
 	@$(BATS_BIN) --tap src/test/bats/formulas/whoami/
+
+# Shortcut for kong tests
+test-kong: setup-bats check-cluster
+	@echo "Running kong tests in $(or $(VKDR_TEST_MODE),dev) mode..."
+	@$(BATS_BIN) --tap src/test/bats/formulas/kong/
 
 # Test using compiled native binary (release testing)
 test-binary: setup-bats check-cluster
