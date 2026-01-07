@@ -185,29 +185,18 @@ teardown_file() {
   assert_failure
 }
 
-@test "postgres dropdb: database removal behavior" {
-  # NOTE: CNPG operator does NOT auto-drop databases when Database CR is deleted.
-  # This is a safety feature - the CR controls creation, not deletion.
-  #
-  # The dropdb formula currently only:
-  # 1. Deletes the Database CR
-  # 2. Removes the role from cluster spec
-  # 3. Deletes secrets
-  #
-  # TODO: dropdb formula should execute DROP DATABASE via kubectl exec
-  # to actually remove the database from PostgreSQL.
-
-  # For now, we verify the CR is gone (test 18) and skip this check
-  # since the actual database persists (by design or bug - needs review)
+@test "postgres dropdb: database is removed from PostgreSQL" {
+  # dropdb formula now executes DROP DATABASE via kubectl exec
+  # Wait a moment for the command to complete
+  sleep 2
 
   run vkdr postgres listdbs
   assert_success
 
-  # Check if database still exists - expected with current implementation
+  # Filter out warnings and verify database is gone
   local filtered=$(echo "$output" | grep -v "^WARNING:")
   if echo "$filtered" | grep -q "testdb"; then
-    # This is expected - CNPG doesn't auto-drop databases
-    skip "CNPG operator does not auto-drop databases on CR deletion (expected behavior)"
+    fail "Database 'testdb' still exists after dropdb - DROP DATABASE failed"
   fi
 }
 

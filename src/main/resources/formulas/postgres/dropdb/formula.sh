@@ -34,13 +34,17 @@ dropDB() {
   local ROLE_SECRET_NAME="${POSTGRES_CLUSTER_NAME}-role-${VKDR_ENV_POSTGRES_USER_NAME}"
   local USER_PG_SECRET="${VKDR_ENV_POSTGRES_USER_NAME}-pg-secret"
 
+  # First, actually DROP the database from PostgreSQL
+  # CNPG operator does NOT auto-drop databases when CR is deleted (safety feature)
+  dropDatabaseFromPostgres
+
   # Delete Database CRD if it exists
   if $VKDR_KUBECTL get database "$POSTGRES_DB_OBJECT" -n "$POSTGRES_NAMESPACE" &>/dev/null; then
-    info "Deleting database '$VKDR_ENV_POSTGRES_DATABASE_NAME'..."
+    info "Deleting Database CR '$POSTGRES_DB_OBJECT'..."
     $VKDR_KUBECTL delete database "$POSTGRES_DB_OBJECT" -n "$POSTGRES_NAMESPACE" --ignore-not-found=true
-    boldInfo "Database '$VKDR_ENV_POSTGRES_DATABASE_NAME' deleted!"
+    boldInfo "Database CR '$POSTGRES_DB_OBJECT' deleted!"
   else
-    debug "Database '$VKDR_ENV_POSTGRES_DATABASE_NAME' not found, skipping..."
+    debug "Database CR '$POSTGRES_DB_OBJECT' not found, skipping..."
   fi
 
   # Delete role from CloudNative-PG cluster if user name is provided
@@ -94,6 +98,41 @@ deleteRole() {
     boldInfo "Role '$VKDR_ENV_POSTGRES_USER_NAME' removed from cluster!"
   else
     debug "Role '$VKDR_ENV_POSTGRES_USER_NAME' not found in cluster, skipping..."
+  fi
+}
+
+dropDatabaseFromPostgres() {
+  # Get the primary pod name
+  local PRIMARY_POD=$($VKDR_KUBECTL get pod -n "$POSTGRES_NAMESPACE" \
+    -l "cnpg.io/cluster=$POSTGRES_CLUSTER_NAME,role=primary" \
+    -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
+
+  if [ -z "$PRIMARY_POD" ]; then
+    warn "Primary pod not found, skipping DROP DATABASE command"
+    return 0
+  fi
+
+  # Check if database exists before trying to drop
+  local DB_EXISTS=$($VKDR_KUBECTL exec -n "$POSTGRES_NAMESPACE" "$PRIMARY_POD" -- \
+    psql -U postgres -tAc "SELECT 1 FROM pg_database WHERE datname='$VKDR_ENV_POSTGRES_DATABASE_NAME'" 2>/dev/null || echo "")
+
+  if [ "$DB_EXISTS" != "1" ]; then
+    debug "Database '$VKDR_ENV_POSTGRES_DATABASE_NAME' does not exist in PostgreSQL, skipping DROP"
+    return 0
+  fi
+
+  info "Dropping database '$VKDR_ENV_POSTGRES_DATABASE_NAME' from PostgreSQL..."
+
+  # Terminate active connections to the database
+  $VKDR_KUBECTL exec -n "$POSTGRES_NAMESPACE" "$PRIMARY_POD" -- \
+    psql -U postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname='$VKDR_ENV_POSTGRES_DATABASE_NAME' AND pid <> pg_backend_pid();" 2>/dev/null || true
+
+  # Drop the database
+  if $VKDR_KUBECTL exec -n "$POSTGRES_NAMESPACE" "$PRIMARY_POD" -- \
+    psql -U postgres -c "DROP DATABASE IF EXISTS \"$VKDR_ENV_POSTGRES_DATABASE_NAME\";" 2>/dev/null; then
+    boldInfo "Database '$VKDR_ENV_POSTGRES_DATABASE_NAME' dropped from PostgreSQL!"
+  else
+    warn "Failed to drop database '$VKDR_ENV_POSTGRES_DATABASE_NAME' - it may have active connections or not exist"
   fi
 }
 
