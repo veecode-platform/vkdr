@@ -15,7 +15,7 @@ BATS_BIN             := $(BATS_LIBS_DIR)/bats-core/bin/bats
 # Targets
 .PHONY: release bump generate-release-notes command \
         setup-bats check-cluster test test-formula test-binary test-verbose test-debug clean-bats \
-        test-whoami test-kong test-infra test-postgres test-nginx test-traefik \
+        test-whoami test-kong test-infra test-infra-lifecycle test-postgres test-nginx test-traefik \
         test-keycloak test-vault test-eso test-minio test-grafana-cloud \
         test-openldap test-devportal test-mirror
 
@@ -130,10 +130,20 @@ test-kong: setup-bats check-cluster
 	@echo "Running kong tests in $(or $(VKDR_TEST_MODE),dev) mode..."
 	@$(BATS_BIN) --tap src/test/bats/formulas/kong/
 
-# Shortcut for infra tests (cluster operations)
+# Shortcut for infra tests (cluster state checks - non-destructive)
 test-infra: setup-bats
-	@echo "Running infra tests in $(or $(VKDR_TEST_MODE),dev) mode..."
-	@$(BATS_BIN) --tap src/test/bats/formulas/infra/
+	@echo "Running infra state tests in $(or $(VKDR_TEST_MODE),dev) mode..."
+	@$(BATS_BIN) --tap src/test/bats/formulas/infra/cluster.bats
+
+# Infra lifecycle tests (DESTRUCTIVE - will destroy vkdr-local cluster!)
+# Usage: make test-infra-lifecycle
+test-infra-lifecycle: setup-bats
+	@echo ""
+	@echo "WARNING: This will DESTROY any existing vkdr-local cluster!"
+	@echo "Press Ctrl+C within 5 seconds to cancel..."
+	@sleep 5
+	@echo "Running infra lifecycle tests..."
+	@VKDR_TEST_LIFECYCLE=true $(BATS_BIN) --tap src/test/bats/formulas/infra/lifecycle.bats
 
 # Shortcut for postgres tests
 test-postgres: setup-bats check-cluster
