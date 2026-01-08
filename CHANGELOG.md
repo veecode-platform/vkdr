@@ -1,6 +1,10 @@
 # VKDR Changelog
 
 
+## v2.0.4 (2026-01-08)
+* fix: make nginx-gw remove --all idempotent (2dd815e)
+* feat: add Gateway API support to whoami formula (51e7c9d)
+
 ## v2.0.3 (2026-01-08)
 * chore: add fun certificate subject for self-signed TLS cert (4e2a6b5)
 * feat: preserve TLS secret on default remove, add --all alias (ad4bebf)
