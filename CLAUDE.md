@@ -42,7 +42,11 @@ subcommands = { ..., Vkdr<Service>Command.class }
 2. **Idempotency**: All remove operations must be safe to run multiple times
 3. **Namespace cleanup**: Use namespace deletion for `--all` removal, not individual resources
 4. **Tests**: Keep simple (5-6 tests per formula), assume only cluster is running
-5. **Docs**: Each formula has `_meta/docs.md` - keep updated
+5. **Docs**: Each formula has `_meta/docs.md` (user docs) and `_meta/spec.md` (implementation spec)
+
+## Before Modifying a Formula
+
+**Always read `_meta/spec.md` first** - it contains architecture decisions, known bugs, and implementation notes specific to that formula.
 
 ## File Locations
 
@@ -52,7 +56,8 @@ subcommands = { ..., Vkdr<Service>Command.class }
 | Formula scripts | `src/main/resources/formulas/<service>/<action>/formula.sh` |
 | Shared libraries | `src/main/resources/formulas/_shared/lib/` |
 | Helm values | `src/main/resources/formulas/<service>/_meta/values/` |
-| Documentation | `src/main/resources/formulas/<service>/_meta/docs.md` |
+| User documentation | `src/main/resources/formulas/<service>/_meta/docs.md` |
+| Implementation spec | `src/main/resources/formulas/<service>/_meta/spec.md` |
 | BATS tests | `src/test/bats/formulas/<service>/<action>.bats` |
 
 ## Common Patterns
