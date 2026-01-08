@@ -11,10 +11,10 @@ import java.util.concurrent.Callable;
         exitCodeOnExecutionException = ExitCodes.NGINX_GW_REMOVE)
 public class VkdrNginxGwRemoveCommand implements Callable<Integer> {
 
-    @CommandLine.Option(names = {"--delete-fabric", "--delete_fabric"},
+    @CommandLine.Option(names = {"--delete-fabric", "--delete_fabric", "--all"},
             defaultValue = "false",
             description = {
-                    "Also remove the NGINX Gateway Fabric control plane (default: false)",
+                    "Also remove the NGINX Gateway Fabric control plane and TLS secret (default: false)",
                     "By default only the Gateway object is removed, leaving the control plane installed."})
     private boolean delete_fabric;
 

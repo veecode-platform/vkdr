@@ -93,18 +93,19 @@ vkdr nginx-gw remove [--delete-fabric]
 
 | Flag | Description | Default |
 |------|-------------|---------|
-| `--delete-fabric` | Also remove the control plane (helm release) | `false` |
+| `--delete-fabric`, `--all` | Also remove control plane and TLS secret | `false` |
 
 ### What Gets Removed
 
 **Default behavior** (no flags):
 - Removes the Gateway object named `nginx`
 - Removes any associated NginxProxy configuration
-- **Keeps the control plane installed** for quick re-creation of Gateways
+- **Keeps the control plane and TLS secret** for quick re-creation of Gateways
 
-**With `--delete-fabric`**:
+**With `--delete-fabric` or `--all`**:
 - Removes the Gateway and NginxProxy (as above)
-- Also uninstalls the NGINX Gateway Fabric helm release (control plane)
+- Uninstalls the NGINX Gateway Fabric helm release (control plane)
+- Removes the self-signed TLS certificate secret
 - Gateway API CRDs remain installed
 
 ### Examples
@@ -113,8 +114,10 @@ vkdr nginx-gw remove [--delete-fabric]
 # Remove Gateway only (fast, control plane stays)
 vkdr nginx-gw remove
 
-# Full removal including control plane
+# Full removal including control plane and TLS secret
 vkdr nginx-gw remove --delete-fabric
+# or
+vkdr nginx-gw remove --all
 ```
 
 ## vkdr nginx-gw explain

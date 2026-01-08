@@ -15,7 +15,7 @@ startInfos() {
   boldInfo "NGINX Gateway Remove"
   bold "=============================="
   if [ "$VKDR_ENV_DELETE_FABRIC" = "true" ]; then
-    boldNotice "Mode: Full removal (Gateway + Control Plane)"
+    boldNotice "Mode: Full removal (Gateway + Control Plane + TLS Secret)"
   else
     boldNotice "Mode: Gateway only (Control Plane preserved)"
   fi
@@ -40,12 +40,18 @@ removeControlPlane() {
   $VKDR_HELM delete nginx-gateway -n nginx-gateway
 }
 
+removeTlsSecret() {
+  debug "removeTlsSecret: deleting TLS secret"
+  $VKDR_KUBECTL delete secret nginx-gateway-tls -n nginx-gateway --ignore-not-found
+}
+
 runFormula() {
   startInfos
   removeGateway
   removeNginxProxy
   if [ "$VKDR_ENV_DELETE_FABRIC" = "true" ]; then
     removeControlPlane
+    removeTlsSecret
   fi
 }
 
