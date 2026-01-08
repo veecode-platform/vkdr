@@ -189,29 +189,10 @@ The `init` command handles three states:
 
 1. **Single Instance**: Only one Vault pod (no HA mode)
 2. **Unseal Keys in Cluster**: Not suitable for production security
-3. **Remove Not Idempotent**: `helm delete` fails if release doesn't exist
-4. **No Auto-Unseal**: Manual unseal required after pod restart in prod mode
-
-## Remove Idempotency (Bug)
-
-The remove formula doesn't check if Vault is installed:
-```bash
-removeVault() {
-  $VKDR_HELM delete vault -n $VAULT_NAMESPACE  # Fails if not installed
-}
-```
-
-Should be:
-```bash
-if $VKDR_HELM list -n $VAULT_NAMESPACE -q | grep -q "vault"; then
-  $VKDR_HELM delete vault -n $VAULT_NAMESPACE
-fi
-```
+3. **No Auto-Unseal**: Manual unseal required after pod restart in prod mode
 
 ## Future Improvements
 
-- [ ] Fix remove idempotency
 - [ ] Add `--gateway` flag for Gateway API support
 - [ ] Support HA mode with multiple replicas
 - [ ] Add auto-unseal via cloud KMS
-- [ ] Clean up secrets on remove

@@ -22,7 +22,15 @@ runFormula() {
 }
 
 removeVault() {
-  $VKDR_HELM delete vault -n $VAULT_NAMESPACE
+  if $VKDR_HELM list -n $VAULT_NAMESPACE -q | grep -q "^vault$"; then
+    $VKDR_HELM delete vault -n $VAULT_NAMESPACE
+  else
+    debug "removeVault: helm release not found, skipping"
+  fi
+  # Clean up secrets
+  $VKDR_KUBECTL delete secret vault-keys -n $VAULT_NAMESPACE --ignore-not-found
+  $VKDR_KUBECTL delete secret vault-server-ca -n $VAULT_NAMESPACE --ignore-not-found
+  $VKDR_KUBECTL delete secret vault-server-tls -n $VAULT_NAMESPACE --ignore-not-found
 }
 
 runFormula
