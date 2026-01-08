@@ -1,0 +1,94 @@
+name: Check Formula Updates
+
+on:
+  schedule:
+    - cron: '0 9 * * 1'  # Every Monday at 9am UTC
+  workflow_dispatch:      # Manual trigger
+
+jobs:
+  check-updates:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup tools
+        run: |
+          # Install yq
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+
+          # Install helm
+          curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+      - name: Check for updates
+        id: check
+        run: |
+          updates=$(./src/main/resources/formulas/_shared/bin/check-updates.sh --json)
+          echo "updates<<EOF" >> $GITHUB_OUTPUT
+          echo "$updates" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create issues for updates
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          updates='${{ steps.check.outputs.updates }}'
+
+          # Ensure dependency-update label exists
+          gh label create "dependency-update" --color "0366d6" --description "Automated dependency update" 2>/dev/null || true
+
+          # Process each formula with updates available
+          echo "$updates" | jq -c '.[] | select(.status == "update-available")' | while read -r item; do
+            formula=$(echo "$item" | jq -r '.formula')
+            type=$(echo "$item" | jq -r '.type')
+            current=$(echo "$item" | jq -r '.current')
+            latest=$(echo "$item" | jq -r '.latest')
+
+            # Check if issue already exists (search by title)
+            existing=$(gh issue list --search "update: $formula to $latest in:title" --state open --json number --jq 'length')
+            if [ "$existing" -gt 0 ]; then
+              echo "Issue already exists for $formula update to $latest, skipping..."
+              continue
+            fi
+
+            # Create issue with structured body
+            gh issue create \
+              --title "update: $formula to $latest" \
+              --label "dependency-update" \
+              --body "$(cat <<EOF
+## Dependency Update Available
+
+A new version is available for the **$formula** formula.
+
+### Update Details
+
+\`\`\`yaml
+formula: $formula
+type: $type
+current_version: "$current"
+target_version: "$latest"
+update_yaml: src/main/resources/formulas/$formula/_meta/update.yaml
+spec_file: src/main/resources/formulas/$formula/_meta/spec.md
+test_command: make test-formula formula=$formula
+\`\`\`
+
+### Instructions
+
+1. Read the formula spec: \`src/main/resources/formulas/$formula/_meta/spec.md\`
+2. Follow the "Updating" section for this formula type: \`$type\`
+3. Update version to: \`$latest\`
+4. Run tests: \`make test-formula formula=$formula\`
+5. Commit with message: \`update: $formula to $latest\`
+
+### Links
+
+- [Formula update.yaml](../blob/main/src/main/resources/formulas/$formula/_meta/update.yaml)
+- [Formula spec.md](../blob/main/src/main/resources/formulas/$formula/_meta/spec.md)
+EOF
+)"
+
+            echo "Created issue for $formula update: $current -> $latest"
+          done
