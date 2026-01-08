@@ -31,15 +31,6 @@ installNginxGatewayFabric() {
 
   installGatewayAPICRDs
 
-  if [ -z "$VKDR_ENV_NGINX_GW_NODE_PORTS" ]; then
-    installNginxGwLB
-  else
-    installNginxGwNP
-  fi
-}
-
-installNginxGwLB() {
-  debug "installNginxGwLB: installing nginx gateway fabric as LoadBalancer"
   $VKDR_HELM upgrade --install nginx-gateway oci://ghcr.io/nginx/charts/nginx-gateway-fabric \
     --version "$NGF_VERSION" \
     --create-namespace \
@@ -47,35 +38,17 @@ installNginxGwLB() {
     --set "nginxGateway.gatewayClassName=nginx"
 }
 
-installNginxGwNP() {
-  debug "installNginxGwNP: installing nginx gateway fabric as NodePort"
-  if [ "*" = "$VKDR_ENV_NGINX_GW_NODE_PORTS" ]; then
-    NGW_PORT_1=30000
-    NGW_PORT_2=30001
-  else
-    IFS=',' read -r NGW_PORT_1 NGW_PORT_2 <<< "$VKDR_ENV_NGINX_GW_NODE_PORTS"
-  fi
-  debug "installNginxGwNP: using nodePorts $NGW_PORT_1 and $NGW_PORT_2"
-  $VKDR_HELM upgrade --install nginx-gateway oci://ghcr.io/nginx/charts/nginx-gateway-fabric \
-    --version "$NGF_VERSION" \
-    --create-namespace \
-    --namespace nginx-gateway \
-    --set "nginxGateway.gatewayClassName=nginx" \
-    --set "service.type=NodePort" \
-    --set "service.ports[0].port=80" \
-    --set "service.ports[0].targetPort=80" \
-    --set "service.ports[0].protocol=TCP" \
-    --set "service.ports[0].name=http" \
-    --set "service.ports[0].nodePort=$NGW_PORT_1" \
-    --set "service.ports[1].port=443" \
-    --set "service.ports[1].targetPort=443" \
-    --set "service.ports[1].protocol=TCP" \
-    --set "service.ports[1].name=https" \
-    --set "service.ports[1].nodePort=$NGW_PORT_2"
-}
-
 createDefaultGateway() {
   debug "createDefaultGateway: creating default Gateway resource"
+  if [ -z "$VKDR_ENV_NGINX_GW_NODE_PORTS" ]; then
+    createGatewayLB
+  else
+    createGatewayNP
+  fi
+}
+
+createGatewayLB() {
+  debug "createGatewayLB: creating Gateway with LoadBalancer service"
   $VKDR_KUBECTL apply -f - <<EOF
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
@@ -84,6 +57,49 @@ metadata:
   namespace: nginx-gateway
 spec:
   gatewayClassName: nginx
+  listeners:
+  - name: http
+    port: 80
+    protocol: HTTP
+EOF
+}
+
+createGatewayNP() {
+  if [ "*" = "$VKDR_ENV_NGINX_GW_NODE_PORTS" ]; then
+    NGW_PORT_1=30000
+    NGW_PORT_2=30001
+  else
+    IFS=',' read -r NGW_PORT_1 NGW_PORT_2 <<< "$VKDR_ENV_NGINX_GW_NODE_PORTS"
+  fi
+  debug "createGatewayNP: creating Gateway with NodePort service ($NGW_PORT_1, $NGW_PORT_2)"
+  $VKDR_KUBECTL apply -f - <<EOF
+apiVersion: gateway.nginx.org/v1alpha2
+kind: NginxProxy
+metadata:
+  name: nginx-proxy-config
+  namespace: nginx-gateway
+spec:
+  kubernetes:
+    service:
+      type: NodePort
+      nodePorts:
+      - port: $NGW_PORT_1
+        listenerPort: 80
+      - port: $NGW_PORT_2
+        listenerPort: 443
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: nginx
+  namespace: nginx-gateway
+spec:
+  gatewayClassName: nginx
+  infrastructure:
+    parametersRef:
+      group: gateway.nginx.org
+      kind: NginxProxy
+      name: nginx-proxy-config
   listeners:
   - name: http
     port: 80
