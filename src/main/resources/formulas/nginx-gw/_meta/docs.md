@@ -36,6 +36,7 @@ vkdr nginx-gw install [--node-ports=<node_ports>]
 2. **Gateway** (always created/updated):
    - Default Gateway named `nginx` in `nginx-gateway` namespace
    - HTTP listener on port 80
+   - TLS passthrough listener on port 443
 
 **Note:** If the control plane is already installed, only the Gateway object is created. This allows multiple `install` calls to update the Gateway configuration without reinstalling the controller.
 

@@ -65,6 +65,11 @@ spec:
   - name: http
     port: 80
     protocol: HTTP
+  - name: https
+    port: 443
+    protocol: TLS
+    tls:
+      mode: Passthrough
 EOF
 }
 
@@ -108,6 +113,11 @@ spec:
   - name: http
     port: 80
     protocol: HTTP
+  - name: https
+    port: 443
+    protocol: TLS
+    tls:
+      mode: Passthrough
 EOF
 }
 
