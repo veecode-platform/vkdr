@@ -48,7 +48,7 @@ createSelfSignedCert() {
   openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
     -keyout "$TEMP_DIR/tls.key" \
     -out "$TEMP_DIR/tls.crt" \
-    -subj "/CN=nginx-gateway" \
+    -subj "/CN=nginx-gateway/O=VKDR Fake Authority/OU=Trust Me Bro Security/L=La Garantia Soy Yo City/ST=Kubernetes" \
     -addext "subjectAltName=DNS:localhost,DNS:*.localhost,DNS:localdomain,DNS:*.localdomain" \
     2>/dev/null
 
