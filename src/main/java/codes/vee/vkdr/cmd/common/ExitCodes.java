@@ -1,4 +1,4 @@
-// NEXT: 180
+// NEXT: 190
 package codes.vee.vkdr.cmd.common;
 
 public final class ExitCodes {
@@ -105,6 +105,12 @@ public final class ExitCodes {
     public static final int NGINX_GW_INSTALL = 171;
     public static final int NGINX_GW_REMOVE = 172;
     public static final int NGINX_GW_EXPLAIN = 173;
+
+    // KONG_GW related exit codes (180-189)
+    public static final int KONG_GW_BASE = 180;
+    public static final int KONG_GW_EXPLAIN = 191;
+    public static final int KONG_GW_REMOVE = 191;
+    public static final int KONG_GW_INSTALL = 181;
 
     // ADD_HERE
 }
