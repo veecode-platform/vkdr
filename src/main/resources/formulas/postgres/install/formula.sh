@@ -14,7 +14,7 @@ source "$SHARED_DIR/lib/log.sh"
 
 POSTGRES_NAMESPACE=vkdr
 POSTGRES_CLUSTER_NAME=vkdr-pg-cluster
-CNPG_OPERATOR_YAML="$SHARED_DIR/operators/cnpg-1.27.0.yaml"
+CNPG_OPERATOR_YAML="$SHARED_DIR/operators/cnpg-1.28.0.yaml"
 
 startInfos() {
   boldInfo "Postgres Install (CloudNative-PG)"

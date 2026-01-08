@@ -3,7 +3,7 @@ type: helm-pinned
 helm:
   repo: oci://ghcr.io/nginx/charts/nginx-gateway-fabric
   chart: nginx-gateway-fabric
-  version: "1.6.2"
+  version: "2.3.0"
   version_file: install/formula.sh
   values_file: null
 test: make test-formula formula=nginx-gw
