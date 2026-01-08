@@ -17,7 +17,7 @@ public class VkdrNginxInstallCommand implements Callable<Integer> {
                     "This affects ingress objects without an 'ingressClassName' field."})
     private boolean default_ingress_controller;
 
-    @CommandLine.Option(names = {"--node-ports", "--node_ports"},
+    @CommandLine.Option(names = {"--node-ports", "--node_ports", "--nodeports"},
             defaultValue = "",
             description = {
                     "Nodeports to use for http/https endpoints (default: '')",

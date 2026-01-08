@@ -11,7 +11,7 @@ import java.util.concurrent.Callable;
         exitCodeOnExecutionException = ExitCodes.NGINX_GW_INSTALL)
 public class VkdrNginxGwInstallCommand implements Callable<Integer> {
 
-    @CommandLine.Option(names = {"--node-ports", "--node_ports"},
+    @CommandLine.Option(names = {"--node-ports", "--node_ports", "--nodeports"},
             defaultValue = "",
             description = {
                     "Nodeports to use for http/https endpoints (default: '')",
