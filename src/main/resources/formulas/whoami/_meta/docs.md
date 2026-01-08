@@ -9,25 +9,42 @@ The whoami service is a simple HTTP server that returns information about the re
 Install the whoami test service in your cluster.
 
 ```bash
-vkdr whoami install [-s] [-d=<domain>] [--label=<String=String>]...
+vkdr whoami install [-s] [-d=<domain>] [--gateway=<class>] [--label=<String=String>]...
 ```
 
 ### Flags
 
 | Flag | Shorthand | Description | Default |
 |------|-----------|-------------|---------|
-| `--domain` | `-d` | Domain name for the generated ingress | `localhost` |
+| `--domain` | `-d` | Domain name for the generated ingress/route | `localhost` |
 | `--secure` | `-s` | Enable HTTPS | `false` |
+| `--gateway` | | Use Gateway API instead of Ingress. Specify the GatewayClass name. | (none) |
 | `--label` | | Custom labels for whoami resources (repeatable) | (none) |
+
+### Routing: Ingress vs Gateway API
+
+By default, whoami uses **Ingress** for HTTP routing. You can optionally use the **Gateway API** by specifying a gateway class:
+
+- **Ingress (default)**: Works with ingress controllers like nginx-ingress or traefik
+- **Gateway API**: Works with Gateway API implementations like NGINX Gateway Fabric
 
 ### Examples
 
-#### Basic Installation
+#### Basic Installation (with Ingress)
 
 ```bash
 vkdr infra up
 vkdr nginx install --default-ic
 vkdr whoami install
+curl http://whoami.localhost:8000
+```
+
+#### Using Gateway API
+
+```bash
+vkdr infra up
+vkdr nginx-gw install
+vkdr whoami install --gateway nginx
 curl http://whoami.localhost:8000
 ```
 
@@ -85,7 +102,7 @@ Test different ingress controllers with whoami:
 # Start cluster
 vkdr infra up
 
-# Test with NGinx
+# Test with NGINX Ingress Controller
 vkdr nginx install --default-ic
 vkdr whoami install
 curl http://whoami.localhost:8000
@@ -100,6 +117,24 @@ vkdr whoami remove
 vkdr traefik remove
 ```
 
+### Testing with Gateway API
+
+```bash
+# Start cluster
+vkdr infra up
+
+# Install NGINX Gateway Fabric
+vkdr nginx-gw install
+
+# Install whoami using Gateway API
+vkdr whoami install --gateway nginx
+curl http://whoami.localhost:8000
+
+# Clean up
+vkdr whoami remove
+vkdr nginx-gw remove
+```
+
 ### Testing Load Balancing
 
 Scale the whoami deployment to test load balancing:
@@ -110,7 +145,7 @@ vkdr nginx install --default-ic
 vkdr whoami install
 
 # Scale to multiple replicas
-kubectl scale deployment whoami -n whoami --replicas=3
+kubectl scale deployment whoami -n vkdr --replicas=3
 
 # Make multiple requests to see different pod responses
 for i in {1..10}; do curl -s http://whoami.localhost:8000 | grep Hostname; done
@@ -141,15 +176,16 @@ X-Real-Ip: 10.42.0.1
 This information helps verify:
 - Which pod is handling the request (Hostname)
 - Request headers are being passed correctly
-- Ingress proxy headers are set properly
+- Ingress/Gateway proxy headers are set properly
 
 ## Resources Created
 
 - **Namespace**: `vkdr`
 - **Deployment**: `whoami` (1 replica)
 - **Service**: `whoami` (ClusterIP, port 80)
-- **Ingress**: `whoami` (with configured host)
+- **Ingress**: `whoami` (when using Ingress mode)
+- **HTTPRoute**: `whoami` (when using Gateway API mode)
 
 ## Helm Chart
 
-Uses the [cowboysysop/whoami](https://github.com/cowboysysop/charts/tree/master/charts/whoami) Helm chart.
+Uses the [cowboysysop/whoami](https://github.com/cowboysysop/charts/tree/master/charts/whoami) Helm chart (version 6.0.0).

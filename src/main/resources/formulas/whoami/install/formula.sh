@@ -3,6 +3,7 @@
 VKDR_ENV_WHOAMI_DOMAIN=$1
 VKDR_ENV_WHOAMI_SECURE=$2
 VKDR_ENV_WHOAMI_LABELS=$3
+VKDR_ENV_WHOAMI_GATEWAY_CLASS=$4
 
 # New v2 paths: relative to formulas/whoami/install/
 FORMULA_DIR="$(dirname "$0")"
@@ -13,6 +14,7 @@ source "$SHARED_DIR/lib/tools-versions.sh"
 source "$SHARED_DIR/lib/tools-paths.sh"
 source "$SHARED_DIR/lib/log.sh"
 source "$SHARED_DIR/lib/ingress-tools.sh"
+source "$SHARED_DIR/lib/gateway-tools.sh"
 
 WHOAMI_NAMESPACE=vkdr
 
@@ -22,6 +24,11 @@ startInfos() {
   boldNotice "Domain: $VKDR_ENV_WHOAMI_DOMAIN"
   boldNotice "Secure: $VKDR_ENV_WHOAMI_SECURE"
   boldNotice "Labels: $VKDR_ENV_WHOAMI_LABELS"
+  if [ -n "$VKDR_ENV_WHOAMI_GATEWAY_CLASS" ]; then
+    boldNotice "Gateway Class: $VKDR_ENV_WHOAMI_GATEWAY_CLASS"
+  else
+    boldNotice "Route: Ingress"
+  fi
   bold "=============================="
 }
 
@@ -31,6 +38,7 @@ runFormula() {
   configValues
   configDomain
   configLabels
+  configGateway
   install
   postInstall
 }
@@ -69,13 +77,24 @@ configLabels() {
   fi
 }
 
+configGateway() {
+  if [ -n "$VKDR_ENV_WHOAMI_GATEWAY_CLASS" ]; then
+    debug "configGateway: configuring HTTPRoute for gateway class '$VKDR_ENV_WHOAMI_GATEWAY_CLASS'"
+    local HOSTNAME="whoami.$VKDR_ENV_WHOAMI_DOMAIN"
+    if ! configureGatewayRoute "$VKDR_TMP_VALUES" "$VKDR_ENV_WHOAMI_GATEWAY_CLASS" "$HOSTNAME" "whoami" 80 "$WHOAMI_NAMESPACE"; then
+      boldWarn "Failed to configure Gateway route, falling back to Ingress"
+    fi
+  else
+    debug "configGateway: using Ingress (no gateway class specified)"
+  fi
+}
 
 install() {
   debug "install: add/update helm repo"
   $VKDR_HELM repo add cowboysysop https://cowboysysop.github.io/charts/
   $VKDR_HELM repo update cowboysysop
   debug "install: installing whoami"
-  $VKDR_HELM upgrade -i whoami cowboysysop/whoami -n $WHOAMI_NAMESPACE --values $VKDR_TMP_VALUES
+  $VKDR_HELM upgrade -i whoami cowboysysop/whoami -n $WHOAMI_NAMESPACE --version 6.0.0 --values $VKDR_TMP_VALUES
 }
 
 postInstall() {

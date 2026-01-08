@@ -21,7 +21,15 @@ public class VkdrWhoamiInstallCommand implements Callable<Integer> {
     @CommandLine.Mixin
     private CommonDomainMixin domainSecure;
 
-    @CommandLine.Option(names = {"--label"}, 
+    @CommandLine.Option(names = {"--gateway", "--gateway-class", "--gateway_class"},
+        defaultValue = "",
+        description = {
+                "Use Gateway API HTTPRoute instead of Ingress (default: '' means use Ingress)",
+                "Specify the GatewayClass name (e.g., 'nginx' for NGINX Gateway Fabric).",
+                "Requires a Gateway controller and Gateway resource to be installed."})
+    private String gateway_class;
+
+    @CommandLine.Option(names = {"--label"},
         description = {
                 "Custom labels for whoami deployments and services, can be used many times in the form '--label key=value'. ",
                 "Labels will be applied to all whoami resources (deployments, services, etc.)."})
@@ -29,9 +37,9 @@ public class VkdrWhoamiInstallCommand implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        logger.debug("'whoami install' was called, domain={}, enable_https={}", domainSecure.domain, domainSecure.enable_https);
+        logger.debug("'whoami install' was called, domain={}, enable_https={}, gateway_class={}", domainSecure.domain, domainSecure.enable_https, gateway_class);
         Gson gson = new Gson();
         String labelsJson = gson.toJson(labels);
-        return ShellExecutor.executeCommand("whoami/install", domainSecure.domain, String.valueOf(domainSecure.enable_https), labelsJson);
+        return ShellExecutor.executeCommand("whoami/install", domainSecure.domain, String.valueOf(domainSecure.enable_https), labelsJson, gateway_class);
     }
 }

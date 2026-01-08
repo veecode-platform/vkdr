@@ -104,6 +104,9 @@ spec:
   - name: http
     port: 80
     protocol: HTTP
+    allowedRoutes:
+      namespaces:
+        from: All
   - name: https
     port: 443
     protocol: HTTPS
@@ -112,6 +115,9 @@ spec:
       certificateRefs:
       - kind: Secret
         name: nginx-gateway-tls
+    allowedRoutes:
+      namespaces:
+        from: All
 EOF
 }
 
@@ -155,6 +161,9 @@ spec:
   - name: http
     port: 80
     protocol: HTTP
+    allowedRoutes:
+      namespaces:
+        from: All
   - name: https
     port: 443
     protocol: HTTPS
@@ -163,6 +172,9 @@ spec:
       certificateRefs:
       - kind: Secret
         name: nginx-gateway-tls
+    allowedRoutes:
+      namespaces:
+        from: All
 EOF
 }
 

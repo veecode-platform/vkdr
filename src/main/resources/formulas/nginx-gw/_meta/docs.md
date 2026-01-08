@@ -42,6 +42,7 @@ vkdr nginx-gw install [--node-ports=<node_ports>]
    - Default Gateway named `nginx` in `nginx-gateway` namespace
    - HTTP listener on port 80
    - HTTPS listener on port 443 with TLS termination
+   - Allows HTTPRoutes from all namespaces
 
 **Note:** If the control plane is already installed, only the Gateway object is created. This allows multiple `install` calls to update the Gateway configuration without reinstalling the controller.
 
@@ -178,8 +179,8 @@ vkdr infra up
 # Install NGINX Gateway Fabric
 vkdr nginx-gw install
 
-# Test with whoami
-vkdr whoami install
+# Test with whoami using Gateway API
+vkdr whoami install --gateway nginx
 curl http://whoami.localhost:8000
 
 # Clean up
