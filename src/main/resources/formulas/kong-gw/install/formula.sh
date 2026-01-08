@@ -195,9 +195,23 @@ EOF
 }
 
 waitForOperator() {
-  debug "waitForOperator: waiting for Kong Gateway Operator to be ready"
-  $VKDR_KUBECTL wait --for=condition=available deployment/kong-operator-controller-manager \
+  debug "waitForOperator: waiting for Kong Gateway Operator deployment to be ready"
+  $VKDR_KUBECTL wait --for=condition=available deployment/kong-operator-kong-operator-controller-manager \
     -n kong-system --timeout=120s 2>/dev/null || true
+
+  debug "waitForOperator: waiting for webhook endpoints to be available"
+  local max_wait=60
+  local waited=0
+  while [ $waited -lt $max_wait ]; do
+    local endpoints=$($VKDR_KUBECTL get endpoints kong-operator-kong-operator-webhook -n kong-system -o jsonpath='{.subsets[*].addresses[*].ip}' 2>/dev/null || echo "")
+    if [ -n "$endpoints" ]; then
+      debug "waitForOperator: webhook endpoints ready: $endpoints"
+      break
+    fi
+    debug "waitForOperator: waiting for webhook endpoints... ($waited/$max_wait)"
+    sleep 3
+    waited=$((waited + 3))
+  done
 }
 
 runFormula() {

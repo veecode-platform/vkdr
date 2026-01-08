@@ -15,7 +15,7 @@ BATS_BIN             := $(BATS_LIBS_DIR)/bats-core/bin/bats
 # Targets
 .PHONY: release bump generate-release-notes command update-tools-versions check-updates \
         setup-bats check-cluster test test-formula test-binary test-verbose test-debug clean-bats \
-        test-whoami test-kong test-infra test-infra-lifecycle test-postgres test-nginx test-nginx-gw test-traefik \
+        test-whoami test-kong test-kong-gw test-infra test-infra-lifecycle test-postgres test-nginx test-nginx-gw test-traefik \
         test-keycloak test-vault test-eso test-grafana-cloud \
         test-openldap test-devportal test-mirror
 
@@ -142,6 +142,11 @@ test-whoami: setup-bats check-cluster
 test-kong: setup-bats check-cluster
 	@echo "Running kong tests in $(or $(VKDR_TEST_MODE),dev) mode..."
 	@$(BATS_BIN) --tap src/test/bats/formulas/kong/
+
+# Shortcut for kong-gw (Kong Gateway Operator) tests
+test-kong-gw: setup-bats check-cluster
+	@echo "Running kong-gw tests in $(or $(VKDR_TEST_MODE),dev) mode..."
+	@$(BATS_BIN) --tap src/test/bats/formulas/kong-gw/
 
 # Shortcut for infra tests (cluster state checks - non-destructive)
 test-infra: setup-bats
