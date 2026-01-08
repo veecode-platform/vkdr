@@ -1,0 +1,7 @@
+# Update configuration for automated dependency updates
+type: helm-frozen
+reason: ingress-nginx project is effectively dead, prefer nginx-gw for new deployments
+helm:
+  repo: https://kubernetes.github.io/ingress-nginx
+  chart: ingress-nginx/ingress-nginx
+test: make test-formula formula=nginx

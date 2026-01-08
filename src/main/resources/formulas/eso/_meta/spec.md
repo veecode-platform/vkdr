@@ -22,3 +22,9 @@ vkdr vault install --dev
 vkdr eso install
 # Configure ClusterSecretStore and ExternalSecret CRDs
 ```
+
+## Updating
+
+Uses latest `external-secrets/external-secrets` chart version. No version pin - updates happen automatically. Tests will catch breaking changes.
+
+See `_meta/update.yaml` for automation config.

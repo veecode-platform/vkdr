@@ -1,0 +1,7 @@
+# Update configuration for automated dependency updates
+type: helm-latest
+helm:
+  repo: https://grafana.github.io/helm-charts
+  chart: grafana/k8s-monitoring
+  values_file: _shared/values/grafana-cloud.yaml
+test: make test-formula formula=grafana-cloud

@@ -1,0 +1,7 @@
+# Update configuration for automated dependency updates
+type: helm-latest
+helm:
+  repo: https://traefik.github.io/charts
+  chart: traefik/traefik
+  values_file: _shared/values/traefik-common.yaml
+test: make test-formula formula=traefik

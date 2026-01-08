@@ -20,3 +20,9 @@ Installs Traefik Ingress Controller via Helm chart. Alternative to nginx for Ing
 - NodePort mode via `--nodeports` flag
 - Default ingress controller via `--default-ic` flag
 - Dashboard exposed at `traefik-ui.{domain}`
+
+## Updating
+
+Uses latest `traefik/traefik` chart version. No version pin - updates happen automatically on next install. Tests will catch breaking changes in chart values.
+
+See `_meta/update.yaml` for automation config.

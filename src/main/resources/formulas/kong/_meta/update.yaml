@@ -1,0 +1,7 @@
+# Update configuration for automated dependency updates
+type: helm-latest
+helm:
+  repo: https://charts.konghq.com
+  chart: kong/kong
+  values_file: _meta/values/kong-dbless.yaml
+test: make test-formula formula=kong

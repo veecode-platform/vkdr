@@ -1,0 +1,7 @@
+# Update configuration for automated dependency updates
+type: helm-latest
+helm:
+  repo: https://jp-gouin.github.io/helm-openldap/
+  chart: helm-openldap/openldap-stack-ha
+  values_file: _shared/values/openldap.yaml
+test: make test-formula formula=openldap

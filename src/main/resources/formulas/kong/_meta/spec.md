@@ -165,6 +165,12 @@ removeKong() {
 }
 ```
 
+## Updating
+
+Uses latest `kong/kong` chart version. No version pin - updates happen automatically on next install. Kong releases frequently, so tests are important to catch breaking changes in values files.
+
+See `_meta/update.yaml` for automation config.
+
 ## Future Improvements
 
 - [ ] Fix remove idempotency

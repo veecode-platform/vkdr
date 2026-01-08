@@ -25,4 +25,4 @@ vkdr infra stop && vkdr infra start  # Restart to apply changes
 
 ## Note
 
-Changes require cluster restart to take effect.
+Changes require cluster restart to take effect. No external dependencies to update.

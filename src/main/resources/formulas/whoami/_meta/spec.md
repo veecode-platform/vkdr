@@ -19,3 +19,13 @@ Deploys the whoami test service via Helm chart. Useful for testing ingress confi
 - Supports both Ingress and Gateway API (`--gateway` flag)
 - Custom labels via `--label` flag
 - TLS/ACME integration via `--secure` flag
+
+## Updating
+
+Uses `cowboysysop/whoami` Helm chart with pinned version. To update:
+1. Check latest version at the Helm repo
+2. Update `--version` in `install/formula.sh`
+3. Review chart changelog for values changes
+4. Run tests
+
+See `_meta/update.yaml` for automation config.

@@ -24,3 +24,9 @@ Installs OpenLDAP server with optional phpLDAPadmin and Self-Service-Password UI
 ## Default Domain
 
 `dc=vee,dc=codes` - hardcoded in formula.
+
+## Updating
+
+Uses latest `helm-openldap/openldap-stack-ha` chart version. No version pin - updates happen automatically. Tests will catch breaking changes.
+
+See `_meta/update.yaml` for automation config.

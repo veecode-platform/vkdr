@@ -225,6 +225,19 @@ remove() {
 
 Should use `--ignore-not-found`.
 
+## Updating
+
+Uses CloudNative-PG operator installed from a versioned manifest file. To update:
+1. Download new operator manifest from GitHub releases
+2. Rename to `_shared/operators/cnpg-{version}.yaml`
+3. Update `CNPG_OPERATOR_YAML` path in `install/formula.sh`
+4. Check release notes for CRD changes affecting Cluster spec
+5. Run tests
+
+Note: Major version updates may require CRD migration. See https://cloudnative-pg.io/documentation/current/installation_upgrade/
+
+See `_meta/update.yaml` for automation config.
+
 ## Future Improvements
 
 - [ ] Fix remove idempotency

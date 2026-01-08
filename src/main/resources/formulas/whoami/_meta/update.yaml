@@ -1,0 +1,9 @@
+# Update configuration for automated dependency updates
+type: helm-pinned
+helm:
+  repo: https://cowboysysop.github.io/charts/
+  chart: cowboysysop/whoami
+  version: "6.0.0"
+  version_file: install/formula.sh
+  values_file: _meta/values/whoami.yaml
+test: make test-formula formula=whoami

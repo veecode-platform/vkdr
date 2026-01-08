@@ -191,6 +191,12 @@ The `init` command handles three states:
 2. **Unseal Keys in Cluster**: Not suitable for production security
 3. **No Auto-Unseal**: Manual unseal required after pod restart in prod mode
 
+## Updating
+
+Uses latest `hashicorp/vault` chart version. No version pin - updates happen automatically on next install. Vault is stable but check release notes for breaking changes in values structure.
+
+See `_meta/update.yaml` for automation config.
+
 ## Future Improvements
 
 - [ ] Add `--gateway` flag for Gateway API support

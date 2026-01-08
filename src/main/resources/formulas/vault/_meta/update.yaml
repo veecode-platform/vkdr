@@ -1,0 +1,7 @@
+# Update configuration for automated dependency updates
+type: helm-latest
+helm:
+  repo: https://helm.releases.hashicorp.com
+  chart: hashicorp/vault
+  values_file: _shared/values/vault.yaml
+test: make test-formula formula=vault

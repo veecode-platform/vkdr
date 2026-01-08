@@ -147,13 +147,15 @@ The `gateway-tools.sh` library:
 2. **TLS Certificate**: Self-signed only. No Let's Encrypt / cert-manager integration.
 3. **Gateway API CRDs**: Not removed on uninstall (shared resource, might be used by other controllers).
 
-## Version Pinning
+## Updating
 
-```bash
-NGF_VERSION="2.3.0"
-```
+Version is pinned in `install/formula.sh`. To update:
+1. Check latest release at https://github.com/nginx/nginx-gateway-fabric/releases
+2. Update `NGF_VERSION` in formula
+3. Verify CRD kustomize URL still works with new version
+4. Run tests - Gateway API CRDs may have breaking changes
 
-Update this when upgrading NGINX Gateway Fabric. Ensure CRD kustomize URL matches.
+See `_meta/update.yaml` for automation config.
 
 ## Testing
 

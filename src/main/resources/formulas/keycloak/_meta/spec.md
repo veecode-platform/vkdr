@@ -199,6 +199,17 @@ Tests should verify:
 4. Ingress is configured correctly
 5. Admin console is accessible
 
+## Updating
+
+Uses Keycloak Operator installed from versioned manifest files. To update:
+1. Check latest release at https://github.com/keycloak/keycloak-k8s-resources
+2. Download updated operator YAML and CRDs
+3. Update files in `_shared/operators/keycloak/`
+4. Check release notes for CRD changes affecting Keycloak CR
+5. Run tests
+
+See `_meta/update.yaml` for automation config.
+
 ## Future Improvements
 
 - [ ] Fix namespace inconsistency in import/export

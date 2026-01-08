@@ -1,0 +1,7 @@
+# Update configuration for automated dependency updates
+type: helm-latest
+helm:
+  repo: https://charts.external-secrets.io
+  chart: external-secrets/external-secrets
+  values_file: null
+test: make test-formula formula=eso

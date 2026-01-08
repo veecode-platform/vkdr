@@ -34,3 +34,9 @@ Key parameters:
 - `--github-org`: Organization name
 - `--samples`: Install sample apps
 - `--load-env`: Load from environment variables
+
+## Updating
+
+Uses latest `veecode-devportal` chart from VeeCode Platform repo. No version pin - updates happen automatically. Internal project, coordinated releases.
+
+See `_meta/update.yaml` for automation config.

@@ -1,0 +1,7 @@
+# Update configuration for automated dependency updates
+type: helm-latest
+helm:
+  repo: https://veecode-platform.github.io/next-charts
+  chart: veecode-devportal
+  values_file: _shared/values/devportal-common.yaml
+test: make test-formula formula=devportal

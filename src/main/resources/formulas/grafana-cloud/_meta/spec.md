@@ -23,3 +23,9 @@ Installs Grafana Cloud agent (k8s-monitoring) to send metrics, logs, and traces 
 ## Note
 
 Requires a Grafana Cloud account. Token is used for Prometheus, Loki, and Tempo authentication.
+
+## Updating
+
+Uses latest `grafana/k8s-monitoring` chart version. No version pin - updates happen automatically. May need to update values file if Grafana Cloud API changes.
+
+See `_meta/update.yaml` for automation config.
