@@ -78,7 +78,7 @@ fi
 # Use --ignore-not-found for kubectl
 $VKDR_KUBECTL delete <resource> --ignore-not-found
 
-# For full cleanup, delete namespace
+# For full cleanup, delete namespace (when not shared)
 $VKDR_KUBECTL delete namespace <ns> --ignore-not-found
 ```
 
