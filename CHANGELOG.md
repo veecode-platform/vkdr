@@ -1,6 +1,18 @@
 # VKDR Changelog
 
 
+## v2.0.6 (2026-01-08)
+* update: keycloak operator to 26.5.0 (f0a5ab4)
+* update: CloudNativePG operator to v1.28.0 (b7f610a)
+* docs: add Updating Formulas section to CLAUDE.md (4d9f6f7)
+* add: update.yaml files for automated formula updates (9253c3c)
+* docs: instruct Claude to read spec.md before modifying formulas (1c51141)
+* add: minimal spec.md for all remaining formulas (5b72c1a)
+* add: spec.md documentation for kong, postgres, and infra formulas (9eaecf9)
+* fix: make vault remove idempotent and clean up secrets (99dbaa7)
+* docs: add spec.md for vault formula (7d29b11)
+* docs: add spec.md for keycloak formula (2d08efd)
+
 ## v2.0.5 (2026-01-08)
 * fix: restore missing get-vkdr.sh for upgrade formula (b8def11)
 * docs: add spec.md for nginx-gw formula (9906760)
