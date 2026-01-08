@@ -5,6 +5,7 @@ import codes.vee.vkdr.cmd.devportal.VkdrDevPortalCommand;
 import codes.vee.vkdr.cmd.keycloak.VkdrKeycloakCommand;
 import codes.vee.vkdr.cmd.kong.VkdrKongCommand;
 import codes.vee.vkdr.cmd.nginx.VkdrNginxCommand;
+import codes.vee.vkdr.cmd.nginx_gw.VkdrNginxGwCommand;
 import codes.vee.vkdr.cmd.postgres.VkdrPostgresCommand;
 import codes.vee.vkdr.cmd.whoami.VkdrWhoamiCommand;
 import codes.vee.vkdr.cmd.vault.VkdrVaultCommand;
@@ -36,6 +37,7 @@ import picocli.CommandLine.Mixin;
                 VkdrInfraCommand.class,
                 VkdrInitCommand.class,
                 VkdrNginxCommand.class,
+                VkdrNginxGwCommand.class,
                 VkdrPostgresCommand.class,
                 VkdrKongCommand.class,
                 VkdrDevPortalCommand.class,

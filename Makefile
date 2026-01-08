@@ -15,7 +15,7 @@ BATS_BIN             := $(BATS_LIBS_DIR)/bats-core/bin/bats
 # Targets
 .PHONY: release bump generate-release-notes command update-tools-versions \
         setup-bats check-cluster test test-formula test-binary test-verbose test-debug clean-bats \
-        test-whoami test-kong test-infra test-infra-lifecycle test-postgres test-nginx test-traefik \
+        test-whoami test-kong test-infra test-infra-lifecycle test-postgres test-nginx test-nginx-gw test-traefik \
         test-keycloak test-vault test-eso test-grafana-cloud \
         test-openldap test-devportal test-mirror
 
@@ -158,6 +158,11 @@ test-postgres: setup-bats check-cluster
 test-nginx: setup-bats check-cluster
 	@echo "Running nginx tests in $(or $(VKDR_TEST_MODE),dev) mode..."
 	@$(BATS_BIN) --tap src/test/bats/formulas/nginx/
+
+# Shortcut for nginx-gw (NGINX Gateway Fabric) tests
+test-nginx-gw: setup-bats check-cluster
+	@echo "Running nginx-gw tests in $(or $(VKDR_TEST_MODE),dev) mode..."
+	@$(BATS_BIN) --tap src/test/bats/formulas/nginx-gw/
 
 # Shortcut for traefik tests
 test-traefik: setup-bats check-cluster

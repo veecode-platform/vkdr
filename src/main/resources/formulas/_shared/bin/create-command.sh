@@ -11,16 +11,43 @@ fi
 
 TASK=$(echo "$1" | tr '[:upper:]' '[:lower:]')
 SUBTASK=$(echo "$2" | tr '[:upper:]' '[:lower:]')
-TASK_CAPITALIZED=$(echo "${TASK^}")
-TASK_UPPER_CASE=$(echo "$TASK" | tr '[:lower:]' '[:upper:]')
+
+# Handle hyphens: convert to underscore for package/directory names
+TASK_UNDERSCORE=$(echo "$TASK" | tr '-' '_')
+SUBTASK_UNDERSCORE=$(echo "$SUBTASK" | tr '-' '_')
+
+# Convert hyphen-separated to CamelCase for class names
+to_camel_case() {
+    local input="$1"
+    local result=""
+    local capitalize_next=true
+    for (( i=0; i<${#input}; i++ )); do
+        local char="${input:$i:1}"
+        if [[ "$char" == "-" || "$char" == "_" ]]; then
+            capitalize_next=true
+        elif $capitalize_next; then
+            result+=$(echo "$char" | tr '[:lower:]' '[:upper:]')
+            capitalize_next=false
+        else
+            result+="$char"
+        fi
+    done
+    echo "$result"
+}
+TASK_CAMEL=$(to_camel_case "$TASK")
+SUBTASK_CAMEL=$(to_camel_case "$SUBTASK")
+
+# Upper case with underscores for exit codes
+TASK_UPPER_CASE=$(echo "$TASK_UNDERSCORE" | tr '[:lower:]' '[:upper:]')
+SUBTASK_UPPER_CASE=$(echo "$SUBTASK_UNDERSCORE" | tr '[:lower:]' '[:upper:]')
 
 # Get script and project directories
-SCRIPT_DIR="$(dirname "$0")/.."
+SCRIPT_DIR="$(dirname "$0")/../.."
 SCRIPT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-JAVA_BASE="${SCRIPT_ROOT}/../../../java/codes/vee/vkdr/cmd"
+JAVA_BASE="${SCRIPT_ROOT}/../../../../java/codes/vee/vkdr/cmd"
 JAVA_BASE="$(cd "${JAVA_BASE}" && pwd)"
-JAVA_PACKAGE="codes.vee.vkdr.cmd.${TASK}"
-JAVA_DIR="${JAVA_BASE}/${TASK}"
+JAVA_PACKAGE="codes.vee.vkdr.cmd.${TASK_UNDERSCORE}"
+JAVA_DIR="${JAVA_BASE}/${TASK_UNDERSCORE}"
 TARGET_DIR="${SCRIPT_DIR}/${TASK}/${SUBTASK}"
 EXIT_CODES_FILE="${JAVA_BASE}/common/ExitCodes.java"
 
@@ -73,20 +100,20 @@ mkdir -p "${JAVA_DIR}"
 
 # Create or update Java command class
 generate_java_command_class() {
-    local class_name="Vkdr${TASK_CAPITALIZED}Command"
+    local class_name="Vkdr${TASK_CAMEL}Command"
     local file_path="${JAVA_DIR}/${class_name}.java"
-    local subcommand_class="Vkdr${TASK_CAPITALIZED}${SUBTASK^}Command"
-    
+    local subcommand_class="Vkdr${TASK_CAMEL}${SUBTASK_CAMEL}Command"
+
     # Get the next available exit code
     local base_code=$(get_next_exit_code)
     local exit_code_constant="${TASK_UPPER_CASE}_BASE"
-    
+
     # Add exit codes to ExitCodes.java
-    add_exit_codes $base_code "${TASK_UPPER_CASE}" "${SUBTASK^^}"
-    
+    add_exit_codes $base_code "${TASK_UPPER_CASE}" "${SUBTASK_UPPER_CASE}"
+
     # Update the exit code constant to use the actual code
     exit_code_constant="${TASK_UPPER_CASE}_BASE"
-    
+
     if [ -f "$file_path" ]; then
         # If file exists, check if the subcommand is already in the subcommands list
         if ! grep -q "$subcommand_class" "$file_path"; then
@@ -99,14 +126,14 @@ generate_java_command_class() {
     else
         # Create new command class
         cat > "${file_path}" << EOF
-package codes.vee.vkdr.cmd.${TASK};
+package codes.vee.vkdr.cmd.${TASK_UNDERSCORE};
 
 import codes.vee.vkdr.cmd.common.ExitCodes;
 import org.springframework.stereotype.Component;
 import picocli.CommandLine;
 
 @Component
-@CommandLine.Command(name = "${TASK}", mixinStandardHelpOptions = true, 
+@CommandLine.Command(name = "${TASK}", mixinStandardHelpOptions = true,
         exitCodeOnExecutionException = ExitCodes.${exit_code_constant},
         description = "manage ${TASK} service",
         subcommands = {
@@ -122,14 +149,14 @@ EOF
 
 # Create Java subcommand class
 generate_java_subcommand_class() {
-    local class_name="Vkdr${TASK_CAPITALIZED}${SUBTASK^}Command"
+    local class_name="Vkdr${TASK_CAMEL}${SUBTASK_CAMEL}Command"
     local file_path="${JAVA_DIR}/${class_name}.java"
-    
+
     # The exit code constant will be set by the command class
-    local exit_code_constant="${TASK_UPPER_CASE}_${SUBTASK^^}"
-    
+    local exit_code_constant="${TASK_UPPER_CASE}_${SUBTASK_UPPER_CASE}"
+
     cat > "${file_path}" << EOF
-package codes.vee.vkdr.cmd.${TASK};
+package codes.vee.vkdr.cmd.${TASK_UNDERSCORE};
 
 import codes.vee.vkdr.ShellExecutor;
 import codes.vee.vkdr.cmd.common.ExitCodes;
@@ -141,7 +168,7 @@ import java.util.concurrent.Callable;
         description = "${SUBTASK} ${TASK} service",
         exitCodeOnExecutionException = ExitCodes.${exit_code_constant})
 public class ${class_name} implements Callable<Integer> {
-    
+
     @CommandLine.Option(names = {"--arg1"},
             description = "Example argument",
             defaultValue = "")
@@ -153,7 +180,7 @@ public class ${class_name} implements Callable<Integer> {
     }
 }
 EOF
-    
+
     echo "Created Java subcommand class: ${file_path}"
 }
 
@@ -168,9 +195,9 @@ cat > "${TARGET_DIR}/formula.sh" << EOF
 VKDR_ENV_${TASK_UPPER_CASE}_ARG1=\$1
 
 # Source common functions and variables
-source "\$(dirname "\$0")/../../.util/tools-versions.sh"
-source "\$(dirname "\$0")/../../.util/tools-paths.sh"
-source "\$(dirname "\$0")/../../.util/log.sh"
+source "\$(dirname "\$0")/../../_shared/lib/tools-versions.sh"
+source "\$(dirname "\$0")/../../_shared/lib/tools-paths.sh"
+source "\$(dirname "\$0")/../../_shared/lib/log.sh"
 
 # Define the startInfos function
 startInfos() {
@@ -195,5 +222,5 @@ chmod +x "${TARGET_DIR}/formula.sh"
 
 echo "Created command structure for 'vkdr ${TASK} ${SUBTASK}' in ${TARGET_DIR}"
 echo "Please add the following import to VkdrCommand.java if not already present:"
-echo "import ${JAVA_PACKAGE}.Vkdr${TASK_CAPITALIZED}Command;"
-echo "And add 'Vkdr${TASK_CAPITALIZED}Command.class' to the subcommands list in VkdrCommand.java"
+echo "import ${JAVA_PACKAGE}.Vkdr${TASK_CAMEL}Command;"
+echo "And add 'Vkdr${TASK_CAMEL}Command.class' to the subcommands list in VkdrCommand.java"

@@ -1,4 +1,4 @@
-// NEXT: 170
+// NEXT: 180
 package codes.vee.vkdr.cmd.common;
 
 public final class ExitCodes {
@@ -99,6 +99,12 @@ public final class ExitCodes {
     public static final int OPENLDAP_INSTALL = 161;
     public static final int OPENLDAP_EXPLAIN = 162;
     public static final int OPENLDAP_REMOVE = 163;
+
+    // NGINX_GW related exit codes (170-179)
+    public static final int NGINX_GW_BASE = 170;
+    public static final int NGINX_GW_INSTALL = 171;
+    public static final int NGINX_GW_REMOVE = 172;
+    public static final int NGINX_GW_EXPLAIN = 173;
 
     // ADD_HERE
 }
