@@ -85,3 +85,8 @@ teardown_file() {
   run $VKDR_KUBECTL get crd httproutes.gateway.networking.k8s.io
   assert_success
 }
+
+@test "nginx-gw install: default gateway is created" {
+  run $VKDR_KUBECTL get gateway nginx -n nginx-gateway
+  assert_success
+}

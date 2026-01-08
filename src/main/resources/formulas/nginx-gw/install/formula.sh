@@ -74,9 +74,27 @@ installNginxGwNP() {
     --set "service.ports[1].nodePort=$NGW_PORT_2"
 }
 
+createDefaultGateway() {
+  debug "createDefaultGateway: creating default Gateway resource"
+  $VKDR_KUBECTL apply -f - <<EOF
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: nginx
+  namespace: nginx-gateway
+spec:
+  gatewayClassName: nginx
+  listeners:
+  - name: http
+    port: 80
+    protocol: HTTP
+EOF
+}
+
 runFormula() {
   startInfos
   installNginxGatewayFabric
+  createDefaultGateway
 }
 
 runFormula

@@ -14,8 +14,14 @@ startInfos() {
   bold "=============================="
 }
 
+removeDefaultGateway() {
+  debug "removeDefaultGateway: deleting default Gateway resource"
+  $VKDR_KUBECTL delete gateway nginx -n nginx-gateway --ignore-not-found
+}
+
 removeNginxGatewayFabric() {
   debug "removeNginxGatewayFabric: uninstalling nginx-gateway"
+  removeDefaultGateway
   $VKDR_HELM delete nginx-gateway -n nginx-gateway
 }
 
