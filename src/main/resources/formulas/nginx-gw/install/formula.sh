@@ -30,10 +30,49 @@ isControlPlaneInstalled() {
   $VKDR_HELM list -n nginx-gateway -q 2>/dev/null | grep -q "nginx-gateway"
 }
 
+isTlsSecretExists() {
+  $VKDR_KUBECTL get secret nginx-gateway-tls -n nginx-gateway &>/dev/null
+}
+
+createSelfSignedCert() {
+  debug "createSelfSignedCert: generating self-signed certificate"
+
+  if isTlsSecretExists; then
+    boldNotice "TLS secret already exists, skipping certificate generation"
+    return
+  fi
+
+  local TEMP_DIR=$(mktemp -d)
+
+  # Generate self-signed certificate with SANs for localhost and localdomain
+  openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout "$TEMP_DIR/tls.key" \
+    -out "$TEMP_DIR/tls.crt" \
+    -subj "/CN=nginx-gateway" \
+    -addext "subjectAltName=DNS:localhost,DNS:*.localhost,DNS:localdomain,DNS:*.localdomain" \
+    2>/dev/null
+
+  # Create namespace if it doesn't exist
+  $VKDR_KUBECTL create namespace nginx-gateway --dry-run=client -o yaml | $VKDR_KUBECTL apply -f -
+
+  # Create TLS secret
+  $VKDR_KUBECTL create secret tls nginx-gateway-tls \
+    --cert="$TEMP_DIR/tls.crt" \
+    --key="$TEMP_DIR/tls.key" \
+    -n nginx-gateway \
+    --dry-run=client -o yaml | $VKDR_KUBECTL apply -f -
+
+  # Cleanup temp files
+  rm -rf "$TEMP_DIR"
+
+  boldNotice "Self-signed TLS certificate created"
+}
+
 installControlPlane() {
   debug "installControlPlane: installing NGINX Gateway Fabric control plane"
 
   installGatewayAPICRDs
+  createSelfSignedCert
 
   $VKDR_HELM upgrade --install nginx-gateway oci://ghcr.io/nginx/charts/nginx-gateway-fabric \
     --version "$NGF_VERSION" \
@@ -67,9 +106,12 @@ spec:
     protocol: HTTP
   - name: https
     port: 443
-    protocol: TLS
+    protocol: HTTPS
     tls:
-      mode: Passthrough
+      mode: Terminate
+      certificateRefs:
+      - kind: Secret
+        name: nginx-gateway-tls
 EOF
 }
 
@@ -115,9 +157,12 @@ spec:
     protocol: HTTP
   - name: https
     port: 443
-    protocol: TLS
+    protocol: HTTPS
     tls:
-      mode: Passthrough
+      mode: Terminate
+      certificateRefs:
+      - kind: Secret
+        name: nginx-gateway-tls
 EOF
 }
 

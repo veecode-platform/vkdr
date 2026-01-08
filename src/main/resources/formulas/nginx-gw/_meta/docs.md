@@ -33,10 +33,15 @@ vkdr nginx-gw install [--node-ports=<node_ports>]
    - NGINX Gateway Fabric controller
    - GatewayClass named `nginx`
 
-2. **Gateway** (always created/updated):
+2. **TLS Certificate** (if not exists):
+   - Self-signed certificate for TLS termination
+   - SANs: `localhost`, `*.localhost`, `localdomain`, `*.localdomain`
+   - Stored in secret `nginx-gateway-tls`
+
+3. **Gateway** (always created/updated):
    - Default Gateway named `nginx` in `nginx-gateway` namespace
    - HTTP listener on port 80
-   - TLS passthrough listener on port 443
+   - HTTPS listener on port 443 with TLS termination
 
 **Note:** If the control plane is already installed, only the Gateway object is created. This allows multiple `install` calls to update the Gateway configuration without reinstalling the controller.
 
