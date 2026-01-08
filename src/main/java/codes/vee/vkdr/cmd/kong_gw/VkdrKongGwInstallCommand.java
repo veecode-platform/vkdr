@@ -15,8 +15,8 @@ public class VkdrKongGwInstallCommand implements Callable<Integer> {
             defaultValue = "",
             description = {
                     "Nodeports to use for http/https endpoints (default: '')",
-                    "Example: '30080,30443' (use ports defined in 'vkdr infra start').",
-                    "Using '*' means '30080,30443'.",
+                    "Example: '30000,30001' (use ports defined in 'vkdr infra start').",
+                    "Using '*' means '30000,30001'.",
                     "Note: this will change type from 'LoadBalancer' to 'NodePort'."})
     private String node_ports;
 

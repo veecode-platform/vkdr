@@ -24,7 +24,7 @@ vkdr kong-gw install [--node-ports=<node_ports>]
 
 | Flag | Description | Default |
 |------|-------------|---------|
-| `--node-ports` | NodePorts for http/https (e.g., `30080,30443` or `*`) | (none) |
+| `--node-ports` | NodePorts for http/https (e.g., `30000,30001` or `*`) | (none) |
 
 ### What Gets Installed
 
@@ -75,7 +75,7 @@ When using NodePort mode instead of LoadBalancer:
 vkdr infra start --nodeports 2
 
 # Install Kong Gateway Operator with NodePort
-vkdr kong-gw install --node-ports 30080,30443
+vkdr kong-gw install --node-ports 30000,30001
 # Or use '*' for defaults
 vkdr kong-gw install --node-ports '*'
 

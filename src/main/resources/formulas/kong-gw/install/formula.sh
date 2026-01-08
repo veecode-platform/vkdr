@@ -138,8 +138,8 @@ EOF
 
 createGatewayNP() {
   if [ "*" = "$VKDR_ENV_KONG_GW_NODE_PORTS" ]; then
-    KGW_PORT_1=30080
-    KGW_PORT_2=30443
+    KGW_PORT_1=30000
+    KGW_PORT_2=30001
   else
     IFS=',' read -r KGW_PORT_1 KGW_PORT_2 <<< "$VKDR_ENV_KONG_GW_NODE_PORTS"
   fi
