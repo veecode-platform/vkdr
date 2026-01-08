@@ -26,8 +26,12 @@ installGatewayAPICRDs() {
   $VKDR_KUBECTL kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/gateway-api/standard?ref=v$NGF_VERSION" | $VKDR_KUBECTL apply -f -
 }
 
-installNginxGatewayFabric() {
-  debug "installNginxGatewayFabric: installing NGINX Gateway Fabric"
+isControlPlaneInstalled() {
+  $VKDR_HELM list -n nginx-gateway -q 2>/dev/null | grep -q "nginx-gateway"
+}
+
+installControlPlane() {
+  debug "installControlPlane: installing NGINX Gateway Fabric control plane"
 
   installGatewayAPICRDs
 
@@ -109,7 +113,11 @@ EOF
 
 runFormula() {
   startInfos
-  installNginxGatewayFabric
+  if isControlPlaneInstalled; then
+    boldNotice "Control plane already installed, creating Gateway only"
+  else
+    installControlPlane
+  fi
   createDefaultGateway
 }
 

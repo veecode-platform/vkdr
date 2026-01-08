@@ -20,7 +20,7 @@ teardown_file() {
 }
 
 @test "nginx-gw remove: command succeeds" {
-  run vkdr nginx-gw remove
+  run vkdr nginx-gw remove --delete-fabric
   assert_success
 }
 

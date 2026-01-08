@@ -28,9 +28,16 @@ vkdr nginx-gw install [--node-ports=<node_ports>]
 
 ### What Gets Installed
 
-1. **Gateway API CRDs** - The standard Kubernetes Gateway API custom resources
-2. **NGINX Gateway Fabric** - The controller and NGINX data plane
-3. **GatewayClass** - Named `nginx` for creating Gateways
+1. **Control Plane** (if not already installed):
+   - Gateway API CRDs
+   - NGINX Gateway Fabric controller
+   - GatewayClass named `nginx`
+
+2. **Gateway** (always created/updated):
+   - Default Gateway named `nginx` in `nginx-gateway` namespace
+   - HTTP listener on port 80
+
+**Note:** If the control plane is already installed, only the Gateway object is created. This allows multiple `install` calls to update the Gateway configuration without reinstalling the controller.
 
 ### Examples
 
@@ -70,18 +77,38 @@ vkdr nginx-gw install --node-ports '*'
 
 ## vkdr nginx-gw remove
 
-Remove NGINX Gateway Fabric from your cluster.
+Remove NGINX Gateway from your cluster.
 
 ```bash
-vkdr nginx-gw remove
+vkdr nginx-gw remove [--delete-fabric]
 ```
 
-**Note:** This removes the NGINX Gateway Fabric controller but keeps the Gateway API CRDs installed.
+### Flags
 
-### Example
+| Flag | Description | Default |
+|------|-------------|---------|
+| `--delete-fabric` | Also remove the control plane (helm release) | `false` |
+
+### What Gets Removed
+
+**Default behavior** (no flags):
+- Removes the Gateway object named `nginx`
+- Removes any associated NginxProxy configuration
+- **Keeps the control plane installed** for quick re-creation of Gateways
+
+**With `--delete-fabric`**:
+- Removes the Gateway and NginxProxy (as above)
+- Also uninstalls the NGINX Gateway Fabric helm release (control plane)
+- Gateway API CRDs remain installed
+
+### Examples
 
 ```bash
+# Remove Gateway only (fast, control plane stays)
 vkdr nginx-gw remove
+
+# Full removal including control plane
+vkdr nginx-gw remove --delete-fabric
 ```
 
 ## vkdr nginx-gw explain
