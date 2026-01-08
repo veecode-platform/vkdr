@@ -106,8 +106,9 @@ vkdr nginx-gw remove [--delete-fabric]
 **With `--delete-fabric` or `--all`**:
 - Removes the Gateway and NginxProxy (as above)
 - Uninstalls the NGINX Gateway Fabric helm release (control plane)
-- Removes the self-signed TLS certificate secret
+- Deletes the entire `nginx-gateway` namespace (including TLS secret)
 - Gateway API CRDs remain installed
+- Idempotent: safe to run multiple times
 
 ### Examples
 

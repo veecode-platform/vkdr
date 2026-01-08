@@ -37,12 +37,16 @@ removeNginxProxy() {
 
 removeControlPlane() {
   debug "removeControlPlane: uninstalling nginx-gateway helm release"
-  $VKDR_HELM delete nginx-gateway -n nginx-gateway
+  if $VKDR_HELM list -n nginx-gateway -q 2>/dev/null | grep -q "nginx-gateway"; then
+    $VKDR_HELM delete nginx-gateway -n nginx-gateway
+  else
+    debug "removeControlPlane: helm release not found, skipping"
+  fi
 }
 
-removeTlsSecret() {
-  debug "removeTlsSecret: deleting TLS secret"
-  $VKDR_KUBECTL delete secret nginx-gateway-tls -n nginx-gateway --ignore-not-found
+removeNamespace() {
+  debug "removeNamespace: deleting nginx-gateway namespace"
+  $VKDR_KUBECTL delete namespace nginx-gateway --ignore-not-found
 }
 
 runFormula() {
@@ -51,7 +55,7 @@ runFormula() {
   removeNginxProxy
   if [ "$VKDR_ENV_DELETE_FABRIC" = "true" ]; then
     removeControlPlane
-    removeTlsSecret
+    removeNamespace
   fi
 }
 
