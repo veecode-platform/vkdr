@@ -48,6 +48,24 @@ subcommands = { ..., Vkdr<Service>Command.class }
 
 **Always read `_meta/spec.md` first** - it contains architecture decisions, known bugs, and implementation notes specific to that formula.
 
+## Updating Formulas
+
+Each formula with external dependencies has documentation for keeping it up-to-date:
+
+- **Human-readable**: `_meta/spec.md` contains an "Updating" section describing the update process
+- **Machine-readable**: `_meta/update.yaml` defines the update configuration for automation
+
+Update types in `update.yaml`:
+
+| Type | Meaning |
+|------|---------|
+| `helm-pinned` | Version is pinned in formula - check for new chart versions |
+| `helm-latest` | Uses latest chart version - tests catch breaking changes |
+| `helm-frozen` | Do not update (deprecated/dead upstream project) |
+| `operator` | Operator manifest from GitHub releases - download new versions |
+
+Formulas without `update.yaml` (init, upgrade, infra, mirror) have no external dependencies to track.
+
 ## File Locations
 
 | What | Where |
@@ -58,6 +76,7 @@ subcommands = { ..., Vkdr<Service>Command.class }
 | Helm values | `src/main/resources/formulas/<service>/_meta/values/` |
 | User documentation | `src/main/resources/formulas/<service>/_meta/docs.md` |
 | Implementation spec | `src/main/resources/formulas/<service>/_meta/spec.md` |
+| Update config | `src/main/resources/formulas/<service>/_meta/update.yaml` |
 | BATS tests | `src/test/bats/formulas/<service>/<action>.bats` |
 
 ## Common Patterns
