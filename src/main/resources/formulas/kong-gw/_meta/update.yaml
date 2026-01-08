@@ -1,9 +1,10 @@
 # Update configuration for automated dependency updates
-type: helm-pinned
+# Note: We use image.tag override instead of chart version for access to newer features
+type: helm-latest
 helm:
   repo: https://charts.konghq.com
   chart: kong-operator
-  version: "1.0.2"
   version_file: install/formula.sh
   values_file: null
+# Image tag is tracked separately: KGO_IMAGE_TAG in formula.sh
 test: make test-formula formula=kong-gw

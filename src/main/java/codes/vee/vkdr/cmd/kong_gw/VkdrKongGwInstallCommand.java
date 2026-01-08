@@ -14,10 +14,10 @@ public class VkdrKongGwInstallCommand implements Callable<Integer> {
     @CommandLine.Option(names = {"--node-ports", "--node_ports", "--nodeports"},
             defaultValue = "",
             description = {
-                    "Nodeports to use for http/https endpoints (default: '')",
+                    "NodePorts for http/https endpoints (default: '')",
                     "Example: '30000,30001' (use ports defined in 'vkdr infra start').",
                     "Using '*' means '30000,30001'.",
-                    "Note: this will change type from 'LoadBalancer' to 'NodePort'."})
+                    "Note: changes service type from 'LoadBalancer' to 'NodePort'."})
     private String node_ports;
 
     @Override

@@ -11,20 +11,16 @@ source "$SHARED_DIR/lib/tools-versions.sh"
 source "$SHARED_DIR/lib/tools-paths.sh"
 source "$SHARED_DIR/lib/log.sh"
 
-# Kong Gateway Operator version
-KGO_VERSION="1.0.2"
+# Kong Gateway Operator image tag
+KGO_IMAGE_TAG="2.0.6"
 
 startInfos() {
   boldInfo "Kong Gateway Operator Install"
   bold "=============================="
-  boldNotice "Node ports: $VKDR_ENV_KONG_GW_NODE_PORTS"
+  if [ -n "$VKDR_ENV_KONG_GW_NODE_PORTS" ]; then
+    boldNotice "Node ports: $VKDR_ENV_KONG_GW_NODE_PORTS"
+  fi
   bold "=============================="
-}
-
-installGatewayAPICRDs() {
-  debug "installGatewayAPICRDs: installing Gateway API CRDs"
-  # Kong Gateway Operator requires Gateway API CRDs
-  $VKDR_KUBECTL apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.1/standard-install.yaml
 }
 
 isOperatorInstalled() {
@@ -72,32 +68,20 @@ createSelfSignedCert() {
 installOperator() {
   debug "installOperator: installing Kong Gateway Operator"
 
-  installGatewayAPICRDs
   createSelfSignedCert
 
   $VKDR_HELM repo add kong https://charts.konghq.com 2>/dev/null || true
   $VKDR_HELM repo update kong
 
+  # Helm chart includes all CRDs (Gateway API + Kong CRDs)
   $VKDR_HELM upgrade --install kong-operator kong/kong-operator \
-    --version "$KGO_VERSION" \
     --create-namespace \
-    --namespace kong-system
+    --namespace kong-system \
+    --set image.tag="$KGO_IMAGE_TAG"
 }
 
-createGatewayClass() {
-  debug "createGatewayClass: creating GatewayClass for Kong"
-  $VKDR_KUBECTL apply -f - <<EOF
-apiVersion: gateway.networking.k8s.io/v1
-kind: GatewayClass
-metadata:
-  name: kong
-spec:
-  controllerName: konghq.com/gateway-operator
-EOF
-}
-
-createDefaultGateway() {
-  debug "createDefaultGateway: creating default Gateway resource"
+createGateway() {
+  debug "createGateway: creating Gateway resource"
   if [ -z "$VKDR_ENV_KONG_GW_NODE_PORTS" ]; then
     createGatewayLB
   else
@@ -108,6 +92,13 @@ createDefaultGateway() {
 createGatewayLB() {
   debug "createGatewayLB: creating Gateway with LoadBalancer service"
   $VKDR_KUBECTL apply -f - <<EOF
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: kong
+spec:
+  controllerName: konghq.com/gateway-operator
+---
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
@@ -138,39 +129,51 @@ EOF
 
 createGatewayNP() {
   if [ "*" = "$VKDR_ENV_KONG_GW_NODE_PORTS" ]; then
-    KGW_PORT_1=30000
-    KGW_PORT_2=30001
+    KGW_PORT_HTTP=30000
+    KGW_PORT_HTTPS=30001
   else
-    IFS=',' read -r KGW_PORT_1 KGW_PORT_2 <<< "$VKDR_ENV_KONG_GW_NODE_PORTS"
+    IFS=',' read -r KGW_PORT_HTTP KGW_PORT_HTTPS <<< "$VKDR_ENV_KONG_GW_NODE_PORTS"
   fi
-  debug "createGatewayNP: creating Gateway with NodePort service ($KGW_PORT_1, $KGW_PORT_2)"
+  debug "createGatewayNP: creating Gateway with NodePort service ($KGW_PORT_HTTP, $KGW_PORT_HTTPS)"
 
-  # Create GatewayConfiguration for NodePort
+  # Create GatewayConfiguration with NodePort service type
   $VKDR_KUBECTL apply -f - <<EOF
-apiVersion: gateway-operator.konghq.com/v1beta1
+apiVersion: gateway-operator.konghq.com/v2beta1
 kind: GatewayConfiguration
 metadata:
-  name: kong-config
+  name: kong-nodeport-config
   namespace: kong-system
 spec:
   dataPlaneOptions:
     deployment:
-      replicas: 1
+      podTemplateSpec:
+        spec:
+          containers:
+          - name: proxy
+            image: kong:3.9.1
     network:
       services:
         ingress:
           type: NodePort
-          annotations:
-            konghq.com/nodeport-http: "$KGW_PORT_1"
-            konghq.com/nodeport-https: "$KGW_PORT_2"
+          externalTrafficPolicy: Local
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: kong
+spec:
+  controllerName: konghq.com/gateway-operator
+  parametersRef:
+    group: gateway-operator.konghq.com
+    kind: GatewayConfiguration
+    name: kong-nodeport-config
+    namespace: kong-system
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
   name: kong
   namespace: kong-system
-  annotations:
-    konghq.com/gateway-configuration: kong-config
 spec:
   gatewayClassName: kong
   listeners:
@@ -192,6 +195,52 @@ spec:
       namespaces:
         from: All
 EOF
+
+  # Wait for the dataplane service to be created by the operator
+  boldNotice "Waiting for dataplane service..."
+  waitForDataplaneService
+
+  # Patch the service to use specific NodePort values
+  patchServiceNodePorts "$KGW_PORT_HTTP" "$KGW_PORT_HTTPS"
+}
+
+waitForDataplaneService() {
+  debug "waitForDataplaneService: waiting for dataplane ingress service"
+  local max_wait=120
+  local waited=0
+  while [ $waited -lt $max_wait ]; do
+    local svc_name=$($VKDR_KUBECTL get svc -n kong-system -o name 2>/dev/null | grep "dataplane-ingress" | head -1)
+    if [ -n "$svc_name" ]; then
+      debug "waitForDataplaneService: found service $svc_name"
+      return 0
+    fi
+    debug "waitForDataplaneService: waiting... ($waited/$max_wait)"
+    sleep 3
+    waited=$((waited + 3))
+  done
+  boldWarn "Timeout waiting for dataplane service"
+  return 1
+}
+
+patchServiceNodePorts() {
+  local http_port=$1
+  local https_port=$2
+  debug "patchServiceNodePorts: patching service with NodePorts $http_port, $https_port"
+
+  # Find the dataplane ingress service
+  local svc_name=$($VKDR_KUBECTL get svc -n kong-system -o name 2>/dev/null | grep "dataplane-ingress" | head -1)
+  if [ -z "$svc_name" ]; then
+    boldWarn "Could not find dataplane ingress service to patch"
+    return 1
+  fi
+
+  # Patch the NodePort values
+  $VKDR_KUBECTL patch $svc_name -n kong-system --type='json' -p="[
+    {\"op\": \"replace\", \"path\": \"/spec/ports/0/nodePort\", \"value\": $http_port},
+    {\"op\": \"replace\", \"path\": \"/spec/ports/1/nodePort\", \"value\": $https_port}
+  ]"
+
+  boldNotice "Service patched with NodePorts: http=$http_port, https=$https_port"
 }
 
 waitForOperator() {
@@ -222,8 +271,7 @@ runFormula() {
     installOperator
     waitForOperator
   fi
-  createGatewayClass
-  createDefaultGateway
+  createGateway
 }
 
 runFormula
