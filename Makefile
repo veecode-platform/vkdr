@@ -13,7 +13,7 @@ BATS_LIBS_DIR        := .bats-libs
 BATS_BIN             := $(BATS_LIBS_DIR)/bats-core/bin/bats
 
 # Targets
-.PHONY: release bump generate-release-notes command update-tools-versions \
+.PHONY: release bump generate-release-notes command update-tools-versions check-updates \
         setup-bats check-cluster test test-formula test-binary test-verbose test-debug clean-bats \
         test-whoami test-kong test-infra test-infra-lifecycle test-postgres test-nginx test-nginx-gw test-traefik \
         test-keycloak test-vault test-eso test-grafana-cloud \
@@ -64,6 +64,15 @@ command:
 # Update tool versions (kubectl, helm, k3d, etc.) to latest releases
 update-tools-versions:
 	./src/main/resources/formulas/_shared/bin/generate-tools-versions.sh
+
+# Check all formulas for available updates
+# Usage: make check-updates [JSON=1]
+check-updates:
+	@if [ "$(JSON)" = "1" ]; then \
+		./src/main/resources/formulas/_shared/bin/check-updates.sh --json; \
+	else \
+		./src/main/resources/formulas/_shared/bin/check-updates.sh; \
+	fi
 
 # ============================================================================
 # BATS Testing
