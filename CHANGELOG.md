@@ -1,6 +1,11 @@
 # VKDR Changelog
 
 
+## v2.0.5 (2026-01-08)
+* fix: restore missing get-vkdr.sh for upgrade formula (b8def11)
+* docs: add spec.md for nginx-gw formula (9906760)
+* docs: split CLAUDE.md into quick reference and SPEC.md (a64668b)
+
 ## v2.0.4 (2026-01-08)
 * fix: make nginx-gw remove --all idempotent (2dd815e)
 * feat: add Gateway API support to whoami formula (51e7c9d)
