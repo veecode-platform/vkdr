@@ -1,6 +1,17 @@
 # VKDR Changelog
 
 
+## v2.0.3 (2026-01-08)
+* chore: add fun certificate subject for self-signed TLS cert (4e2a6b5)
+* feat: preserve TLS secret on default remove, add --all alias (ad4bebf)
+* feat: add self-signed TLS certificate for HTTPS termination (5e4ecac)
+* feat: add HTTPS listener to nginx-gw Gateway (5c2c216)
+* feat: optimize nginx-gw install/remove lifecycle (64d68b1)
+* fix: use NginxProxy for nodeport config, optimize tests (497c78d)
+* fix: accept --nodeports in addition to --node-ports and --node_ports (a9d1fae)
+* add: create default Gateway resource on nginx-gw install (8b2744f)
+* add: nginx-gw command for NGINX Gateway Fabric (c1ed283)
+
 ## v2.0.2 (2026-01-07)
 * add: top-level explain command and comprehensive docs (97c52cc)
 * add: explain command to all formulas (48b065c)
