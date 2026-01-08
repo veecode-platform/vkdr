@@ -1,6 +1,17 @@
 # VKDR Changelog
 
 
+## v2.0.7 (2026-01-08)
+* improve: kong-gw formula with NodePort support and image.tag (ea67942)
+* fix: kong-gw nodeports default to 30000,30001 like nginx-gw (9d9f20f)
+* fix: kong-gw explain command using wrong executor (99d9632)
+* add: BATS tests for kong-gw formula (3db0fd2)
+* add: kong-gw command for Kong Gateway Operator (b984c99)
+* fix: simplify check-updates workflow (5688085)
+* add: GitHub Action to check formula updates weekly (6b9d89b)
+* add: make check-updates target (f7fe913)
+* add: check-updates.sh script for formula version checking (b270b5f)
+
 ## v2.0.6 (2026-01-08)
 * update: keycloak operator to 26.5.0 (f0a5ab4)
 * update: CloudNativePG operator to v1.28.0 (b7f610a)
