@@ -1,6 +1,12 @@
 # VKDR Changelog
 
 
+## v2.0.8 (2026-01-09)
+* refactor: simplify version access using VkdrApplication.version (a353987)
+* add: version check to enforce init after upgrade (755400f)
+* add: enforce init check in Java before running formulas (0f4bb5d)
+* improve: move mirror config to ~/.vkdr/configs/ for persistence (91daf5d)
+
 ## v2.0.7 (2026-01-08)
 * improve: kong-gw formula with NodePort support and image.tag (ea67942)
 * fix: kong-gw nodeports default to 30000,30001 like nginx-gw (9d9f20f)
