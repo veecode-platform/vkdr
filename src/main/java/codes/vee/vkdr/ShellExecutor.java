@@ -7,12 +7,10 @@ package codes.vee.vkdr;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,29 +19,6 @@ public class ShellExecutor {
 
     // Commands that can run without init
     private static final String[] ALLOWED_WITHOUT_INIT = {"init", "upgrade"};
-
-    // Cached current version (read once from properties)
-    private static String currentVersion = null;
-
-    /**
-     * Gets the current VKDR version from application.properties.
-     * @return The current version, or null if not found
-     */
-    private static String getCurrentVersion() {
-        if (currentVersion == null) {
-            try (InputStream input = ShellExecutor.class.getClassLoader()
-                    .getResourceAsStream("application.properties")) {
-                if (input != null) {
-                    Properties props = new Properties();
-                    props.load(input);
-                    currentVersion = props.getProperty("vkdr.version");
-                }
-            } catch (IOException e) {
-                logger.warn("Could not read application.properties: {}", e.getMessage());
-            }
-        }
-        return currentVersion;
-    }
 
     /**
      * Gets the installed VKDR version from ~/.vkdr/.version file.
@@ -60,27 +35,6 @@ public class ShellExecutor {
             logger.warn("Could not read version file: {}", e.getMessage());
         }
         return null;
-    }
-
-    /**
-     * Checks if VKDR has been initialized by verifying the configs directory exists
-     * and the version matches.
-     * @return true if VKDR has been initialized with current version, false otherwise
-     */
-    private static boolean isVkdrInitialized() {
-        String homeDir = System.getProperty("user.home");
-        Path configsDir = Paths.get(homeDir, ".vkdr", "configs");
-        if (!Files.exists(configsDir) || !Files.isDirectory(configsDir)) {
-            return false;
-        }
-
-        // Check version match
-        String installed = getInstalledVersion();
-        String current = getCurrentVersion();
-        if (installed == null || current == null) {
-            return false;
-        }
-        return installed.equals(current);
     }
 
     /**
@@ -112,7 +66,7 @@ public class ShellExecutor {
         boolean configsExist = Files.exists(configsDir) && Files.isDirectory(configsDir);
 
         String installed = getInstalledVersion();
-        String current = getCurrentVersion();
+        String current = VkdrApplication.version;
         boolean versionMatch = installed != null && current != null && installed.equals(current);
 
         if (!configsExist) {

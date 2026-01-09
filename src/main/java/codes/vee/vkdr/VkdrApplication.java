@@ -1,14 +1,25 @@
 package codes.vee.vkdr;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.SpringBootVersion;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import jakarta.annotation.PostConstruct;
 import java.util.Arrays;
 
 @SpringBootApplication
 public class VkdrApplication {
 	public static boolean silentMode = false;
+	public static String version = null;
+
+	@Value("${vkdr.version}")
+	private String vkdrVersion;
+
+	@PostConstruct
+	public void init() {
+		version = vkdrVersion;
+	}
 
 	public static void main(String[] args) {
 		System.setProperty("springBootVersion", SpringBootVersion.getVersion());
