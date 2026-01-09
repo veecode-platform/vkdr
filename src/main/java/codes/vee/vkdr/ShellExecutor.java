@@ -7,10 +7,12 @@ package codes.vee.vkdr;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,14 +22,65 @@ public class ShellExecutor {
     // Commands that can run without init
     private static final String[] ALLOWED_WITHOUT_INIT = {"init", "upgrade"};
 
+    // Cached current version (read once from properties)
+    private static String currentVersion = null;
+
     /**
-     * Checks if VKDR has been initialized by verifying the configs directory exists.
-     * @return true if VKDR has been initialized, false otherwise
+     * Gets the current VKDR version from application.properties.
+     * @return The current version, or null if not found
+     */
+    private static String getCurrentVersion() {
+        if (currentVersion == null) {
+            try (InputStream input = ShellExecutor.class.getClassLoader()
+                    .getResourceAsStream("application.properties")) {
+                if (input != null) {
+                    Properties props = new Properties();
+                    props.load(input);
+                    currentVersion = props.getProperty("vkdr.version");
+                }
+            } catch (IOException e) {
+                logger.warn("Could not read application.properties: {}", e.getMessage());
+            }
+        }
+        return currentVersion;
+    }
+
+    /**
+     * Gets the installed VKDR version from ~/.vkdr/.version file.
+     * @return The installed version, or null if not found
+     */
+    private static String getInstalledVersion() {
+        try {
+            String homeDir = System.getProperty("user.home");
+            Path versionFile = Paths.get(homeDir, ".vkdr", ".version");
+            if (Files.exists(versionFile)) {
+                return Files.readString(versionFile).trim();
+            }
+        } catch (IOException e) {
+            logger.warn("Could not read version file: {}", e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * Checks if VKDR has been initialized by verifying the configs directory exists
+     * and the version matches.
+     * @return true if VKDR has been initialized with current version, false otherwise
      */
     private static boolean isVkdrInitialized() {
         String homeDir = System.getProperty("user.home");
         Path configsDir = Paths.get(homeDir, ".vkdr", "configs");
-        return Files.exists(configsDir) && Files.isDirectory(configsDir);
+        if (!Files.exists(configsDir) || !Files.isDirectory(configsDir)) {
+            return false;
+        }
+
+        // Check version match
+        String installed = getInstalledVersion();
+        String current = getCurrentVersion();
+        if (installed == null || current == null) {
+            return false;
+        }
+        return installed.equals(current);
     }
 
     /**
@@ -53,14 +106,36 @@ public class ShellExecutor {
         if (isAllowedWithoutInit(cmdName)) {
             return true;
         }
-        if (!isVkdrInitialized()) {
+
+        String homeDir = System.getProperty("user.home");
+        Path configsDir = Paths.get(homeDir, ".vkdr", "configs");
+        boolean configsExist = Files.exists(configsDir) && Files.isDirectory(configsDir);
+
+        String installed = getInstalledVersion();
+        String current = getCurrentVersion();
+        boolean versionMatch = installed != null && current != null && installed.equals(current);
+
+        if (!configsExist) {
+            // Fresh install - no configs directory
             System.out.println();
             System.out.println("ERROR: VKDR has not been initialized.");
             System.out.println();
             System.out.println("Please run 'vkdr init' first to set up VKDR.");
             System.out.println();
             return false;
+        } else if (!versionMatch) {
+            // Upgrade scenario - configs exist but version mismatch
+            System.out.println();
+            System.out.println("ERROR: VKDR has been upgraded and needs to be re-initialized.");
+            System.out.println();
+            System.out.println("Installed version: " + (installed != null ? installed : "unknown"));
+            System.out.println("Current version:   " + (current != null ? current : "unknown"));
+            System.out.println();
+            System.out.println("Please run 'vkdr init' to complete the upgrade.");
+            System.out.println();
+            return false;
         }
+
         return true;
     }
 
