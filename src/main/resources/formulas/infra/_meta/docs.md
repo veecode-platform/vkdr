@@ -214,7 +214,13 @@ vkdr infra getca --json
 ```
 ## About Mirrors
 
-The local registry mirrors are started as background containers and are used by VKDR cluster transparently. You can use the `````vdkr mirror` command to change the mirror list.
+The local registry mirrors are started as background containers and are used by VKDR cluster transparently. You can use the `vdkr mirror` command to change the mirror list.
+
+You can force stop the mirrors when stop VKDR:
+
+```bash
+vkdr infra stop --registry
+```
 
 ## Complete Examples
 
