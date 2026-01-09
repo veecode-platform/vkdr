@@ -13,7 +13,7 @@ source "$SHARED_DIR/lib/log.sh"
 source "$SHARED_DIR/lib/tools-paths.sh"
 
 # Define the path to the mirror registry config file
-MIRROR_CONFIG="${HOME}/.vkdr/formulas/_shared/configs/mirror-registry.yaml"
+MIRROR_CONFIG="${HOME}/.vkdr/configs/mirror-registry.yaml"
 
 # Display information about the command
 startInfos() {

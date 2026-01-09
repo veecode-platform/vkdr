@@ -11,7 +11,7 @@ source "$SHARED_DIR/lib/log.sh"
 source "$SHARED_DIR/lib/tools-paths.sh"
 source "$SHARED_DIR/lib/docker-tools.sh"
 
-MIRROR_CONFIG="${HOME}/.vkdr/formulas/_shared/configs/mirror-registry.yaml"
+MIRROR_CONFIG="${HOME}/.vkdr/configs/mirror-registry.yaml"
 
 runFormula() {
   startInfos

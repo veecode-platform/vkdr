@@ -162,7 +162,7 @@ You can mirror any container registry:
 
 The mirror configuration is stored at:
 ```
-~/.vkdr/scripts/.util/configs/mirror-registry.yaml
+~/.vkdr/configs/mirror-registry.yaml
 ```
 
 Example configuration:
@@ -170,16 +170,18 @@ Example configuration:
 mirrors:
   "docker.io":
     endpoint:
-      - http://host.k3d.internal:6000
-  "gcr.io":
-    endpoint:
       - http://host.k3d.internal:6001
-  "quay.io":
+  "registry.k8s.io":
     endpoint:
       - http://host.k3d.internal:6002
+  "ghcr.io":
+    endpoint:
+      - http://host.k3d.internal:6003
 ```
 
-Port numbers are automatically incremented for each new endpoint, starting from 6000.
+Port numbers are automatically incremented for each new endpoint, starting from 6001.
+
+The default configuration is copied to `~/.vkdr/configs/` on first `vkdr init` run. Subsequent `vkdr init` runs will preserve your custom mirror configurations.
 
 ## Important Notes
 

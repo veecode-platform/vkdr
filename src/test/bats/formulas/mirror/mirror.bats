@@ -10,7 +10,7 @@
 
 load '../../helpers/common'
 
-MIRROR_CONFIG="${HOME}/.vkdr/formulas/_shared/configs/mirror-registry.yaml"
+MIRROR_CONFIG="${HOME}/.vkdr/configs/mirror-registry.yaml"
 TEST_HOST="test.mirror.example.com"
 
 # ============================================================================

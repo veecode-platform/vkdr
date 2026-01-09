@@ -5,3 +5,6 @@ mirrors:
   "registry.k8s.io":
     endpoint:
       - http://host.k3d.internal:6002
+  "ghcr.io":
+    endpoint:
+      - http://host.k3d.internal:6003

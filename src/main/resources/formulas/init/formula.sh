@@ -15,12 +15,33 @@ if [[ "$1" == "--force" ]]; then
   boldInfo "Force reinstallation enabled"
 fi
 
+copyDefaultConfigs() {
+  local VKDR_HOME=~/.vkdr
+  local DEFAULT_MIRROR_CONFIG="$SHARED_DIR/configs/mirror-registry.yaml"
+  local USER_MIRROR_CONFIG="$VKDR_HOME/configs/mirror-registry.yaml"
+
+  if [[ -f "$USER_MIRROR_CONFIG" ]]; then
+    notice "Mirror config already exists at $USER_MIRROR_CONFIG, preserving user configuration."
+  else
+    if [[ -f "$DEFAULT_MIRROR_CONFIG" ]]; then
+      info "Copying default mirror config to $USER_MIRROR_CONFIG"
+      cp "$DEFAULT_MIRROR_CONFIG" "$USER_MIRROR_CONFIG"
+    else
+      warn "Default mirror config not found at $DEFAULT_MIRROR_CONFIG"
+    fi
+  fi
+}
+
 runFormula() {
   boldInfo "VKDR initialization"
   bold "=============================="
   local VKDR_HOME=~/.vkdr
 
   mkdir -p $VKDR_HOME/bin
+  mkdir -p $VKDR_HOME/configs
+
+  # Copy default mirror config if it doesn't exist (preserves user modifications)
+  copyDefaultConfigs
 
   installArkade
   #validateKubectlVersion

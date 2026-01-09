@@ -78,6 +78,24 @@ Formulas without `update.yaml` (init, upgrade, infra, mirror) have no external d
 | Implementation spec | `src/main/resources/formulas/<service>/_meta/spec.md` |
 | Update config | `src/main/resources/formulas/<service>/_meta/update.yaml` |
 | BATS tests | `src/test/bats/formulas/<service>/<action>.bats` |
+| Default mirror config | `src/main/resources/formulas/_shared/configs/mirror-registry.yaml` |
+| User mirror config | `~/.vkdr/configs/mirror-registry.yaml` |
+
+## Default Mirror Registries
+
+The cluster is configured with mirrors for common container registries to avoid rate limits and speed up pulls:
+
+| Registry | Port | Purpose |
+|----------|------|---------|
+| `docker.io` | 6001 | Docker Hub - has strict rate limits (100 pulls/6h anonymous) |
+| `registry.k8s.io` | 6002 | Kubernetes images (replaces k8s.gcr.io) |
+| `ghcr.io` | 6003 | GitHub Container Registry |
+
+**Config locations:**
+- Default template: `src/main/resources/formulas/_shared/configs/mirror-registry.yaml`
+- User config: `~/.vkdr/configs/mirror-registry.yaml` (copied on first `vkdr init`, preserved on subsequent runs)
+
+Users can add/remove mirrors with `vkdr mirror add --host <registry>` and `vkdr mirror remove --host <registry>`.
 
 ## Common Patterns
 

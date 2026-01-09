@@ -62,7 +62,7 @@ Pulling images from Docker Hub is slow and rate-limited. Registry mirrors:
 
 ### Mirror Configuration
 
-Mirrors are configured in `~/.vkdr/formulas/_shared/configs/mirror-registry.yaml`:
+Mirrors are configured in `~/.vkdr/configs/mirror-registry.yaml`:
 
 ```yaml
 mirrors:
@@ -72,9 +72,12 @@ mirrors:
   "registry.k8s.io":
     endpoint:
       - http://host.k3d.internal:6002
+  "ghcr.io":
+    endpoint:
+      - http://host.k3d.internal:6003
 ```
 
-New mirrors can be added by editing this file before `vkdr infra start`.
+The default config is copied to `~/.vkdr/configs/` on first `vkdr init` and preserved on subsequent runs. Users can add/remove mirrors with `vkdr mirror add/remove` commands.
 
 ### Traefik Ingress
 
@@ -98,7 +101,7 @@ After cluster start, CoreDNS is patched to resolve `*.localdomain` to the cluste
 | `expose/formula.sh` | Create Cloudflare tunnel for remote access |
 | `createtoken/formula.sh` | Generate service account token |
 | `getca/formula.sh` | Extract cluster CA certificate |
-| `_shared/configs/mirror-registry.yaml` | Mirror registry configuration |
+| `~/.vkdr/configs/mirror-registry.yaml` | User's mirror registry configuration |
 | `_shared/configs/rewrite-coredns.yaml` | CoreDNS localdomain patch |
 | `_shared/lib/docker-tools.sh` | Docker engine check utilities |
 
@@ -198,8 +201,7 @@ Each volume is added as `--volume <path>@server:0` to k3d.
 
 1. **Stop Not Idempotent**: Error message if cluster not running (but continues)
 2. **Single Cluster**: Only one `vkdr-local` cluster supported
-3. **Mirror Config Location**: Must be in `~/.vkdr/formulas/` (extracted on first run)
-4. **Expose Requires Internet**: Cloudflare tunnel needs outbound access
+3. **Expose Requires Internet**: Cloudflare tunnel needs outbound access
 
 ## Stop Idempotency Issue
 
