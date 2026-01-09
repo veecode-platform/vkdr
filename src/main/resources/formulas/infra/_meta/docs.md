@@ -6,7 +6,7 @@ The `vkdr infra` commands are used to manage the local cluster where `vkdr` inst
 
 Start the local `vkdr` cluster with configurable options. The cluster is a single-node `k3d` cluster with opinionated settings and optimizations.
 
-This command also starts a pass-through local registry on port 6000. All image pulls from the cluster are redirected to this local registry transparently, helping avoid Docker Hub rate limits.
+This command also starts a few pass-through local registry mirrors starting on port 6000. All image pulls from the cluster that match these hosts are redirected to these mirrors transparently, helping avoid Docker Hub rate limits and network delays.
 
 ```bash
 vkdr infra start [--traefik] [--agents=<k3d_agents>] \
@@ -212,6 +212,9 @@ Get CA data as JSON:
 ```bash
 vkdr infra getca --json
 ```
+## About Mirrors
+
+The local registry mirrors are started as background containers and are used by VKDR cluster transparently. You can use the `````vdkr mirror` command to change the mirror list.
 
 ## Complete Examples
 

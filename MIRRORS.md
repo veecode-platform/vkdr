@@ -43,7 +43,7 @@ vkdr mirror add quay.io
 Then restart the infrastructure:
 
 ```bash
-vkdr infra stop
+vkdr infra stop --registry
 vkdr infra up
 ```
 
