@@ -119,6 +119,71 @@ vkdr infra down
 vkdr infra down
 ```
 
+## vkdr infra status
+
+Check the health status of the local `vkdr` cluster.
+
+```bash
+vkdr infra status [--json]
+```
+
+### Flags
+
+| Flag | Description | Default |
+|------|-------------|---------|
+| `--json` | Output in JSON format | `false` |
+
+### Output
+
+The command checks:
+
+- **k3d availability**: Whether k3d CLI is responding
+- **Cluster exists**: Whether `vkdr-local` cluster exists
+- **Server count**: Number of servers running vs total
+- **API server**: Whether Kubernetes API is reachable
+
+Status values:
+
+| Status | Meaning |
+|--------|---------|
+| `READY` | All servers running and API reachable |
+| `DEGRADED` | Some servers running but not all, or API unreachable |
+| `NOT_READY` | No servers running |
+
+### Examples
+
+Check cluster status:
+
+```bash
+vkdr infra status
+# ==============================
+# VKDR Cluster Status
+# ==============================
+# Cluster:          vkdr-local
+# Servers:          1/1 running
+# API Server:       reachable
+# ------------------------------
+# Status:           READY
+# ==============================
+```
+
+Get status as JSON (useful for scripting):
+
+```bash
+vkdr infra status --json --silent
+# {"cluster":"vkdr-local","exists":true,"k3d_available":true,"servers_count":1,"servers_running":1,"api_server_reachable":true,"status":"READY"}
+```
+
+Use in scripts to wait for cluster:
+
+```bash
+until vkdr infra status --json --silent | jq -e '.status == "READY"' > /dev/null; do
+  echo "Waiting for cluster..."
+  sleep 5
+done
+echo "Cluster is ready!"
+```
+
 ## vkdr infra expose
 
 Expose the local `vkdr` cluster admin port to the internet using a public Cloudflare tunnel.
@@ -212,6 +277,7 @@ Get CA data as JSON:
 ```bash
 vkdr infra getca --json
 ```
+
 ## About Mirrors
 
 The local registry mirrors are started as background containers and are used by VKDR cluster transparently. You can use the `vdkr mirror` command to change the mirror list.

@@ -46,6 +46,7 @@ Manages the local Kubernetes development environment using k3d (k3s in Docker). 
 ### Why k3d (not Kind, Minikube)
 
 k3d provides:
+
 - Fast cluster startup (seconds, not minutes)
 - Built-in registry mirror support
 - LoadBalancer support via servicelb
@@ -55,6 +56,7 @@ k3d provides:
 ### Why Registry Mirrors
 
 Pulling images from Docker Hub is slow and rate-limited. Registry mirrors:
+
 - Cache images locally in persistent Docker volumes
 - Survive cluster restarts (volumes are not deleted)
 - Eliminate rate limiting issues
@@ -82,6 +84,7 @@ The default config is copied to `~/.vkdr/configs/` on first `vkdr init` and pres
 ### Traefik Ingress
 
 By default, k3d includes Traefik ingress controller. VKDR disables it by default (`--traefik false`) because:
+
 - VKDR provides `nginx install` and `kong install` as ingress options
 - Avoids port conflicts
 - User can enable with `--traefik true` if desired
@@ -89,6 +92,7 @@ By default, k3d includes Traefik ingress controller. VKDR disables it by default
 ### CoreDNS Patching
 
 After cluster start, CoreDNS is patched to resolve `*.localdomain` to the cluster. This enables:
+
 - OIDC flows where pods need to reach auth server via public hostname
 - Local domain resolution within the cluster
 
@@ -98,6 +102,7 @@ After cluster start, CoreDNS is patched to resolve `*.localdomain` to the cluste
 |------|---------|
 | `start/formula.sh` | Create cluster with mirrors and port mappings |
 | `stop/formula.sh` | Delete cluster, optionally delete registries |
+| `status/formula.sh` | Check cluster health and readiness |
 | `expose/formula.sh` | Create Cloudflare tunnel for remote access |
 | `createtoken/formula.sh` | Generate service account token |
 | `getca/formula.sh` | Extract cluster CA certificate |
@@ -132,6 +137,12 @@ After cluster start, CoreDNS is patched to resolve `*.localdomain` to the cluste
 |-----------|----------|-------------|
 | `--off` | `$1` | Terminate tunnel (default: false) |
 
+### Status
+
+| Parameter | Variable | Description |
+|-----------|----------|-------------|
+| `--json` | `$1` | Output JSON format (default: false) |
+
 ## Functions
 
 ### start/formula.sh
@@ -150,6 +161,12 @@ After cluster start, CoreDNS is patched to resolve `*.localdomain` to the cluste
 | Function | Purpose |
 |----------|---------|
 | `stopCluster` | Delete cluster, optionally delete all mirrors |
+
+### status/formula.sh
+
+| Function | Purpose |
+|----------|---------|
+| `checkClusterStatus` | Check k3d cluster state and API server reachability |
 
 ### expose/formula.sh
 
