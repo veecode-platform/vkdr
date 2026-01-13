@@ -21,11 +21,12 @@ checkClusterStatus() {
   cluster_json=$($VKDR_K3D cluster list -o json 2>/dev/null)
   if [ $? -ne 0 ]; then
     if [ "$VKDR_ENV_JSON" == "true" ]; then
-      echo '{"cluster":"'"$CLUSTER_NAME"'","exists":false,"k3d_available":false}'
+      echo '{"cluster":"'"$CLUSTER_NAME"'","exists":false,"k3d_available":false,"status":"NOT_READY"}'
+      return 0  # JSON mode always succeeds - status is in the output
     else
       boldError "k3d is not available or not responding"
+      return 1
     fi
-    return 1
   fi
 
   # Check if cluster exists
@@ -33,12 +34,13 @@ checkClusterStatus() {
 
   if [ -z "$cluster_exists" ]; then
     if [ "$VKDR_ENV_JSON" == "true" ]; then
-      echo '{"cluster":"'"$CLUSTER_NAME"'","exists":false,"k3d_available":true}'
+      echo '{"cluster":"'"$CLUSTER_NAME"'","exists":false,"k3d_available":true,"status":"NOT_READY"}'
+      return 0  # JSON mode always succeeds - status is in the output
     else
       boldError "Cluster '$CLUSTER_NAME' does not exist"
       info "Run 'vkdr infra start' to create the cluster"
+      return 1
     fi
-    return 1
   fi
 
   # Get server counts
@@ -83,7 +85,9 @@ checkClusterStatus() {
     bold "=============================="
   fi
 
-  if [ "$status" == "READY" ]; then
+  if [ "$VKDR_ENV_JSON" == "true" ]; then
+    return 0  # JSON mode always succeeds - status is in the output
+  elif [ "$status" == "READY" ]; then
     return 0
   else
     return 1
