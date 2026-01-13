@@ -36,6 +36,11 @@ export VKDR_TEST_MODE="${VKDR_TEST_MODE:-dev}"
 # Run a vkdr command
 # Usage: vkdr <args...>
 vkdr() {
+  local silent_mode=false
+  if [[ " $* " =~ " --silent " ]]; then
+    silent_mode=true
+  fi
+
   if [ "$VKDR_TEST_MODE" = "binary" ]; then
     # Binary mode: use compiled native binary
     if [ ! -x "$VKDR_PROJECT_ROOT/target/vkdr" ]; then
@@ -47,9 +52,16 @@ vkdr() {
   else
     # Dev mode (default): Maven exec + source formulas
     export VKDR_FORMULA_HOME="$VKDR_PROJECT_ROOT/src/main/resources/formulas"
-    (cd "$VKDR_PROJECT_ROOT" && mvn -q exec:java \
-      -Dexec.mainClass=codes.vee.vkdr.VkdrApplication \
-      -Dexec.args="$*")
+    if [ "$silent_mode" = "true" ]; then
+      # Filter warnings in silent mode (matches vkdr.sh behavior)
+      (cd "$VKDR_PROJECT_ROOT" && mvn -q exec:java \
+        -Dexec.mainClass=codes.vee.vkdr.VkdrApplication \
+        -Dexec.args="$*" 2>&1 | grep -v "WARNING:")
+    else
+      (cd "$VKDR_PROJECT_ROOT" && mvn -q exec:java \
+        -Dexec.mainClass=codes.vee.vkdr.VkdrApplication \
+        -Dexec.args="$*")
+    fi
   fi
 }
 

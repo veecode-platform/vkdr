@@ -65,9 +65,13 @@ public class ShellExecutor {
         Path configsDir = Paths.get(homeDir, ".vkdr", "configs");
         boolean configsExist = Files.exists(configsDir) && Files.isDirectory(configsDir);
 
+        // Skip version check in development mode (VKDR_FORMULA_HOME set)
+        String envFormulaHome = System.getenv("VKDR_FORMULA_HOME");
+        boolean devMode = envFormulaHome != null && !envFormulaHome.isEmpty();
+
         String installed = getInstalledVersion();
         String current = VkdrApplication.version;
-        boolean versionMatch = installed != null && current != null && installed.equals(current);
+        boolean versionMatch = devMode || (installed != null && current != null && installed.equals(current));
 
         if (!configsExist) {
             // Fresh install - no configs directory

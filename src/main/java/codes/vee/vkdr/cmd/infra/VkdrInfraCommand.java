@@ -12,6 +12,7 @@ import picocli.CommandLine.Command;
             VkdrInfraDownCommand.class,
             VkdrInfraExposeCommand.class,
             VkdrInfraStartCommand.class,
+            VkdrInfraStatusCommand.class,
             VkdrInfraStopCommand.class,
             VkdrInfraUpCommand.class,
             VkdrInfraCreateTokenCommand.class,

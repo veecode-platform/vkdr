@@ -14,6 +14,7 @@ public final class ExitCodes {
     public static final int INFRA_CREATETOKEN = 16;
     public static final int INFRA_GETCA = 17;
     public static final int INFRA_EXPLAIN = 18;
+    public static final int INFRA_STATUS = 19;
     public static final int INIT = 9;
     public static final int VKDR_EXPLAIN = 1;
 
