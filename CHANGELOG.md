@@ -1,6 +1,11 @@
 # VKDR Changelog
 
 
+## v2.0.10 (2026-01-13)
+* build: add status.bats to test-infra target (3dc16d5)
+* test: add infra status --json tests for stopped cluster (35ab633)
+* fix: infra status --json returns success with NOT_READY status (7c83e7e)
+
 ## v2.0.9 (2026-01-13)
 * docs: add infra status command documentation (cd33617)
 * feat: add vkdr infra status command (5bff49b)
