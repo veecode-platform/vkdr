@@ -127,3 +127,34 @@ teardown_file() {
   api_reachable=$(echo "$output" | $VKDR_JQ -r '.api_server_reachable')
   [ "$api_reachable" = "true" ]
 }
+
+# ============================================================================
+# Stopped Cluster Tests (must run last - stops the cluster)
+# ============================================================================
+
+@test "infra status --json: succeeds when cluster is stopped" {
+  # Stop the cluster first
+  vkdr infra down
+
+  run vkdr infra status --json --silent
+  assert_success
+  echo "$output" | $VKDR_JQ -e '.' > /dev/null
+}
+
+@test "infra status --json: returns NOT_READY when cluster is stopped" {
+  run vkdr infra status --json --silent
+  assert_success
+
+  local status
+  status=$(echo "$output" | $VKDR_JQ -r '.status')
+  [ "$status" = "NOT_READY" ]
+}
+
+@test "infra status --json: returns exists=false when cluster is stopped" {
+  run vkdr infra status --json --silent
+  assert_success
+
+  local exists
+  exists=$(echo "$output" | $VKDR_JQ -r '.exists')
+  [ "$exists" = "false" ]
+}
