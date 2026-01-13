@@ -152,6 +152,7 @@ test-kong-gw: setup-bats check-cluster
 test-infra: setup-bats
 	@echo "Running infra state tests in $(or $(VKDR_TEST_MODE),dev) mode..."
 	@$(BATS_BIN) --tap src/test/bats/formulas/infra/cluster.bats
+	@$(BATS_BIN) --tap src/test/bats/formulas/infra/status.bats
 
 # Infra lifecycle tests (DESTRUCTIVE - will destroy vkdr-local cluster!)
 # Usage: make test-infra-lifecycle
