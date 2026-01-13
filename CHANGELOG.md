@@ -1,6 +1,14 @@
 # VKDR Changelog
 
 
+## v2.0.9 (2026-01-13)
+* docs: add infra status command documentation (cd33617)
+* feat: add vkdr infra status command (5bff49b)
+* docs: updated info on mirrors (typo) (7e699ef)
+* docs: updated info on mirrors (8dde4a3)
+* docs: update mirror documentation (784f23a)
+* docs: add MIRRORS.md listing formula images and registries (3043c3c)
+
 ## v2.0.8 (2026-01-09)
 * refactor: simplify version access using VkdrApplication.version (a353987)
 * add: version check to enforce init after upgrade (755400f)
