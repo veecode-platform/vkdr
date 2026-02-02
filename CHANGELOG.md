@@ -1,6 +1,12 @@
 # VKDR Changelog
 
 
+## v2.0.11 (2026-02-02)
+* add: updating agent (50e5fdd)
+* update: nginx-gw to 2.4.0 (2706658)
+* update: keycloak to 26.5.2 (3e3f366)
+* docs: add TESTS.md and enforce markdown style rules (4a9bcd2)
+
 ## v2.0.10 (2026-01-13)
 * build: add status.bats to test-infra target (3dc16d5)
 * test: add infra status --json tests for stopped cluster (35ab633)
