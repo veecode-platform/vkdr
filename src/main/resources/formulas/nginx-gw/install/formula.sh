@@ -12,7 +12,7 @@ source "$SHARED_DIR/lib/tools-paths.sh"
 source "$SHARED_DIR/lib/log.sh"
 
 # NGINX Gateway Fabric version
-NGF_VERSION="2.3.0"
+NGF_VERSION="2.4.0"
 
 startInfos() {
   boldInfo "NGINX Gateway Fabric Install"
