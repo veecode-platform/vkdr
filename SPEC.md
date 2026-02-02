@@ -10,7 +10,7 @@ VKDR (VeeCode Kubernetes Developer Runtime) is a CLI tool to accelerate local Ku
 
 ### Hybrid Design
 
-```
+```pre
 ┌─────────────────────────────────────────────────────────────┐
 │                      User runs: vkdr whoami install         │
 └─────────────────────────────────────────────────────────────┘
@@ -46,7 +46,7 @@ VKDR (VeeCode Kubernetes Developer Runtime) is a CLI tool to accelerate local Ku
 
 ## Directory Structure
 
-```
+```pre
 src/
 ├── main/
 │   ├── java/codes/vee/vkdr/
@@ -123,6 +123,7 @@ public class VkdrServiceInstallCommand implements Callable<Integer> {
 ### Exit Codes
 
 Each service has a reserved range in `ExitCodes.java`:
+
 - INFRA: 10-19
 - KONG: 20-29
 - KEYCLOAK: 30-39
@@ -178,6 +179,7 @@ runFormula
 ### Tool Variables
 
 Never use bare commands. Always use:
+
 - `$VKDR_KUBECTL` instead of `kubectl`
 - `$VKDR_HELM` instead of `helm`
 - `$VKDR_YQ` instead of `yq`
@@ -208,12 +210,14 @@ configureGatewayRoute "$VALUES_FILE" "$GATEWAY_CLASS" "$HOSTNAME" "$SERVICE" "$P
 ```
 
 **Key functions in gateway-tools.sh:**
+
 - `getGatewayByClass` - Find Gateway by gatewayClassName
 - `isGatewayClassAvailable` - Check if GatewayClass exists
 - `generateHTTPRouteYAML` - Create HTTPRoute manifest
 - `configureGatewayRoute` - Main function to configure Gateway routing
 
 **Gateway must allow routes from all namespaces:**
+
 ```yaml
 listeners:
 - name: http
@@ -299,6 +303,7 @@ make release
 ```
 
 This:
+
 1. Sets version (removes -SNAPSHOT)
 2. Generates changelog from commits
 3. Commits and tags

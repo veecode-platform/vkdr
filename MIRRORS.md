@@ -6,6 +6,7 @@ Configure mirrors for these registries using `vkdr mirror add <registry>` to avo
 ## Default Mirrors
 
 VKDR comes pre-configured with mirrors for:
+
 - `docker.io` (Docker Hub)
 - `registry.k8s.io` (Kubernetes registry)
 - `ghcr.io` (GitHub Container Registry)
@@ -13,7 +14,7 @@ VKDR comes pre-configured with mirrors for:
 ## Images by Formula
 
 | Formula | Mirror | Image |
-|---------|--------|-------|
+| --- | --- | --- |
 | whoami | docker.io | cowboysysop/whoami |
 | kong | docker.io | kong |
 | kong (enterprise) | docker.io | kong/kong-gateway |
