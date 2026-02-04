@@ -1,6 +1,9 @@
 # VKDR Changelog
 
 
+## v2.0.12 (2026-02-04)
+* update devportal version (ed10b58)
+
 ## v2.0.11 (2026-02-02)
 * add: updating agent (50e5fdd)
 * update: nginx-gw to 2.4.0 (2706658)
