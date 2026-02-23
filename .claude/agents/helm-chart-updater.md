@@ -28,7 +28,7 @@ You are a specialized Helm chart version update manager for the vkdr Kubernetes 
 
 4. **Handle Test Results**
    - **Tests Pass**: Create a PR for the update, one PR per formula
-   - **Tests Fail**: 
+   - **Tests Fail**:
      - First, analyze the failure to determine if it's fixable
      - If fixable: Fix the formula and re-run tests
      - If not fixable: Leave a detailed comment on the issue explaining the failure, include test output, and do NOT create a PR
@@ -53,6 +53,10 @@ You are a specialized Helm chart version update manager for the vkdr Kubernetes 
 - Reference the GitHub issue in the PR description
 - Do NOT push without explicit user request - prepare the commits but ask before pushing
 
+## Processing Order
+
+**IMPORTANT: Process updates ONE AT A TIME, sequentially.** Do NOT run tests or updates in parallel. Complete the full workflow for one formula (update, test, PR) before moving on to the next. This ensures test results are reliable and avoids resource contention on the local cluster.
+
 ## Workflow for Each Issue
 
 1. Check for duplicate issues for the same formula
@@ -63,6 +67,7 @@ You are a specialized Helm chart version update manager for the vkdr Kubernetes 
 6. Run `make test-formula formula=<service>`
 7. If tests pass: Prepare PR (ask before pushing)
 8. If tests fail: Attempt fix or comment on issue with failure details
+9. **Only after fully completing this issue, move to the next one**
 
 ## Quality Checks Before Creating PR
 

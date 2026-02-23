@@ -46,6 +46,7 @@ Installs PostgreSQL using the CloudNative-PG operator. Manages databases and rol
 ### Why CloudNative-PG Operator (not Helm Chart)
 
 Previous versions used the Bitnami PostgreSQL Helm chart. CloudNative-PG provides:
+
 - Declarative database and role management via CRDs
 - Automatic failover and recovery
 - Built-in backup/restore capabilities
@@ -54,6 +55,7 @@ Previous versions used the Bitnami PostgreSQL Helm chart. CloudNative-PG provide
 ### Why Declarative Role Management
 
 Roles (users) are managed via the Cluster CRD's `spec.managed.roles` field:
+
 - Secrets are auto-reloaded when labeled with `cnpg.io/reload=true`
 - Role state is managed declaratively (`ensure: present/absent`)
 - No need for SQL scripts or manual intervention
@@ -61,6 +63,7 @@ Roles (users) are managed via the Cluster CRD's `spec.managed.roles` field:
 ### Vault Integration
 
 When `--vault` is used in createdb:
+
 1. Role is created as a Vault static role
 2. Vault manages password rotation automatically
 3. Rotation schedule is configurable (default: hourly)
@@ -68,6 +71,7 @@ When `--vault` is used in createdb:
 ### Database Safety
 
 CloudNative-PG does NOT auto-drop databases when CR is deleted. The `dropdb` command:
+
 1. Executes `DROP DATABASE` via psql on primary pod
 2. Deletes the Database CR
 3. Removes role from `managed.roles`
@@ -81,7 +85,7 @@ CloudNative-PG does NOT auto-drop databases when CR is deleted. The `dropdb` com
 | `remove/formula.sh` | Remove cluster (keeps operator) |
 | `createdb/formula.sh` | Create database + role (8 parameters) |
 | `dropdb/formula.sh` | Drop database + role + secrets |
-| `_shared/operators/cnpg-1.27.0.yaml` | CloudNative-PG operator manifest |
+| `_shared/operators/cnpg-1.28.1.yaml` | CloudNative-PG operator manifest |
 | `_shared/lib/vault-tools.sh` | Vault integration helpers |
 
 ## Parameters
@@ -104,7 +108,7 @@ CloudNative-PG does NOT auto-drop databases when CR is deleted. The `dropdb` com
 | `--store` | `$5` | Store secret (deprecated) |
 | `--drop` | `$6` | Drop existing database first |
 | `--vault` | `$7` | Use Vault for credential rotation |
-| `--vault-rotation` | `$8` | Rotation schedule (default: "0 * * * *") |
+| `--vault-rotation` | `$8` | Rotation schedule (default: "0 ** **") |
 
 ### Remove
 
@@ -228,13 +232,14 @@ Should use `--ignore-not-found`.
 ## Updating
 
 Uses CloudNative-PG operator installed from a versioned manifest file. To update:
+
 1. Download new operator manifest from GitHub releases
 2. Rename to `_shared/operators/cnpg-{version}.yaml`
 3. Update `CNPG_OPERATOR_YAML` path in `install/formula.sh`
 4. Check release notes for CRD changes affecting Cluster spec
 5. Run tests
 
-Note: Major version updates may require CRD migration. See https://cloudnative-pg.io/documentation/current/installation_upgrade/
+Note: Major version updates may require CRD migration. See <https://cloudnative-pg.io/documentation/current/installation_upgrade/>
 
 See `_meta/update.yaml` for automation config.
 
