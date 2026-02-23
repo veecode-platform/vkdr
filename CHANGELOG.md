@@ -1,6 +1,12 @@
 # VKDR Changelog
 
 
+## v2.0.13 (2026-02-23)
+* clean up stale cnpg operator manifest and update docs (82c0131)
+* update: postgres to 1.28.1 (#13) (7c97d3f)
+* update: keycloak to 26.5.4 (#12) (839756f)
+* update: nginx-gw to 2.4.2 (#11) (d03e858)
+
 ## v2.0.12 (2026-02-04)
 * update devportal version (ed10b58)
 
