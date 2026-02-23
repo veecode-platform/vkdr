@@ -3,6 +3,6 @@ type: operator
 operator:
   name: CloudNative-PG
   github: cloudnative-pg/cloudnative-pg
-  version: "1.28.0"
-  manifest_file: _shared/operators/cnpg-1.28.0.yaml
+  version: "1.28.1"
+  manifest_file: _shared/operators/cnpg-1.28.1.yaml
 test: make test-formula formula=postgres
