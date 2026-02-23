@@ -3,6 +3,6 @@ type: operator
 operator:
   name: Keycloak
   github: keycloak/keycloak-k8s-resources
-  version: "26.5.2"
+  version: "26.5.4"
   manifest_file: _shared/operators/keycloak/keycloak-operator.yml
 test: make test-formula formula=keycloak
