@@ -312,5 +312,5 @@ This:
 
 ## Java Requirements
 
-- JDK 21 with GraalVM
-- Install: `sdk install java 24.0.2-graalce`
+- JDK 25 with GraalVM
+- Install: `sdk install java 25.0.2-graalce`

@@ -20,8 +20,8 @@ Esta é uma CLI para acelerar o desenvolvimento local usando Kubernetes sem maio
 
 Este projeto usa:
 
-- Spring Boot 3.1.9
-- Picocli 4.7.6
+- Spring Boot 4.0.3
+- Picocli 4.7.7
 - GraalVM Native Support
 - Shell scripts (fórmulas)
 
@@ -91,10 +91,10 @@ make test-postgres
 
 O pipeline deste projeto irá gerar um novo release com os assets binários de cada plataforma suportada sempre que um "tagged push" ocorrer em main.
 
-* vkdr-linux-amd64
-* vkdr-linux-arm64
-* vkdr-osx-amd64
-* vkdr-osx-arm64
+- vkdr-linux-amd64
+- vkdr-linux-arm64
+- vkdr-osx-amd64
+- vkdr-osx-arm64
 
 Para fazer um tagged push e gerar um release manualmente:
 
@@ -118,11 +118,11 @@ Para uma versão na POM definida como "x.y.z-SNAPSHOT" será feito:
 
 ## Instalando o Java
 
-Recomendo usar o SDKMAN (https://sdkman.io/install) para instalar
-a JDK localmente. Para este projeto utilizamos a GraalVM 21:
+Recomendo usar o SDKMAN (<https://sdkman.io/install>) para instalar
+a JDK localmente. Para este projeto utilizamos a GraalVM 25:
 
 ```shell
-sdk install java 24.0.2-graalce
+sdk install java 25.0.2-graalce
 ```
 
 ## Atualizando versões das ferramentas
