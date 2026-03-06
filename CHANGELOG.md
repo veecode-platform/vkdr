@@ -1,6 +1,9 @@
 # VKDR Changelog
 
 
+## v2.0.16 (2026-03-06)
+* Delete local registry on 'infra stop --delete-registry' (cb11fb9)
+
 ## v2.0.15 (2026-03-06)
 * Update to Spring Boot 4.0.3 and GraalVM 25 (JDK 25) (03913ef)
 
