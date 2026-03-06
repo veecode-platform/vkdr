@@ -47,6 +47,11 @@ stopCluster() {
         error "Registry k3d-mirror not running..."
       fi
     done
+    # Also delete the local registry if it exists
+    if echo "$REGISTRIES" | grep -qx "k3d-registry.localhost"; then
+      debug "stopCluster: Deleting local registry k3d-registry.localhost"
+      ${VKDR_K3D} registry delete "k3d-registry.localhost"
+    fi
   fi
 }
 
