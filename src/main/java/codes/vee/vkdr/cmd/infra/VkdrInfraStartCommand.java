@@ -57,10 +57,15 @@ public class VkdrInfraStartCommand implements Callable<Integer> {
                     "This will allow for hostPath mounts to work in the k3d cluster and to survive cluster recycling."})
     private String volumes;
 
+    @CommandLine.Option(names = {"--registry", "--enable-registry", "--enable_registry"},
+            defaultValue = "false",
+            description = "enable local registry (default: false)")
+    private boolean enable_registry;
+
     @Override
     public Integer call() throws IOException, InterruptedException {
-        logger.debug("'infra start' was called, enable_traefik={}, http_port={}, https_port={}, nodeports={}, nodeport_base={}, volumes={}", 
-            enable_traefik, http_port, https_port, nodeports, nodeport_base, volumes);
+        logger.debug("'infra start' was called, enable_traefik={}, http_port={}, https_port={}, nodeports={}, nodeport_base={}, volumes={}, enable_registry={}", 
+            enable_traefik, http_port, https_port, nodeports, nodeport_base, volumes, enable_registry);
         return ShellExecutor.executeCommand("infra/start", 
             String.valueOf(enable_traefik), 
             String.valueOf(http_port), 
@@ -69,6 +74,7 @@ public class VkdrInfraStartCommand implements Callable<Integer> {
             api_port, 
             String.valueOf(k3d_agents), 
             volumes,
-            String.valueOf(nodeport_base));
+            String.valueOf(nodeport_base),
+            String.valueOf(enable_registry));
     }
 }

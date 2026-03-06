@@ -9,6 +9,7 @@ VKDR_ENV_API_PORT=$5
 VKDR_ENV_AGENTS=$6
 VKDR_ENV_VOLUMES=$7
 VKDR_ENV_NODEPORT_BASE=$8
+VKDR_ENV_ENABLE_REGISTRY=$9
 # internal
 NODEPORT_FLAG=""
 NODEPORT_VALUE=""
@@ -38,8 +39,12 @@ startInfos() {
   else
     boldNotice "Kubernetes API port: ${VKDR_ENV_API_PORT}"
   fi
-  #boldNotice "Local Registry: 6000"
-  boldNotice "Local Docker Hub Registry Mirror (cache): 6001"
+  if [ "$VKDR_ENV_ENABLE_REGISTRY" = "true" ]; then
+    boldNotice "Local Registry: enabled (port 6000)"
+  else
+    boldNotice "Local Registry: disabled"
+  fi
+  boldNotice "Local Docker Hub Registry Mirror (cache): starting from 6001"
   if [ $VKDR_ENV_NUMBER_NODEPORTS -gt 0 ] ; then
     boldNotice "NodePorts available: ${VKDR_ENV_NODEPORT_BASE}-$((VKDR_ENV_NUMBER_NODEPORTS+VKDR_ENV_NODEPORT_BASE-1)):30000-$((VKDR_ENV_NUMBER_NODEPORTS+30000-1))"
   else
@@ -51,13 +56,19 @@ startInfos() {
 }
 
 startLocalRegistry() {
-  debug "startLocalRegistry: TODO"
-  #if ! ${VKDR_K3D} registry list | grep -q "k3d-registry\.localhost"; then
-  #  ${VKDR_K3D} registry create registry.localhost \
-  #    -p 6000 -v vkdr-registry:/var/lib/registry
-  #else
-  #  warn "Registry already started, skipping..."
-  #fi
+  if [ "$VKDR_ENV_ENABLE_REGISTRY" != "true" ]; then
+    debug "startLocalRegistry: registry disabled, skipping..."
+    return
+  fi
+  
+  debug "startLocalRegistry: starting local registry..."
+  if ! ${VKDR_K3D} registry list | grep -q "k3d-registry\.localhost"; then
+    ${VKDR_K3D} registry create registry.localhost \
+      -p 6000 -v vkdr-registry:/var/lib/registry
+    info "Local registry started on port 6000"
+  else
+    warn "Registry already started, skipping..."
+  fi
 }
 
 # Create the local registry and Docker Hub Mirror
@@ -159,6 +170,7 @@ postStart() {
 startInfos
 checkDockerEngine
 startMirrors
+startLocalRegistry
 parseVolumes
 configureCluster
 startCluster
