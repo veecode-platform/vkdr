@@ -1,6 +1,9 @@
 # VKDR Changelog
 
 
+## v2.0.14 (2026-03-06)
+* enable local registry in 'infra start' (cb84b46)
+
 ## v2.0.13 (2026-02-23)
 * clean up stale cnpg operator manifest and update docs (82c0131)
 * update: postgres to 1.28.1 (#13) (7c97d3f)
