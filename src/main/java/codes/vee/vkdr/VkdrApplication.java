@@ -10,6 +10,10 @@ import java.util.Arrays;
 
 @SpringBootApplication
 public class VkdrApplication {
+	static {
+		System.setProperty("logback.statusListenerClass", "ch.qos.logback.core.status.NopStatusListener");
+	}
+
 	public static boolean silentMode = false;
 	public static String version = null;
 
@@ -22,7 +26,6 @@ public class VkdrApplication {
 	}
 
 	public static void main(String[] args) {
-		System.setProperty("logback.statusListenerClass", "ch.qos.logback.core.status.NopStatusListener");
 		System.setProperty("springBootVersion", SpringBootVersion.getVersion());
 		
 		// Honor VKDR_SILENT environment variable or --silent command option - only show errors when set to true
