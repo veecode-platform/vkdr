@@ -52,7 +52,6 @@
 						<!-- Include the ZIP file as a resource -->
 						<buildArg>-H:IncludeResources=.*zip$</buildArg>
 						<buildArg>-H:IncludeResources=logback.xml</buildArg>
-						<buildArg>-H:IncludeResources=META-INF/MANIFEST.MF</buildArg>
 						<!-- Will not use native architecture, breaks multiarch build -->
 						<!--
 						<buildArg>-march=native</buildArg>
