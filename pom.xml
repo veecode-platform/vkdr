@@ -21,6 +21,12 @@
 			<groupId>info.picocli</groupId>
 			<artifactId>picocli-spring-boot-starter</artifactId>
 			<version>4.7.7</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<!-- abaixo importante para native -->
 		<dependency>
@@ -39,6 +45,17 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
+			<version>2.0.17</version>
 		</dependency>
 	</dependencies>
 
@@ -51,8 +68,7 @@
 					<buildArgs>
 						<!-- Include the ZIP file as a resource -->
 						<buildArg>-H:IncludeResources=.*zip$</buildArg>
-						<buildArg>-H:IncludeResources=logback.xml</buildArg>
-						<buildArg>--initialize-at-run-time=ch.qos.logback.classic.LoggerContext</buildArg>
+						<buildArg>-H:IncludeResources=simplelogger.properties</buildArg>
 						<!-- Will not use native architecture, breaks multiarch build -->
 						<!--
 						<buildArg>-march=native</buildArg>
