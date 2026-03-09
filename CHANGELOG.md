@@ -1,6 +1,18 @@
 # VKDR Changelog
 
 
+## v2.0.17 (2026-03-09)
+* Replace logback with slf4j-simple to fix native image warning (a1d7fc8)
+* Defer LoggerContext initialization to runtime in native image (6d3aa15)
+* Revert "Include MANIFEST.MF in native image resources" (2f4252d)
+* Include MANIFEST.MF in native image resources (34aac42)
+* Move NopStatusListener to static initializer block (f63c671)
+* Set logback NopStatusListener before context initialization (0baebd7)
+* Make logback.xml self-contained for native image (d714ebd)
+* Include logback.xml in GraalVM native-image resources (bf1741e)
+* Rename to logback.xml for early logback initialization (2ce0a58)
+* Suppress logback status messages in native image (7946f58)
+
 ## v2.0.16 (2026-03-06)
 * Delete local registry on 'infra stop --delete-registry' (cb11fb9)
 
