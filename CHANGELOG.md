@@ -1,6 +1,9 @@
 # VKDR Changelog
 
 
+## v2.0.18 (2026-03-13)
+* Add crossplane install/remove commands with provider support (cf2ccc1)
+
 ## v2.0.17 (2026-03-09)
 * Replace logback with slf4j-simple to fix native image warning (a1d7fc8)
 * Defer LoggerContext initialization to runtime in native image (6d3aa15)
