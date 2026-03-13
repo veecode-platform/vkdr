@@ -1,6 +1,7 @@
 package codes.vee.vkdr.cmd;
 
 import codes.vee.vkdr.cmd.common.SilentMixin;
+import codes.vee.vkdr.cmd.crossplane.VkdrCrossplaneCommand;
 import codes.vee.vkdr.cmd.devportal.VkdrDevPortalCommand;
 import codes.vee.vkdr.cmd.keycloak.VkdrKeycloakCommand;
 import codes.vee.vkdr.cmd.kong.VkdrKongCommand;
@@ -50,6 +51,7 @@ import picocli.CommandLine.Mixin;
                 VkdrGrafanaCloudCommand.class,
                 VkdrMirrorCommand.class,
                 VkdrTraefikCommand.class,
+                VkdrCrossplaneCommand.class,
                 VkdrOpenldapCommand.class,
                 VkdrUpgradeCommand.class})
 public class VkdrCommand {

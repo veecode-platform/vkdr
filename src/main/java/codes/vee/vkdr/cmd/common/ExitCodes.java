@@ -1,4 +1,4 @@
-// NEXT: 190
+// NEXT: 200
 package codes.vee.vkdr.cmd.common;
 
 public final class ExitCodes {
@@ -112,6 +112,11 @@ public final class ExitCodes {
     public static final int KONG_GW_EXPLAIN = 191;
     public static final int KONG_GW_REMOVE = 191;
     public static final int KONG_GW_INSTALL = 181;
+
+    // CROSSPLANE related exit codes (190-199)
+    public static final int CROSSPLANE_BASE = 190;
+    public static final int CROSSPLANE_REMOVE = 201;
+    public static final int CROSSPLANE_INSTALL = 191;
 
     // ADD_HERE
 }

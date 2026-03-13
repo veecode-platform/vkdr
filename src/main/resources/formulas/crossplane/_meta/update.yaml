@@ -1,0 +1,7 @@
+# Update configuration for automated dependency updates
+type: helm-latest
+helm:
+  repo: https://charts.crossplane.io/stable
+  chart: crossplane-stable/crossplane
+  values_file: null
+test: make test-formula formula=crossplane
