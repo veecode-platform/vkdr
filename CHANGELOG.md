@@ -1,6 +1,10 @@
 # VKDR Changelog
 
 
+## v2.0.19 (2026-04-02)
+* Simplify devportal-common values and bump image to 1.4.12 (ccea388)
+* Update CloudNative-PG operator to 1.29.0 (06da99e)
+
 ## v2.0.18 (2026-03-13)
 * Add crossplane install/remove commands with provider support (cf2ccc1)
 
