@@ -85,7 +85,7 @@ CloudNative-PG does NOT auto-drop databases when CR is deleted. The `dropdb` com
 | `remove/formula.sh` | Remove cluster (keeps operator) |
 | `createdb/formula.sh` | Create database + role (8 parameters) |
 | `dropdb/formula.sh` | Drop database + role + secrets |
-| `_shared/operators/cnpg-1.28.1.yaml` | CloudNative-PG operator manifest |
+| `_shared/operators/cnpg-1.29.0.yaml` | CloudNative-PG operator manifest |
 | `_shared/lib/vault-tools.sh` | Vault integration helpers |
 
 ## Parameters
@@ -108,7 +108,7 @@ CloudNative-PG does NOT auto-drop databases when CR is deleted. The `dropdb` com
 | `--store` | `$5` | Store secret (deprecated) |
 | `--drop` | `$6` | Drop existing database first |
 | `--vault` | `$7` | Use Vault for credential rotation |
-| `--vault-rotation` | `$8` | Rotation schedule (default: "0 ** **") |
+| `--vault-rotation` | `$8` | Rotation schedule (default: "0 ****") |
 
 ### Remove
 
