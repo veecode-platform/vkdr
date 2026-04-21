@@ -1,6 +1,9 @@
 # VKDR Changelog
 
 
+## v2.0.20 (2026-04-21)
+* Fix openldap ingress toggle and refresh docs (714b027)
+
 ## v2.0.19 (2026-04-02)
 * Simplify devportal-common values and bump image to 1.4.12 (ccea388)
 * Update CloudNative-PG operator to 1.29.0 (06da99e)
