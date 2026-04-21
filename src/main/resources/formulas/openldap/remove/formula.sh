@@ -36,7 +36,7 @@ remove() {
 
 deletePvc() {
   debug "Deleting PVC data-openldap-0"
-  kubectl delete pvc data-openldap-0 --namespace $OPENLDAP_NAMESPACE 2>/dev/null || true
+  $VKDR_KUBECTL delete pvc data-openldap-0 --namespace $OPENLDAP_NAMESPACE 2>/dev/null || true
 }
 
 postRemove() {

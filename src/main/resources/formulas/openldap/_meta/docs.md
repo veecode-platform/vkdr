@@ -1,8 +1,10 @@
 # vkdr openldap
 
-Use these commands to install and manage OpenLDAP directory service in your `vkdr` cluster.
+Use these commands to install and manage an OpenLDAP directory service in your `vkdr` cluster.
 
-OpenLDAP provides a directory service for user authentication and authorization. It's commonly used for enterprise authentication with DevPortal and other applications.
+OpenLDAP provides a directory service for user authentication and authorization. It is commonly used for enterprise authentication with DevPortal and other applications.
+
+The formula ships with a pre-seeded directory tree (base DN `dc=vee,dc=codes`) and a few sample users and groups, ready for local development.
 
 ## vkdr openldap install
 
@@ -16,53 +18,48 @@ vkdr openldap install [-s] [--ldap-admin] [--ssp] \
 ### Flags
 
 | Flag | Shorthand | Description | Default |
-|------|-----------|-------------|---------|
-| `--domain` | `-d` | Domain name for the generated ingress | `localhost` |
-| `--secure` | `-s` | Enable HTTPS | `false` |
-| `--user` | `-u` | OpenLDAP admin user | `admin` |
-| `--password` | `-p` | OpenLDAP admin password | `admin` |
-| `--ldap-admin` | | Enable phpLDAPadmin web UI | `false` |
-| `--ssp` | | Enable self-service-password web UI | `false` |
-| `--nodePort` | | NodePort for LDAP service | `30000` |
+| --- | --- | --- | --- |
+| `--domain` | `-d` | Domain name used for ingress hosts (`ldap.<domain>`, `ldap-ssp.<domain>`) | `localhost` |
+| `--secure` | `-s` | Use HTTPS URLs in messages | `false` |
+| `--user` | `-u` | OpenLDAP admin user (CN) | `admin` |
+| `--password` | `-p` | OpenLDAP admin and config password | `admin` |
+| `--ldap-admin` |  | Enable the phpLDAPadmin web UI | `false` |
+| `--ssp` |  | Enable the self-service-password web UI | `false` |
+| `--nodePort` |  | NodePort exposing LDAP (port 389 inside the container) | `30000` |
+
+The NodePort is only reachable from the host when the cluster was started with `vkdr infra start --nodeports N` (with `N >= 1`). The first nodeport slot maps `30000 -> localhost:9000`.
 
 ### Examples
 
-#### Basic Installation
+#### Basic installation
 
 ```bash
 vkdr infra start --nodeports 1
 vkdr openldap install
-# LDAP available on localhost:9000 (nodeport 30000)
+# LDAP reachable at ldap://localhost:9000
 ```
 
-#### With phpLDAPadmin Web UI
+#### With phpLDAPadmin web UI
 
 ```bash
-vkdr infra up
+vkdr infra start --nodeports 1
 vkdr nginx install --default-ic
 vkdr openldap install --ldap-admin
-# phpLDAPadmin at http://ldapadmin.localhost:8000
+# phpLDAPadmin at http://ldap.localhost:8000
 ```
 
-#### With Self-Service Password
-
-Enable users to reset their own passwords:
+#### With self-service-password
 
 ```bash
 vkdr openldap install --ldap-admin --ssp
-# Self-service password at http://ssp.localhost:8000
+# phpLDAPadmin at      http://ldap.localhost:8000
+# self-service-password at http://ldap-ssp.localhost:8000
 ```
 
-#### With Custom Credentials
+#### Custom credentials
 
 ```bash
-vkdr openldap install -u myadmin -p mysecretpassword --ldap-admin
-```
-
-#### With HTTPS
-
-```bash
-vkdr openldap install -d example.com -s --ldap-admin --ssp
+vkdr openldap install -u admin -p mysecretpassword --ldap-admin
 ```
 
 ## vkdr openldap remove
@@ -76,8 +73,8 @@ vkdr openldap remove [-d]
 ### Flags
 
 | Flag | Shorthand | Description | Default |
-|------|-----------|-------------|---------|
-| `--delete` | `-d` | Delete the associated PVC (data-openldap-0) | `false` |
+| --- | --- | --- | --- |
+| `--delete` | `-d` | Delete the associated PVC (`data-openldap-0`) | `false` |
 
 ### Examples
 
@@ -101,107 +98,114 @@ Explain OpenLDAP setup and configuration options.
 vkdr openldap explain
 ```
 
-## Complete Examples
+## LDAP connection details
 
-### DevPortal with LDAP Authentication
+### Base DN
 
-```bash
-# Start cluster with nodeports for LDAP
-vkdr infra start --nodeports 1
-
-# Install ingress
-vkdr nginx install --default-ic
-
-# Install OpenLDAP with admin UI
-vkdr openldap install --ldap-admin -p ldapadmin123
-
-# Access phpLDAPadmin to manage users
-open http://ldapadmin.localhost:8000
-# Login DN: cn=admin,dc=vkdr,dc=local
-# Password: ldapadmin123
-
-# Install Kong for DevPortal
-vkdr kong install --default-ic
-
-# Install DevPortal with LDAP profile
-vkdr devportal install --profile ldap
+```pre
+dc=vee,dc=codes
 ```
 
-### Full LDAP Setup with Self-Service
+### Admin bind DN
 
-```bash
-# Start cluster
-vkdr infra start --nodeports 1
-vkdr nginx install --default-ic
-
-# Install OpenLDAP with all features
-vkdr openldap install \
-  -u admin \
-  -p adminpassword \
-  --ldap-admin \
-  --ssp
-
-# Access points:
-# - phpLDAPadmin: http://ldapadmin.localhost:8000
-# - Self-Service Password: http://ssp.localhost:8000
-# - LDAP: localhost:9000 (ldap://localhost:9000)
+```pre
+cn=admin,dc=vee,dc=codes
 ```
 
-## LDAP Connection Details
+The admin password is whatever you passed via `-p` (default: `admin`).
 
-### Default Base DN
+### Connection URLs
 
-```
-dc=vkdr,dc=local
-```
+From the host (requires `vkdr infra start --nodeports 1`):
 
-### Admin Bind DN
-
-```
-cn=admin,dc=vkdr,dc=local
-```
-
-### Connection URL
-
-```
+```pre
 ldap://localhost:9000
 ```
 
-Or within the cluster:
+From inside the cluster:
 
+```pre
+ldap://openldap.vkdr.svc.cluster.local:389
 ```
-ldap://openldap.openldap.svc.cluster.local:389
+
+### Quick sanity checks
+
+```bash
+# Bind as admin
+ldapwhoami -H ldap://localhost:9000 -x \
+  -D "cn=admin,dc=vee,dc=codes" -w admin
+
+# List everything under the base DN
+ldapsearch -LLL -H ldap://localhost:9000 -x \
+  -D "cn=admin,dc=vee,dc=codes" -w admin \
+  -b "dc=vee,dc=codes" "(objectClass=*)" dn
 ```
+
+## Pre-seeded directory
+
+The formula loads three LDIF files on first install (from `_shared/values/openldap.yaml`). You can edit that file to change the seed data before installing.
+
+### Organizational units
+
+| DN | Purpose |
+| --- | --- |
+| `dc=vee,dc=codes` | Root (organization "Vee Codes") |
+| `ou=People,dc=vee,dc=codes` | Users |
+| `ou=Groups,dc=vee,dc=codes` | Groups |
+
+### Users
+
+| DN | cn | mail | Password |
+| --- | --- | --- | --- |
+| `uid=admin,ou=People,dc=vee,dc=codes` | Admin Superuser | `admin@vee.codes` | `vert1234` |
+| `uid=young,ou=People,dc=vee,dc=codes` | Young Trainee | `young@vee.codes` | `vert1234` |
+
+Sample user passwords are stored as pre-computed `{SSHA}` hashes in `_shared/values/openldap.yaml`. The seeded password for both users is `vert1234`. To use different passwords, replace the `userPassword` hashes in that file (generate with `slappasswd -h '{SSHA}' -s <password>`) before running `vkdr openldap install`.
+
+Note: the `-p` / admin password flag only sets the rootDN bind password (`cn=admin,dc=vee,dc=codes`). It does not affect the pre-seeded user entries under `ou=People`.
+
+### Groups
+
+Both groups use `objectClass: groupOfNames`.
+
+| DN | Members |
+| --- | --- |
+| `cn=developers,ou=Groups,dc=vee,dc=codes` | `admin`, `young` |
+| `cn=admins,ou=Groups,dc=vee,dc=codes` | `admin` |
 
 ## Using phpLDAPadmin
 
-phpLDAPadmin provides a web interface for managing LDAP:
+When installed with `--ldap-admin`, phpLDAPadmin is available at `http://ldap.<domain>:8000` (default: `http://ldap.localhost:8000`).
 
-1. Access http://ldapadmin.localhost:8000
+1. Open the URL
 2. Click "login"
-3. Login DN: `cn=admin,dc=vkdr,dc=local`
-4. Password: Your admin password (default: `admin`)
+3. Login DN: `cn=admin,dc=vee,dc=codes`
+4. Password: whatever you passed to `-p` (default: `admin`)
 
-### Creating Users
+From there you can browse `dc=vee,dc=codes`, create users under `ou=People`, or add members to groups under `ou=Groups`.
 
-1. Navigate to `dc=vkdr,dc=local`
-2. Create a new child entry
-3. Select "Generic: User Account"
-4. Fill in user details
+## Self-service-password
 
-### Creating Groups
+When installed with `--ssp`, a self-service-password UI is available at `http://ldap-ssp.<domain>:8000` (default: `http://ldap-ssp.localhost:8000`). Users can reset their own passwords there without admin intervention.
 
-1. Navigate to `dc=vkdr,dc=local`
-2. Create a new child entry
-3. Select "Generic: Posix Group"
-4. Add members to the group
+## Complete example: DevPortal with LDAP authentication
 
-## Self-Service Password
+```bash
+# Cluster with one exposed nodeport for LDAP
+vkdr infra start --nodeports 1
 
-When `--ssp` is enabled, users can reset their own passwords:
+# Ingress for the web UIs
+vkdr nginx install --default-ic
 
-1. Access http://ssp.localhost:8000
-2. Enter username
-3. Follow password reset flow
+# OpenLDAP with the admin UI
+vkdr openldap install --ldap-admin -p ldapadmin123
 
-This is useful for enterprise environments where users need to manage their own credentials.
+# Browse the directory:
+#   http://ldap.localhost:8000
+#   DN: cn=admin,dc=vee,dc=codes
+#   Password: ldapadmin123
+
+# Kong and DevPortal wired to LDAP
+vkdr kong install --default-ic
+vkdr devportal install --profile ldap
+```

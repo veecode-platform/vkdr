@@ -105,6 +105,7 @@ install() {
     --set phpldapadmin.ingress.hosts[0]="ldap.$VKDR_ENV_OPENLDAP_DOMAIN" \
     --set-string "phpldapadmin.env.PHPLDAPADMIN_LDAP_HOSTS=#PYTHON2BASH:[{'openldap.vkdr': [{'server': [{'tls': False}, {'base': 'dc=vee,dc=codes'}]}]}]" \
     --set ltb-passwd.enabled="$VKDR_ENV_OPENLDAP_SELF_SERVICE_PASSWORD" \
+    --set ltb-passwd.ingress.enabled="$VKDR_ENV_OPENLDAP_SELF_SERVICE_PASSWORD" \
     --set ltb-passwd.ingress.hosts[0]="ldap-ssp.$VKDR_ENV_OPENLDAP_DOMAIN" \
     --set service.type=NodePort \
     --set service.ldapPortNodePort="$VKDR_ENV_OPENLDAP_NODEPORT" \
