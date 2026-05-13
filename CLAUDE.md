@@ -118,6 +118,14 @@ source "$SHARED_DIR/lib/tools-paths.sh"
 source "$SHARED_DIR/lib/log.sh"
 ```
 
+### Helm Install
+
+Always use `--repo <url>` instead of the `repo/chart` shorthand. Helm resolves `repo/chart` against the filesystem first, so a directory in the user's cwd matching the repo name causes `unable to detect chart at .../Chart.yaml`. Using `--repo` forces a direct repo lookup regardless of cwd.
+
+```bash
+$VKDR_HELM upgrade -i <release> <chart> --repo <chart-repo-url> -n <ns> --values <values>
+```
+
 ### Idempotent Remove
 
 ```bash
