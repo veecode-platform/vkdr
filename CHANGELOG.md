@@ -1,6 +1,9 @@
 # VKDR Changelog
 
 
+## v2.0.21 (2026-05-13)
+* Fix kong install helm chart resolution (ac69eb2)
+
 ## v2.0.20 (2026-04-21)
 * Fix openldap ingress toggle and refresh docs (714b027)
 
