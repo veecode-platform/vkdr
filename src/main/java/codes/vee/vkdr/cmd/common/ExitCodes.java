@@ -1,4 +1,4 @@
-// NEXT: 200
+// NEXT: 210
 package codes.vee.vkdr.cmd.common;
 
 public final class ExitCodes {
@@ -117,6 +117,12 @@ public final class ExitCodes {
     public static final int CROSSPLANE_BASE = 190;
     public static final int CROSSPLANE_REMOVE = 201;
     public static final int CROSSPLANE_INSTALL = 191;
+
+    // DevPortal Platform (V2) related exit codes (200-209)
+    public static final int DEVPORTAL_PLATFORM_BASE = 200;
+    public static final int DEVPORTAL_PLATFORM_INSTALL = 201;
+    public static final int DEVPORTAL_PLATFORM_REMOVE = 202;
+    public static final int DEVPORTAL_PLATFORM_EXPLAIN = 203;
 
     // ADD_HERE
 }
