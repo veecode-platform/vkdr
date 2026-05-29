@@ -1,0 +1,18 @@
+# Base values VKDR injects into the veecode-devportal-platform chart (DevPortal V2).
+# The install formula overrides presets, existingSecret, ingress host, pluginRegistry
+# and appConfig.catalog.locations at runtime. SQLite-on-PVC persistence + image tag
+# come from the chart defaults (do not pin them here).
+presets:
+  - recommended
+existingSecret: ""
+ingress:
+  enabled: true
+  className: kong
+  hosts:
+    - host: devportal.localhost
+      paths:
+        - path: /
+          pathType: Prefix
+appConfig:
+  catalog:
+    locations: []
