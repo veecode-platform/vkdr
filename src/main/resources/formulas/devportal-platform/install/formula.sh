@@ -168,10 +168,35 @@ settingValues() {
   cp "$VKDR_VALUES_SRC" "$VKDR_VALUES"
 }
 
+# Same scheme/port convention as the V1 devportal formula (installDevPortal()):
+# omit :443 for https and :80 for http, otherwise append ":$PORT".
+computeDevPortalBaseUrl() {
+  local scheme="http"
+  local port=""
+  if [ "$VKDR_ENV_SECURE" == "true" ]; then
+    scheme="https"
+    if [ "$VKDR_HTTPS_PORT" != "443" ]; then
+      port=":$VKDR_HTTPS_PORT"
+    fi
+  else
+    if [ "$VKDR_HTTP_PORT" != "80" ]; then
+      port=":$VKDR_HTTP_PORT"
+    fi
+  fi
+  echo "${scheme}://devportal.${VKDR_ENV_DOMAIN}${port}"
+}
+
 patchValues() {
   $VKDR_YQ eval ".presets = (\"$VKDR_FINAL_PRESETS\" | split(\",\"))" -i "$VKDR_VALUES"
   $VKDR_YQ eval ".existingSecret = \"$SECRET_NAME\"" -i "$VKDR_VALUES"
   $VKDR_YQ eval ".ingress.hosts[0].host = \"devportal.$VKDR_ENV_DOMAIN\"" -i "$VKDR_VALUES"
+  # Browser-facing app-config base URLs. Without these the image falls back to its
+  # internal default (http://localhost:7007) and every Scalprum dynamic frontend
+  # remote 404s in the browser (menu still renders; routes/icons break).
+  local base_url
+  base_url="$(computeDevPortalBaseUrl)"
+  $VKDR_YQ eval ".appConfig.app.baseUrl = \"$base_url\"" -i "$VKDR_VALUES"
+  $VKDR_YQ eval ".appConfig.backend.baseUrl = \"$base_url\"" -i "$VKDR_VALUES"
   if [ -n "$VKDR_ENV_PLUGIN_REGISTRY" ]; then
     $VKDR_YQ eval ".pluginRegistry = \"$VKDR_ENV_PLUGIN_REGISTRY\"" -i "$VKDR_VALUES"
   fi
