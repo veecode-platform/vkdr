@@ -110,3 +110,25 @@ teardown_file() {
   run $VKDR_KUBECTL get ingress -n $DEVPORTAL_NAMESPACE
   assert_success
 }
+
+@test "devportal-platform install: generated values set appConfig.app.baseUrl" {
+  # Regression: without this, the image falls back to its internal default
+  # (http://localhost:7007) and every Scalprum dynamic frontend remote 404s
+  # in the browser (menu still renders; routes/icons break).
+  run $VKDR_YQ eval '.appConfig.app.baseUrl' /tmp/devportal-platform.yaml
+  assert_success
+  assert_output --partial "devportal."
+}
+
+@test "devportal-platform install: generated values set appConfig.backend.baseUrl" {
+  run $VKDR_YQ eval '.appConfig.backend.baseUrl' /tmp/devportal-platform.yaml
+  assert_success
+  assert_output --partial "devportal."
+}
+
+@test "devportal-platform install: app and backend baseUrls match" {
+  local app_url backend_url
+  app_url=$($VKDR_YQ eval '.appConfig.app.baseUrl' /tmp/devportal-platform.yaml)
+  backend_url=$($VKDR_YQ eval '.appConfig.backend.baseUrl' /tmp/devportal-platform.yaml)
+  [ "$app_url" == "$backend_url" ]
+}
