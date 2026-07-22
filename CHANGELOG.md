@@ -1,6 +1,10 @@
 # VKDR Changelog
 
 
+## v2.0.23 (2026-07-22)
+* fix(devportal-platform): pin SQLite+PVC so install survives chart 0.5.0 guard (#35) (bdb4bfb)
+* fix(devportal-platform): set appConfig baseUrls in install formula (#34) (8455312)
+
 ## v2.0.21 (2026-05-13)
 * Fix kong install helm chart resolution (ac69eb2)
 
