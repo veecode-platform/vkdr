@@ -1,7 +1,16 @@
 # Base values VKDR injects into the veecode-devportal-platform chart (DevPortal V2).
 # The install formula overrides presets, existingSecret, ingress host, pluginRegistry
-# and appConfig.catalog.locations at runtime. SQLite-on-PVC persistence + image tag
-# come from the chart defaults (do not pin them here).
+# and appConfig.catalog.locations at runtime. The image tag comes from the chart default.
+#
+# Persistence: chart >=0.5.0 defaults to stateless/external-Postgres and REFUSES to render a
+# bare install (a fail guard forces the operator to pick a persistence path). vkdr-local has
+# no external Postgres, so we opt into the SQLite-on-PVC dev path explicitly — both PVCs, which
+# matches pre-0.5.0 behaviour (the plugins PVC is a rebuildable cache that keeps restarts fast).
+persistence:
+  data:
+    enabled: true
+  plugins:
+    enabled: true
 presets:
   - recommended
 existingSecret: ""

@@ -8,7 +8,10 @@ stays as-is for the 1.x distro.
 
 Deploy DevPortal V2 on a local VKDR cluster using the V2 runtime contract: **presets**
 (`VEECODE_PRESETS`) instead of V1 profiles, a VKDR-managed credentials Secret consumed via
-the chart's `existingSecret`, Kong ingress, and persistent SQLite (chart default).
+the chart's `existingSecret`, Kong ingress, and persistent SQLite on a PVC. As of chart
+0.5.0 the chart defaults to stateless/external-Postgres and refuses a bare install; since
+vkdr-local has no external Postgres, the formula opts into the SQLite+PVC dev path explicitly
+(`persistence.data.enabled=true` + `persistence.plugins.enabled=true` in the common values).
 
 ## Key Files
 
