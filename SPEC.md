@@ -44,6 +44,23 @@ VKDR (VeeCode Kubernetes Developer Runtime) is a CLI tool to accelerate local Ku
 - **Java/Picocli**: Excellent CLI UX (help, completion, validation), GraalVM native compilation
 - **Bash formulas**: Easy to iterate on Kubernetes operations, readable by DevOps engineers
 
+### Exception: `vkdr completions`
+
+`vkdr completions` is the one command group whose logic lives entirely in Java, with no formula
+behind it (except `explain`, which renders docs with glow like every other group). Three reasons:
+
+1. The completion script is rendered from the picocli `CommandSpec`, which only exists in Java.
+2. `ShellExecutor.executeCommand` gates every command except `init`/`upgrade` behind
+   `validateInitialization`, and that gate writes its "not initialized" banner to **stdout** —
+   which a user piping the script into `source` would ingest.
+3. `~/.vkdr/formulas/` does not exist until `vkdr init` runs (`ScriptsExtractor` unpacks it
+   there), so a formula-backed implementation could not work on a fresh machine — precisely when
+   a user most wants completion set up.
+
+Because these commands never call `ShellExecutor`, the init gate is never reached and
+`ALLOWED_WITHOUT_INIT` needs no entry. See
+`src/main/resources/formulas/completions/_meta/spec.md` for details.
+
 ## Directory Structure
 
 ```pre

@@ -37,6 +37,19 @@ To install this CLI:
 curl -L get-vkdr.vee.codes | bash
 ```
 
+## Shell completions
+
+To enable TAB completion for bash or zsh:
+
+```sh
+vkdr completions install
+```
+
+This detects your shell, writes the completion script to `~/.vkdr/completions/`, and prefers a
+directory your shell already searches so no rc file has to be modified. Open a new shell
+afterwards. Use `vkdr completions uninstall` to remove it, `vkdr completions status` to check,
+and `vkdr completions explain` for the full documentation.
+
 ## Run in the shell via Maven
 
 To run the CLI in the shell (via Maven):

@@ -1,6 +1,7 @@
 package codes.vee.vkdr.cmd;
 
 import codes.vee.vkdr.cmd.common.SilentMixin;
+import codes.vee.vkdr.cmd.completions.VkdrCompletionsCommand;
 import codes.vee.vkdr.cmd.crossplane.VkdrCrossplaneCommand;
 import codes.vee.vkdr.cmd.devportal.VkdrDevPortalCommand;
 import codes.vee.vkdr.cmd.devportal_platform.VkdrDevPortalPlatformCommand;
@@ -37,6 +38,7 @@ import picocli.CommandLine.Mixin;
         description = "VKDR cli, your friendly local kubernetes",
         subcommands = {
                 VkdrExplainCommand.class,
+                VkdrCompletionsCommand.class,
                 VkdrInfraCommand.class,
                 VkdrInitCommand.class,
                 VkdrNginxCommand.class,

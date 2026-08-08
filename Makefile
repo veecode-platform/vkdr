@@ -17,7 +17,7 @@ BATS_BIN             := $(BATS_LIBS_DIR)/bats-core/bin/bats
         setup-bats check-cluster test test-formula test-binary test-verbose test-debug clean-bats \
         test-whoami test-kong test-kong-gw test-infra test-infra-lifecycle test-postgres test-nginx test-nginx-gw test-traefik \
         test-keycloak test-vault test-eso test-grafana-cloud \
-        test-openldap test-devportal test-mirror
+        test-openldap test-devportal test-mirror test-completions
 
 # Default target
 release: set-release-version generate-release-notes git-tag bump-version
@@ -218,6 +218,11 @@ test-devportal: setup-bats check-cluster
 test-mirror: setup-bats
 	@echo "Running mirror tests in $(or $(VKDR_TEST_MODE),dev) mode..."
 	@$(BATS_BIN) --tap src/test/bats/formulas/mirror/
+
+# Shortcut for completions tests (no cluster required)
+test-completions: setup-bats
+	@echo "Running completions tests in $(or $(VKDR_TEST_MODE),dev) mode..."
+	@$(BATS_BIN) --tap src/test/bats/formulas/completions/
 
 # Test using compiled native binary (release testing)
 test-binary: setup-bats check-cluster

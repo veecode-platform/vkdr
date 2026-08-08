@@ -32,6 +32,7 @@ vkdr infra stop
 | `vkdr infra` | Manage local k3d cluster | `vkdr infra explain` |
 | `vkdr init` | Initialize VKDR environment | `vkdr init --help` |
 | `vkdr upgrade` | Upgrade VKDR to latest version | `vkdr upgrade --help` |
+| `vkdr completions` | Shell TAB-completion (bash, zsh) | `vkdr completions explain` |
 
 ### Ingress Controllers
 
@@ -120,8 +121,8 @@ vkdr postgres createdb -d myapp -u myuser --vault
 - Run `vkdr --help` for all commands
 - Run `vkdr <command> --help` for command options
 - Run `vkdr <command> explain` for detailed documentation
-- Visit https://docs.vkdr.dev for full documentation
-- Report issues at https://github.com/veecode-platform/vkdr/issues
+- Visit <https://docs.vkdr.dev> for full documentation
+- Report issues at <https://github.com/veecode-platform/vkdr/issues>
 
 ## Environment
 

@@ -79,6 +79,7 @@ upgrade() {
 
 postInstall() {
   info "VKDR upgrade finished!"
+  notice "Run 'vkdr init' to complete the upgrade (it also refreshes shell completions)."
 }
 
 runFormula
