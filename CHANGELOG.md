@@ -1,6 +1,10 @@
 # VKDR Changelog
 
 
+## v2.0.25 (2026-08-08)
+* feat(completions): add shell TAB-completion for bash and zsh (5e29d5e)
+* fix(check-updates): guard empty array expansion on bash 3.2 (9437734)
+
 ## v2.0.24 (2026-08-08)
 * fix(log): make color output work on bash 3.2 (b6d2c39)
 
