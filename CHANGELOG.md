@@ -1,6 +1,9 @@
 # VKDR Changelog
 
 
+## v2.0.24 (2026-08-08)
+* fix(log): make color output work on bash 3.2 (b6d2c39)
+
 ## v2.0.23 (2026-07-22)
 * fix(devportal-platform): pin SQLite+PVC so install survives chart 0.5.0 guard (#35) (bdb4bfb)
 * fix(devportal-platform): set appConfig baseUrls in install formula (#34) (8455312)
