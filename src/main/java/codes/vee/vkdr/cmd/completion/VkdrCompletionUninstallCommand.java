@@ -1,8 +1,8 @@
-package codes.vee.vkdr.cmd.completions;
+package codes.vee.vkdr.cmd.completion;
 
 import codes.vee.vkdr.VkdrApplication;
 import codes.vee.vkdr.cmd.common.ExitCodes;
-import codes.vee.vkdr.cmd.completions.CompletionsSupport.Change;
+import codes.vee.vkdr.cmd.completion.CompletionSupport.Change;
 import picocli.CommandLine;
 
 import java.io.PrintWriter;
@@ -11,9 +11,9 @@ import java.nio.file.Path;
 import java.util.concurrent.Callable;
 
 @CommandLine.Command(name = "uninstall", mixinStandardHelpOptions = true,
-        description = "remove vkdr completions from your shell",
-        exitCodeOnExecutionException = ExitCodes.COMPLETIONS_UNINSTALL)
-public class VkdrCompletionsUninstallCommand implements Callable<Integer> {
+        description = "remove installed shell completions",
+        exitCodeOnExecutionException = ExitCodes.COMPLETION_UNINSTALL)
+public class VkdrCompletionUninstallCommand implements Callable<Integer> {
 
     @CommandLine.Spec
     CommandLine.Model.CommandSpec spec;
@@ -45,11 +45,11 @@ public class VkdrCompletionsUninstallCommand implements Callable<Integer> {
 
         if (all) {
             for (Shell s : Shell.values()) {
-                removedAnything |= clean(out, CompletionsSupport.detectRcFile(s, null));
+                removedAnything |= clean(out, CompletionSupport.detectRcFile(s, null));
             }
         } else {
-            Shell target = CompletionsSupport.detectShell(shell);
-            removedAnything = clean(out, CompletionsSupport.detectRcFile(target, rcFile));
+            Shell target = CompletionSupport.detectShell(shell);
+            removedAnything = clean(out, CompletionSupport.detectRcFile(target, rcFile));
         }
 
         // The no-rc ("lazy") payloads, if a previous install placed any.
@@ -57,7 +57,7 @@ public class VkdrCompletionsUninstallCommand implements Callable<Integer> {
             if (!all && shell != null && s != shell) {
                 continue;
             }
-            Path lazy = CompletionsSupport.lazyTarget(s);
+            Path lazy = CompletionSupport.lazyTarget(s);
             if (lazy != null && Files.exists(lazy)) {
                 if (!dryRun) {
                     Files.delete(lazy);
@@ -66,7 +66,7 @@ public class VkdrCompletionsUninstallCommand implements Callable<Integer> {
                 removedAnything = true;
             }
         }
-        Path wrapper = CompletionsSupport.zshWrapperPath();
+        Path wrapper = CompletionSupport.zshWrapperPath();
         if (Files.exists(wrapper)) {
             if (!dryRun) {
                 Files.delete(wrapper);
@@ -76,7 +76,7 @@ public class VkdrCompletionsUninstallCommand implements Callable<Integer> {
         }
 
         if (purge) {
-            Path script = CompletionsSupport.scriptPath();
+            Path script = CompletionSupport.scriptPath();
             if (Files.exists(script) && !dryRun) {
                 Files.delete(script);
                 say(out, "Removed " + script);
@@ -85,7 +85,7 @@ public class VkdrCompletionsUninstallCommand implements Callable<Integer> {
         }
 
         if (!removedAnything) {
-            say(out, "vkdr completions are not installed - nothing to do.");
+            say(out, "Shell completions are not installed - nothing to do.");
         } else {
             say(out, "Open a new shell for the change to take effect.");
         }
@@ -93,7 +93,7 @@ public class VkdrCompletionsUninstallCommand implements Callable<Integer> {
     }
 
     private boolean clean(PrintWriter out, Path rc) throws Exception {
-        Change c = CompletionsSupport.removeBlock(rc, dryRun);
+        Change c = CompletionSupport.removeBlock(rc, dryRun);
         if (c == Change.REMOVED) {
             say(out, "Removed the vkdr block from " + rc);
             return true;

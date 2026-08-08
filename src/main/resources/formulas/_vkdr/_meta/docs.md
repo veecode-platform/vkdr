@@ -32,7 +32,7 @@ vkdr infra stop
 | `vkdr infra` | Manage local k3d cluster | `vkdr infra explain` |
 | `vkdr init` | Initialize VKDR environment | `vkdr init --help` |
 | `vkdr upgrade` | Upgrade VKDR to latest version | `vkdr upgrade --help` |
-| `vkdr completions` | Shell TAB-completion (bash, zsh) | `vkdr completions explain` |
+| `vkdr completion` | Shell TAB-completion (bash, zsh) | `vkdr completion explain` |
 
 ### Ingress Controllers
 

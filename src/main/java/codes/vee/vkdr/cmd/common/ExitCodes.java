@@ -124,14 +124,14 @@ public final class ExitCodes {
     public static final int DEVPORTAL_PLATFORM_REMOVE = 202;
     public static final int DEVPORTAL_PLATFORM_EXPLAIN = 203;
 
-    // COMPLETIONS related exit codes (210-219)
-    public static final int COMPLETIONS_BASE = 210;
-    public static final int COMPLETIONS_BASH = 211;
-    public static final int COMPLETIONS_ZSH = 212;
-    public static final int COMPLETIONS_INSTALL = 213;
-    public static final int COMPLETIONS_UNINSTALL = 214;
-    public static final int COMPLETIONS_STATUS = 215;
-    public static final int COMPLETIONS_EXPLAIN = 216;
+    // COMPLETION related exit codes (210-219)
+    public static final int COMPLETION_BASE = 210;
+    public static final int COMPLETION_BASH = 211;
+    public static final int COMPLETION_ZSH = 212;
+    public static final int COMPLETION_INSTALL = 213;
+    public static final int COMPLETION_UNINSTALL = 214;
+    public static final int COMPLETION_STATUS = 215;
+    public static final int COMPLETION_EXPLAIN = 216;
 
     // ADD_HERE
 }

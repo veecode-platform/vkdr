@@ -1,4 +1,4 @@
-package codes.vee.vkdr.cmd.completions;
+package codes.vee.vkdr.cmd.completion;
 
 /**
  * Shells for which vkdr can generate and install completions.

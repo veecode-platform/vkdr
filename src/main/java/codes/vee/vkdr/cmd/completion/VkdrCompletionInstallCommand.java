@@ -1,8 +1,8 @@
-package codes.vee.vkdr.cmd.completions;
+package codes.vee.vkdr.cmd.completion;
 
 import codes.vee.vkdr.VkdrApplication;
 import codes.vee.vkdr.cmd.common.ExitCodes;
-import codes.vee.vkdr.cmd.completions.CompletionsSupport.Change;
+import codes.vee.vkdr.cmd.completion.CompletionSupport.Change;
 import picocli.CommandLine;
 
 import java.io.PrintWriter;
@@ -14,8 +14,8 @@ import java.util.concurrent.Callable;
 
 @CommandLine.Command(name = "install", mixinStandardHelpOptions = true,
         description = "write the completion script and wire it into your shell",
-        exitCodeOnExecutionException = ExitCodes.COMPLETIONS_INSTALL)
-public class VkdrCompletionsInstallCommand implements Callable<Integer> {
+        exitCodeOnExecutionException = ExitCodes.COMPLETION_INSTALL)
+public class VkdrCompletionInstallCommand implements Callable<Integer> {
 
     @CommandLine.Spec
     CommandLine.Model.CommandSpec spec;
@@ -47,15 +47,15 @@ public class VkdrCompletionsInstallCommand implements Callable<Integer> {
     @Override
     public Integer call() throws Exception {
         PrintWriter out = spec.commandLine().getOut();
-        Shell target = CompletionsSupport.detectShell(shell);
-        Path script = CompletionsSupport.scriptPath();
+        Shell target = CompletionSupport.detectShell(shell);
+        Path script = CompletionSupport.scriptPath();
 
         say(out, "Shell: " + target + (shell == null ? " (detected from $SHELL)" : ""));
 
         // 1. The script itself always lives in ~/.vkdr/completions - vkdr-owned, safe to clobber.
         Change scriptChange = dryRun
                 ? Change.UNCHANGED
-                : CompletionsSupport.writeScript(CompletionsSupport.generate(spec), script);
+                : CompletionSupport.writeScript(CompletionSupport.generate(spec), script);
         say(out, "Script: " + script + " (" + scriptChange.name().toLowerCase() + ")");
 
         if (noRc) {
@@ -70,14 +70,14 @@ public class VkdrCompletionsInstallCommand implements Callable<Integer> {
         Path lazyDir = null;
         if (!rcRequested) {
             lazyDir = (dir != null && !dir.isEmpty())
-                    ? Paths.get(CompletionsSupport.expandHome(dir))
+                    ? Paths.get(CompletionSupport.expandHome(dir))
                     : lazyDirFor(target);
         }
         if (lazyDir != null) {
             Path payload = lazyDir.resolve(target == Shell.zsh ? "_vkdr" : "vkdr");
             if (!dryRun) {
                 Files.createDirectories(lazyDir);
-                CompletionsSupport.writeScript(CompletionsSupport.lazyPayload(target, script), payload);
+                CompletionSupport.writeScript(CompletionSupport.lazyPayload(target, script), payload);
             }
             say(out, "Installed: " + payload);
             say(out, "No rc file was modified - your shell already searches that directory.");
@@ -86,11 +86,11 @@ public class VkdrCompletionsInstallCommand implements Callable<Integer> {
         }
 
         // 3. Fallback: a sentinel-guarded block in the rc file.
-        Path rc = CompletionsSupport.detectRcFile(target, rcFile);
-        List<String> block = CompletionsSupport.rcBlock(script);
+        Path rc = CompletionSupport.detectRcFile(target, rcFile);
+        List<String> block = CompletionSupport.rcBlock(script);
 
-        if (CompletionsSupport.hasBlock(rc)) {
-            Change c = CompletionsSupport.upsertBlock(rc, block, dryRun);
+        if (CompletionSupport.hasBlock(rc)) {
+            Change c = CompletionSupport.upsertBlock(rc, block, dryRun);
             say(out, c == Change.UNCHANGED
                     ? "Completions already installed for " + target + " (" + rc + ") - nothing to do."
                     : "Updated the existing vkdr block in " + rc + ".");
@@ -107,18 +107,18 @@ public class VkdrCompletionsInstallCommand implements Callable<Integer> {
         }
         if (!confirm(out)) {
             say(out, "Aborted. Nothing was written to " + rc + ".");
-            say(out, "Tip: 'vkdr completions install --no-rc' writes only the script.");
+            say(out, "Tip: 'vkdr completion install --no-rc' writes only the script.");
             return 0;
         }
 
-        CompletionsSupport.upsertBlock(rc, block, false);
+        CompletionSupport.upsertBlock(rc, block, false);
         say(out, "Wired into " + rc + " (backup at " + rc + ".vkdr-bak)");
         say(out, "Open a new shell, or run:  . \"" + rc + "\"");
         return 0;
     }
 
     private Path lazyDirFor(Shell target) {
-        Path t = CompletionsSupport.lazyTarget(target);
+        Path t = CompletionSupport.lazyTarget(target);
         return t == null ? null : t.getParent();
     }
 

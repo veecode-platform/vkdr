@@ -29,7 +29,7 @@ VKDR uses the [BATS](https://bats-core.readthedocs.io/) (Bash Automated Testing 
 | `make test-infra` | Run infra state tests (non-destructive) |
 | `make test-infra-lifecycle` | Run infra lifecycle tests (DESTRUCTIVE) |
 | `make test-mirror` | Run mirror tests (no cluster required) |
-| `make test-completions` | Run shell-completion tests (no cluster required) |
+| `make test-completion` | Run shell-completion tests (no cluster required) |
 | `make setup-bats` | Download BATS libraries |
 | `make clean-bats` | Remove BATS libraries |
 

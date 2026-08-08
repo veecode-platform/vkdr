@@ -1,4 +1,4 @@
-# completions Formula Specification
+# completion Formula Specification
 
 Unusual formula: **only `explain` is a shell script.** Everything else lives in Java.
 
@@ -12,8 +12,8 @@ Generates and installs shell TAB-completion (bash, zsh) for the whole vkdr comma
 | --- | --- |
 | `explain/formula.sh` | Renders `_meta/docs.md` with glow — the only shell code here |
 | `_meta/docs.md` | User documentation |
-| `cmd/completions/CompletionsSupport.java` | All generation, detection and rc-file logic |
-| `cmd/completions/Vkdr*Command.java` | picocli command classes |
+| `cmd/completion/CompletionsSupport.java` | All generation, detection and rc-file logic |
+| `cmd/completion/Vkdr*Command.java` | picocli command classes |
 
 ## Why the logic is in Java, not a formula
 
@@ -48,9 +48,21 @@ is still present, so a picocli upgrade that changes the template fails loudly.
 
 ## Compatibility surfaces
 
-- **Sentinel strings** `# >>> vkdr completions >>>` / `# <<< vkdr completions <<<` are a
+- **Sentinel strings** `# >>> vkdr completion >>>` / `# <<< vkdr completion <<<` are a
   compatibility surface. Changing them orphans every previously installed block; if they ever
-  change, `uninstall` must also recognise the legacy pair.
+  change again, `upsertBlock`/`removeBlock` must also recognise the outgoing pair.
+  This already happened once: **v2.0.25 shipped the command as `completions`** and wrote the
+  plural markers. `LEGACY_BEGIN`/`LEGACY_END` in `CompletionSupport` keep those recognised, so
+  upgrading replaces the old block in place rather than appending a second one, and `uninstall`
+  still removes it. Two bats tests cover both directions. The plural markers can be dropped once
+  v2.0.25 is old enough to ignore.
+- **The command name is singular**, matching kubectl, helm, k3d, gh and kind. There is
+  deliberately **no `completions` alias**: picocli renders aliases as real entries, so an alias
+  appears as a duplicate in both `--help` and the generated completion script. A bats test
+  asserts the plural spelling is rejected.
+- The **storage directory stays plural** (`~/.vkdr/completions/`), because it holds scripts for
+  several shells and renaming it would orphan the `_vkdr` loaders that v2.0.25 wrote into
+  `$fpath` directories. Docker uses the same split (`docker completion`, `~/.docker/completions`).
 - **bash 3.2**: the generated script must parse under `/bin/bash` on macOS. picocli's template
   uses only `printf -v` and `local IFS=$'\n'`, both fine on 3.2. Tested.
 - `Files.readAllLines` normalises CRLF to LF, so an rc file with CRLF endings is rewritten with
@@ -69,4 +81,4 @@ is still present, so a picocli upgrade that changes the template fails loudly.
 
 ## Testing
 
-`make test-completions` — no cluster required.
+`make test-completion` — no cluster required.

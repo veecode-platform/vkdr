@@ -42,13 +42,13 @@ curl -L get-vkdr.vee.codes | bash
 To enable TAB completion for bash or zsh:
 
 ```sh
-vkdr completions install
+vkdr completion install
 ```
 
 This detects your shell, writes the completion script to `~/.vkdr/completions/`, and prefers a
 directory your shell already searches so no rc file has to be modified. Open a new shell
-afterwards. Use `vkdr completions uninstall` to remove it, `vkdr completions status` to check,
-and `vkdr completions explain` for the full documentation.
+afterwards. Use `vkdr completion uninstall` to remove it, `vkdr completion status` to check,
+and `vkdr completion explain` for the full documentation.
 
 ## Run in the shell via Maven
 

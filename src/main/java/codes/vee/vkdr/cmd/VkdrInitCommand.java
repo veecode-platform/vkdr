@@ -3,7 +3,7 @@ package codes.vee.vkdr.cmd;
 import codes.vee.vkdr.ShellExecutor;
 import codes.vee.vkdr.VkdrApplication;
 import codes.vee.vkdr.cmd.common.ExitCodes;
-import codes.vee.vkdr.cmd.completions.CompletionsSupport;
+import codes.vee.vkdr.cmd.completion.CompletionSupport;
 import codes.vee.vkdr.ScriptsExtractor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,16 +59,16 @@ public class VkdrInitCommand implements Callable<Integer> {
     /**
      * Refreshes an ALREADY-installed completion script so an upgrade never leaves it stale.
      * Never creates it and never touches an rc file - installing stays opt-in via
-     * `vkdr completions install`. A failure here must never fail init.
+     * `vkdr completion install`. A failure here must never fail init.
      */
     private void refreshCompletions() {
         try {
-            Path script = CompletionsSupport.scriptPath();
+            Path script = CompletionSupport.scriptPath();
             if (Files.exists(script)) {
-                CompletionsSupport.writeScript(CompletionsSupport.generate(spec), script);
+                CompletionSupport.writeScript(CompletionSupport.generate(spec), script);
                 logger.debug("Refreshed completion script at {}", script);
             } else if (!VkdrApplication.silentMode) {
-                System.out.println("Tip: enable TAB completion with 'vkdr completions install'");
+                System.out.println("Tip: enable TAB completion with 'vkdr completion install'");
             }
         } catch (Exception e) {
             logger.debug("Could not refresh completion script: {}", e.getMessage());

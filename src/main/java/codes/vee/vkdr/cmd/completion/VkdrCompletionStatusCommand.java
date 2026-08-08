@@ -1,4 +1,4 @@
-package codes.vee.vkdr.cmd.completions;
+package codes.vee.vkdr.cmd.completion;
 
 import codes.vee.vkdr.VkdrApplication;
 import codes.vee.vkdr.cmd.common.ExitCodes;
@@ -11,9 +11,9 @@ import java.nio.file.Path;
 import java.util.concurrent.Callable;
 
 @CommandLine.Command(name = "status", mixinStandardHelpOptions = true,
-        description = "report where vkdr completions are installed and whether they are current",
-        exitCodeOnExecutionException = ExitCodes.COMPLETIONS_STATUS)
-public class VkdrCompletionsStatusCommand implements Callable<Integer> {
+        description = "report where shell completions are installed and whether they are current",
+        exitCodeOnExecutionException = ExitCodes.COMPLETION_STATUS)
+public class VkdrCompletionStatusCommand implements Callable<Integer> {
 
     @CommandLine.Spec
     CommandLine.Model.CommandSpec spec;
@@ -29,14 +29,14 @@ public class VkdrCompletionsStatusCommand implements Callable<Integer> {
     @Override
     public Integer call() throws Exception {
         PrintWriter out = spec.commandLine().getOut();
-        Shell target = CompletionsSupport.detectShell(shell);
-        Path script = CompletionsSupport.scriptPath();
-        Path rc = CompletionsSupport.detectRcFile(target, rcFile);
-        Path wrapper = CompletionsSupport.zshWrapperPath();
+        Shell target = CompletionSupport.detectShell(shell);
+        Path script = CompletionSupport.scriptPath();
+        Path rc = CompletionSupport.detectRcFile(target, rcFile);
+        Path wrapper = CompletionSupport.zshWrapperPath();
 
-        Path lazy = CompletionsSupport.lazyTarget(target);
+        Path lazy = CompletionSupport.lazyTarget(target);
         boolean scriptExists = Files.exists(script);
-        boolean blockPresent = CompletionsSupport.hasBlock(rc);
+        boolean blockPresent = CompletionSupport.hasBlock(rc);
         boolean wrapperPresent = Files.exists(wrapper);
         boolean lazyPresent = lazy != null && Files.exists(lazy);
         boolean current = scriptExists && isCurrent(script);
@@ -54,7 +54,7 @@ public class VkdrCompletionsStatusCommand implements Callable<Integer> {
         boolean wired = scriptExists && (blockPresent || wrapperPresent || lazyPresent);
         if (!wired) {
             say(out, "");
-            say(out, "Not installed. Run: vkdr completions install");
+            say(out, "Not installed. Run: vkdr completion install");
         } else if (!current) {
             say(out, "");
             say(out, "The script is out of date. Run: vkdr init");
@@ -66,7 +66,7 @@ public class VkdrCompletionsStatusCommand implements Callable<Integer> {
     private boolean isCurrent(Path script) {
         try {
             String onDisk = Files.readString(script, StandardCharsets.UTF_8);
-            String fresh = CompletionsSupport.generate(spec);
+            String fresh = CompletionSupport.generate(spec);
             return onDisk.equals(fresh.endsWith("\n") ? fresh : fresh + "\n");
         } catch (Exception e) {
             return false;
