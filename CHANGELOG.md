@@ -1,6 +1,9 @@
 # VKDR Changelog
 
 
+## v2.0.26 (2026-08-08)
+* refactor(completion)!: rename `completions` to the singular `completion` (2357d07)
+
 ## v2.0.25 (2026-08-08)
 * feat(completions): add shell TAB-completion for bash and zsh (5e29d5e)
 * fix(check-updates): guard empty array expansion on bash 3.2 (9437734)
