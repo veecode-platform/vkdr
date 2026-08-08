@@ -213,7 +213,9 @@ main() {
     # Output JSON array
     echo "["
     local first=true
-    for result in "${JSON_RESULTS[@]}"; do
+    # ${arr[@]+"${arr[@]}"} guards the empty-array case: under `set -u` bash 3.2
+    # treats "${arr[@]}" on an empty array as unbound, and macOS ships 3.2 as /bin/bash.
+    for result in ${JSON_RESULTS[@]+"${JSON_RESULTS[@]}"}; do
       if $first; then
         first=false
       else
