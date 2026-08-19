@@ -1,6 +1,9 @@
 # VKDR Changelog
 
 
+## v2.0.27 (2026-08-19)
+* chore(formulas): update pinned charts and operators (60b6b92)
+
 ## v2.0.26 (2026-08-08)
 * refactor(completion)!: rename `completions` to the singular `completion` (2357d07)
 
