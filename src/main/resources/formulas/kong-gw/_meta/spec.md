@@ -32,6 +32,12 @@ All resources are created in `kong-system` namespace.
 This formula uses `helm-pinned` update type. To update:
 
 1. Check for new versions: `helm search repo kong/kong-operator --versions`
-2. Update `KGO_VERSION` in `install/formula.sh`
+2. Update `KGO_IMAGE_TAG` in `install/formula.sh`
 3. Update `version` in `_meta/update.yaml`
 4. Run tests: `make test-formula formula=kong-gw`
+
+Note: the chart's CRD bundle includes the Gateway API `safe-upgrades`
+ValidatingAdmissionPolicy (Gateway API >= 1.5). `nginx-gw` installs the same object
+with `kubectl apply`, and Helm refuses to adopt objects it did not create, so
+`installOperator` drops a non-Helm copy before installing (`releaseGatewayAPIPolicy`).
+Without it, installing `kong-gw` after `nginx-gw` in the same cluster fails.

@@ -12,7 +12,7 @@ source "$SHARED_DIR/lib/tools-paths.sh"
 source "$SHARED_DIR/lib/log.sh"
 
 # Kong Gateway Operator image tag
-KGO_IMAGE_TAG="2.0.6"
+KGO_IMAGE_TAG="2.2.3"
 
 startInfos() {
   boldInfo "Kong Gateway Operator Install"
@@ -65,10 +65,27 @@ createSelfSignedCert() {
   boldNotice "Self-signed TLS certificate created"
 }
 
+# Gateway API >= 1.5 ships a "safe-upgrades" ValidatingAdmissionPolicy that both
+# nginx-gw (kubectl apply) and the Kong operator chart (helm CRD install) provide.
+# Helm cannot take ownership of an object it did not create, so drop any copy left
+# behind by another formula - the chart recreates it from the same upstream bundle.
+releaseGatewayAPIPolicy() {
+  local policy=safe-upgrades.gateway.networking.k8s.io
+  if $VKDR_KUBECTL get validatingadmissionpolicy "$policy" &>/dev/null; then
+    if ! $VKDR_KUBECTL get validatingadmissionpolicy "$policy" \
+      -o jsonpath='{.metadata.annotations.meta\.helm\.sh/release-name}' 2>/dev/null | grep -q .; then
+      debug "releaseGatewayAPIPolicy: removing non-helm '$policy' policy"
+      $VKDR_KUBECTL delete validatingadmissionpolicybinding "$policy" --ignore-not-found
+      $VKDR_KUBECTL delete validatingadmissionpolicy "$policy" --ignore-not-found
+    fi
+  fi
+}
+
 installOperator() {
   debug "installOperator: installing Kong Gateway Operator"
 
   createSelfSignedCert
+  releaseGatewayAPIPolicy
 
   $VKDR_HELM repo add kong https://charts.konghq.com 2>/dev/null || true
   $VKDR_HELM repo update kong

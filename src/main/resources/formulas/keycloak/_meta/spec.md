@@ -203,7 +203,9 @@ Tests should verify:
 
 Uses Keycloak Operator installed from versioned manifest files. To update:
 1. Check latest release at https://github.com/keycloak/keycloak-k8s-resources
-2. Download updated operator YAML and CRDs
+2. Download updated operator YAML and CRDs (all `*.k8s.keycloak.org-v1.yml` files
+   under `kubernetes/` - 26.7 added `keycloakoidcclients` and `keycloaksamlclients`,
+   whose controllers the operator refuses to start without)
 3. Update files in `_shared/operators/keycloak/`
 4. Check release notes for CRD changes affecting Keycloak CR
 5. Run tests

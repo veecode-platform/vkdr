@@ -153,7 +153,8 @@ Version is pinned in `install/formula.sh`. To update:
 1. Check latest release at https://github.com/nginx/nginx-gateway-fabric/releases
 2. Update `NGF_VERSION` in formula
 3. Verify CRD kustomize URL still works with new version
-4. Run tests - Gateway API CRDs may have breaking changes
+4. Run tests - Gateway API CRDs may have breaking changes (2.6.x pulls Gateway API
+   v1.5.1, which adds the `listenersets` CRD and the `safe-upgrades` admission policy)
 
 See `_meta/update.yaml` for automation config.
 

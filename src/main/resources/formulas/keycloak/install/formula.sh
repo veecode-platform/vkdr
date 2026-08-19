@@ -24,6 +24,8 @@ VKDR_HTTPS_PORT=8001
 KEYCLOAK_OPERATOR_YAML="$SHARED_DIR/operators/keycloak/keycloak-operator.yml"
 KEYCLOAK_CRD_YAML="$SHARED_DIR/operators/keycloak/keycloakrealmimports.k8s.keycloak.org-v1.yml"
 KEYCLOAK_IMPORT_YAML="$SHARED_DIR/operators/keycloak/keycloaks.k8s.keycloak.org-v1.yml"
+KEYCLOAK_SAML_CLIENT_YAML="$SHARED_DIR/operators/keycloak/keycloaksamlclients.k8s.keycloak.org-v1.yml"
+KEYCLOAK_OIDC_CLIENT_YAML="$SHARED_DIR/operators/keycloak/keycloakoidcclients.k8s.keycloak.org-v1.yml"
 KEYCLOAK_SERVER_YAML="$SHARED_DIR/operators/keycloak/keycloak-server.yml"
 KEYCLOAK_BOOTSTRAP_SECRET=vkdr-keycloak-bootstrap-admin-user
 KEYCLOAK_FINAL_SERVER_YAML="$KEYCLOAK_SERVER_YAML"
@@ -60,6 +62,8 @@ configure() {
     debug "install: deploying Keycloak operator"
     kubectl apply --server-side -f "$KEYCLOAK_CRD_YAML"
     kubectl apply --server-side -f "$KEYCLOAK_IMPORT_YAML"
+    kubectl apply --server-side -f "$KEYCLOAK_SAML_CLIENT_YAML"
+    kubectl apply --server-side -f "$KEYCLOAK_OIDC_CLIENT_YAML"
     kubectl apply --server-side -f "$KEYCLOAK_OPERATOR_YAML" -n keycloak
     info "Waiting for Keycloak operator to be ready..."
     kubectl wait --for=condition=Available --timeout=300s \
