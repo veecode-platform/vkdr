@@ -20,6 +20,13 @@ Deploys the whoami test service via Helm chart. Useful for testing ingress confi
 - Custom labels via `--label` flag
 - TLS/ACME integration via `--secure` flag
 
+## Ingress annotations
+
+The default values carry `konghq.com/protocols: "http,https"`. Kong builds Ingress
+routes as HTTPS-only and answers plain HTTP with `426 Upgrade Required`, which made
+`curl http://whoami.localhost:8000` fail behind `kong-gw`. The annotation is ignored by
+traefik and nginx, so it is set unconditionally rather than per ingress controller.
+
 ## Updating
 
 Uses `cowboysysop/whoami` Helm chart with pinned version. To update:

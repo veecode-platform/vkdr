@@ -1,5 +1,9 @@
 ingress:
   enabled: true
+  annotations:
+    # Kong builds Ingress routes as HTTPS-only, answering plain HTTP with 426.
+    # Harmless no-op under traefik/nginx.
+    konghq.com/protocols: "http,https"
   hosts:
     - host: whoami.localhost
       paths:
