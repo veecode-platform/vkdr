@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
 VKDR_ENV_KONG_GW_NODE_PORTS=$1
+VKDR_ENV_KONG_GW_IMAGE_NAME=$2
+VKDR_ENV_KONG_GW_IMAGE_TAG=$3
 
 # V2 paths: relative to formulas/kong-gw/install/
 FORMULA_DIR="$(dirname "$0")"
@@ -17,10 +19,20 @@ KGO_IMAGE_TAG="2.2.3"
 # Gateway API bundle the chart ships at this version - installed from the shared
 # copy instead, so nginx-gw and kong-gw agree on one pinned bundle
 GWAPI_CRDS_YAML="$SHARED_DIR/operators/gateway-api/gateway-api-standard-1.5.1.yaml"
+# Kong data plane image. 3.14 is the last release whose enterprise image keeps
+# working unlicensed, so it is the default; "-distroless" tags behave the same.
+KONG_GW_DEFAULT_IMAGE_NAME="kong/kong-gateway"
+KONG_GW_DEFAULT_IMAGE_TAG="3.14"
+KONG_GW_CONFIG_NAME="kong-config"
+
+: "${VKDR_ENV_KONG_GW_IMAGE_NAME:=$KONG_GW_DEFAULT_IMAGE_NAME}"
+: "${VKDR_ENV_KONG_GW_IMAGE_TAG:=$KONG_GW_DEFAULT_IMAGE_TAG}"
+KONG_GW_IMAGE="$VKDR_ENV_KONG_GW_IMAGE_NAME:$VKDR_ENV_KONG_GW_IMAGE_TAG"
 
 startInfos() {
   boldInfo "Kong Gateway Operator Install"
   bold "=============================="
+  boldNotice "Data plane image: $KONG_GW_IMAGE"
   if [ -n "$VKDR_ENV_KONG_GW_NODE_PORTS" ]; then
     boldNotice "Node ports: $VKDR_ENV_KONG_GW_NODE_PORTS"
   fi
@@ -102,40 +114,7 @@ createGateway() {
 
 createGatewayLB() {
   debug "createGatewayLB: creating Gateway with LoadBalancer service"
-  $VKDR_KUBECTL apply -f - <<EOF
-apiVersion: gateway.networking.k8s.io/v1
-kind: GatewayClass
-metadata:
-  name: kong
-spec:
-  controllerName: konghq.com/gateway-operator
----
-apiVersion: gateway.networking.k8s.io/v1
-kind: Gateway
-metadata:
-  name: kong
-  namespace: kong-system
-spec:
-  gatewayClassName: kong
-  listeners:
-  - name: http
-    port: 80
-    protocol: HTTP
-    allowedRoutes:
-      namespaces:
-        from: All
-  - name: https
-    port: 443
-    protocol: HTTPS
-    tls:
-      mode: Terminate
-      certificateRefs:
-      - kind: Secret
-        name: kong-gateway-tls
-    allowedRoutes:
-      namespaces:
-        from: All
-EOF
+  applyGatewayResources ""
 }
 
 createGatewayNP() {
@@ -147,12 +126,40 @@ createGatewayNP() {
   fi
   debug "createGatewayNP: creating Gateway with NodePort service ($KGW_PORT_HTTP, $KGW_PORT_HTTPS)"
 
-  # Create GatewayConfiguration with NodePort service type
+  applyGatewayResources "nodeport"
+
+  # Wait for the dataplane service to be created by the operator
+  boldNotice "Waiting for dataplane service..."
+  waitForDataplaneService
+
+  # Patch the service to use specific NodePort values
+  patchServiceNodePorts "$KGW_PORT_HTTP" "$KGW_PORT_HTTPS"
+}
+
+# Renders the GatewayConfiguration network block. NodePort mode is the only case
+# where the ingress service type differs from the operator default.
+gatewayNetworkBlock() {
+  if [ "nodeport" = "$1" ]; then
+    cat <<EOF
+    network:
+      services:
+        ingress:
+          type: NodePort
+          externalTrafficPolicy: Local
+EOF
+  fi
+}
+
+# The GatewayConfiguration is always created: it is what pins the data plane
+# image, so LoadBalancer and NodePort modes only differ in the network block.
+# See https://developer.konghq.com/operator/dataplanes/how-to/set-dataplane-image/
+applyGatewayResources() {
+  local mode="$1"
   $VKDR_KUBECTL apply -f - <<EOF
 apiVersion: gateway-operator.konghq.com/v2beta1
 kind: GatewayConfiguration
 metadata:
-  name: kong-nodeport-config
+  name: $KONG_GW_CONFIG_NAME
   namespace: kong-system
 spec:
   dataPlaneOptions:
@@ -161,12 +168,8 @@ spec:
         spec:
           containers:
           - name: proxy
-            image: kong:3.9.1
-    network:
-      services:
-        ingress:
-          type: NodePort
-          externalTrafficPolicy: Local
+            image: $KONG_GW_IMAGE
+$(gatewayNetworkBlock "$mode")
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: GatewayClass
@@ -177,7 +180,7 @@ spec:
   parametersRef:
     group: gateway-operator.konghq.com
     kind: GatewayConfiguration
-    name: kong-nodeport-config
+    name: $KONG_GW_CONFIG_NAME
     namespace: kong-system
 ---
 apiVersion: gateway.networking.k8s.io/v1
@@ -206,13 +209,6 @@ spec:
       namespaces:
         from: All
 EOF
-
-  # Wait for the dataplane service to be created by the operator
-  boldNotice "Waiting for dataplane service..."
-  waitForDataplaneService
-
-  # Patch the service to use specific NodePort values
-  patchServiceNodePorts "$KGW_PORT_HTTP" "$KGW_PORT_HTTPS"
 }
 
 waitForDataplaneService() {

@@ -22,6 +22,38 @@ Install and manage Kong Gateway Operator as a Gateway API implementation in the 
 ## GatewayClass
 
 Creates a GatewayClass named `kong` with controller `konghq.com/gateway-operator`.
+Its `parametersRef` always points at the `kong-config` GatewayConfiguration.
+
+## Data plane image
+
+The data plane image is pinned by the formula, like every other vkdr formula:
+
+| Variable | Default |
+| --- | --- |
+| `VKDR_ENV_KONG_GW_IMAGE_NAME` (`--image`) | `kong/kong-gateway` |
+| `VKDR_ENV_KONG_GW_IMAGE_TAG` (`--tag`) | `3.14` |
+
+`3.14` is the last release whose enterprise image keeps serving traffic without a
+license, which is why it is the default rather than a newer tag. Passing `--image kong`
+selects the OSS image instead, and any tag may carry the `-distroless` suffix.
+
+Set via the GatewayConfiguration, which is the documented path when the data plane is
+owned by a Gateway - see
+[set the DataPlane image](https://developer.konghq.com/operator/dataplanes/how-to/set-dataplane-image/).
+A standalone `DataPlane` resource is *not* needed: `spec.dataPlaneOptions.deployment.podTemplateSpec`
+takes the same `PodTemplateSpec`, and the container to patch must be named `proxy`.
+
+`gateway-operator.konghq.com/v2beta1` is current, not dated: with chart 1.3.1 the
+GatewayConfiguration CRD serves `v1beta1` and `v2beta1`, and `v2beta1` is the storage
+version. `DataPlane` is still only `v1beta1`, which is why the docs example uses it.
+
+### Why the GatewayConfiguration is unconditional
+
+Earlier versions created it only in NodePort mode, so LoadBalancer installs silently
+inherited whatever image the operator defaulted to. It is now always applied - the two
+modes differ only by the `network` block, rendered by `gatewayNetworkBlock`. It is also
+always named `kong-config`; the NodePort path used to name it `kong-nodeport-config`,
+which `remove` never deleted.
 
 ## Namespace
 

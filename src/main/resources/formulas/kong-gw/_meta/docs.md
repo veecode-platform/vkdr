@@ -17,7 +17,7 @@ The Gateway API is the evolution of the Ingress API, offering:
 Install Kong Gateway Operator in your cluster.
 
 ```bash
-vkdr kong-gw install [--node-ports=<node_ports>]
+vkdr kong-gw install [--node-ports=<node_ports>] [--image=<image>] [--tag=<tag>]
 ```
 
 ### Flags
@@ -25,6 +25,36 @@ vkdr kong-gw install [--node-ports=<node_ports>]
 | Flag | Description | Default |
 |------|-------------|---------|
 | `--node-ports` | NodePorts for http/https (e.g., `30000,30001` or `*`) | (none) |
+| `-i`, `--image` | Kong data plane image name | `kong/kong-gateway` |
+| `-t`, `--tag` | Kong data plane image tag | `3.14` |
+
+### Data Plane Image
+
+The data plane image is pinned rather than left to the operator's default. The default
+is the enterprise image `kong/kong-gateway:3.14` — `3.14` is the last release that keeps
+serving traffic when no license is present, so it behaves like the OSS image out of the box.
+
+Kong also publishes **distroless** variants, which carry no shell or package manager and
+are therefore a smaller attack surface. They are the same gateway: routing, plugins and
+configuration behave identically, so switching is a drop-in change. Pick one by suffixing
+the tag:
+
+```bash
+# default enterprise image
+vkdr kong-gw install
+
+# distroless variant of the same release
+vkdr kong-gw install --tag 3.14-distroless
+
+# OSS image instead
+vkdr kong-gw install --image kong --tag 3.9
+
+# a specific patch release
+vkdr kong-gw install --tag 3.14.0.0
+```
+
+The image is applied through the `kong-config` GatewayConfiguration, so it can be changed
+by re-running `install` — the operator rolls the data plane onto the new image.
 
 ### What Gets Installed
 
@@ -38,7 +68,12 @@ vkdr kong-gw install [--node-ports=<node_ports>]
    - SANs: `localhost`, `*.localhost`, `localdomain`, `*.localdomain`
    - Stored in secret `kong-gateway-tls`
 
-3. **Gateway** (always created/updated):
+3. **GatewayConfiguration** (always created/updated):
+   - Named `kong-config` in `kong-system` namespace
+   - Pins the data plane image (see [Data Plane Image](#data-plane-image))
+   - Sets the ingress service to `NodePort` when `--node-ports` is used
+
+4. **Gateway** (always created/updated):
    - Default Gateway named `kong` in `kong-system` namespace
    - HTTP listener on port 80
    - HTTPS listener on port 443 with TLS termination
@@ -47,6 +82,14 @@ vkdr kong-gw install [--node-ports=<node_ports>]
 **Note:** If the operator is already installed, only the Gateway object is created. This allows multiple `install` calls to update the Gateway configuration without reinstalling the operator.
 
 ### Examples
+
+#### Distroless Data Plane
+
+```bash
+vkdr infra up
+vkdr kong-gw install --tag 3.14-distroless
+# same behaviour as the default image, smaller attack surface
+```
 
 #### Basic Installation
 
@@ -100,7 +143,7 @@ vkdr kong-gw remove [--delete-operator]
 
 **Default behavior** (no flags):
 - Removes the Gateway object named `kong`
-- Removes any associated GatewayConfiguration
+- Removes the `kong-config` GatewayConfiguration
 - **Keeps the operator and TLS secret** for quick re-creation of Gateways
 
 **With `--delete-operator`**:
