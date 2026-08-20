@@ -25,9 +25,11 @@ startInfos() {
 removeGateway() {
   debug "removeGateway: deleting Gateway resource"
   $VKDR_KUBECTL delete gateway kong -n kong-system --ignore-not-found
-  # Wait for controller to clean up data plane pods
+  # Wait for controller to clean up data plane pods. The operator labels them
+  # app=kong-<suffix>, so match on the Gateway name instead.
   debug "removeGateway: waiting for data plane pods to terminate"
-  $VKDR_KUBECTL wait --for=delete pod -l app=dataplane-kong -n kong-system --timeout=60s 2>/dev/null || true
+  $VKDR_KUBECTL wait --for=delete pod -l gateway.networking.k8s.io/gateway-name=kong \
+    -n kong-system --timeout=60s 2>/dev/null || true
 }
 
 removeGatewayConfiguration() {
