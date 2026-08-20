@@ -17,7 +17,7 @@ The Gateway API is the evolution of the Ingress API, offering:
 Install Kong Gateway Operator in your cluster.
 
 ```bash
-vkdr kong-gw install [--node-ports=<node_ports>] [--image=<image>] [--tag=<tag>]
+vkdr kong-gw install [--node-ports=<node_ports>] [--profile=<profile>] [--image=<image>] [--tag=<tag>]
 ```
 
 ### Flags
@@ -25,8 +25,39 @@ vkdr kong-gw install [--node-ports=<node_ports>] [--image=<image>] [--tag=<tag>]
 | Flag | Description | Default |
 |------|-------------|---------|
 | `--node-ports` | NodePorts for http/https (e.g., `30000,30001` or `*`) | (none) |
+| `--profile` | Image profile: `default`, `kong`, `kong-distroless`, `oss`, `apip`, `apip-distroless` | `default` |
 | `-i`, `--image` | Kong data plane image name | `kong/kong-gateway` |
 | `-t`, `--tag` | Kong data plane image tag | `3.14` |
+
+### Image Profiles
+
+`--profile` is a shortcut for the image name/tag pairs vkdr supports:
+
+| Profile | Image | Tag |
+| --- | --- | --- |
+| `default` | `kong/kong-gateway` | `3.14` (the formula default) |
+| `kong` | `kong/kong-gateway` | `3.15.0.4` |
+| `kong-distroless` | `kong/kong-gateway` | `3.15-distroless` |
+| `oss` | `kong` | `3.9.3` |
+| `apip` | `veecode/kong` | `3.10.0-veecode.10` |
+| `apip-distroless` | `veecode/kong` | `3.10.0-veecode.10-distroless` |
+
+```bash
+# VeeCode APIP build, distroless
+vkdr kong-gw install --profile apip-distroless
+
+# Kong Gateway 3.15 (needs a license to keep serving traffic)
+vkdr kong-gw install --profile kong
+
+# Kong OSS
+vkdr kong-gw install --profile oss
+```
+
+**Note:** the `kong` and `kong-distroless` profiles are Kong Gateway 3.15, which stops
+serving traffic without a license. The `default` profile stays on 3.14 for that reason.
+
+`--image` and `--tag` override the profile field by field, so `--profile oss --tag 3.9.1`
+installs `kong:3.9.1`.
 
 ### Data Plane Image
 
@@ -54,7 +85,8 @@ vkdr kong-gw install --tag 3.14.0.0
 ```
 
 The image is applied through the `kong-config` GatewayConfiguration, so it can be changed
-by re-running `install` — the operator rolls the data plane onto the new image.
+by re-running `install` — the operator rolls the data plane onto the new image. Use
+[`--profile`](#image-profiles) to pick a known-good pair instead of spelling both out.
 
 ### What Gets Installed
 

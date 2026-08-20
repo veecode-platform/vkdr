@@ -39,6 +39,43 @@ teardown_file() {
   assert_success
 }
 
+@test "kong-gw install: data plane image is pinned" {
+  run $VKDR_KUBECTL get gatewayconfiguration kong-config -n kong-system \
+    -o jsonpath='{.spec.dataPlaneOptions.deployment.podTemplateSpec.spec.containers[0].image}'
+  assert_success
+  assert_output "kong/kong-gateway:3.14"
+}
+
+@test "kong-gw install: profile sets the data plane image" {
+  run vkdr kong-gw install --profile oss
+  assert_success
+
+  run $VKDR_KUBECTL get gatewayconfiguration kong-config -n kong-system \
+    -o jsonpath='{.spec.dataPlaneOptions.deployment.podTemplateSpec.spec.containers[0].image}'
+  assert_success
+  assert_output "kong:3.9.3"
+}
+
+@test "kong-gw install: explicit tag overrides the profile" {
+  run vkdr kong-gw install --profile oss --tag 3.9.1
+  assert_success
+
+  run $VKDR_KUBECTL get gatewayconfiguration kong-config -n kong-system \
+    -o jsonpath='{.spec.dataPlaneOptions.deployment.podTemplateSpec.spec.containers[0].image}'
+  assert_success
+  assert_output "kong:3.9.1"
+}
+
+@test "kong-gw install: restores the default image" {
+  run vkdr kong-gw install
+  assert_success
+
+  run $VKDR_KUBECTL get gatewayconfiguration kong-config -n kong-system \
+    -o jsonpath='{.spec.dataPlaneOptions.deployment.podTemplateSpec.spec.containers[0].image}'
+  assert_success
+  assert_output "kong/kong-gateway:3.14"
+}
+
 @test "kong-gw install: gateway is programmed" {
   # Wait for Gateway to be programmed
   local max_wait=120

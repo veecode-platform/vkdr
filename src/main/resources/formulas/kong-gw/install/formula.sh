@@ -3,6 +3,7 @@
 VKDR_ENV_KONG_GW_NODE_PORTS=$1
 VKDR_ENV_KONG_GW_IMAGE_NAME=$2
 VKDR_ENV_KONG_GW_IMAGE_TAG=$3
+VKDR_ENV_KONG_GW_PROFILE=$4
 
 # V2 paths: relative to formulas/kong-gw/install/
 FORMULA_DIR="$(dirname "$0")"
@@ -25,13 +26,42 @@ KONG_GW_DEFAULT_IMAGE_NAME="kong/kong-gateway"
 KONG_GW_DEFAULT_IMAGE_TAG="3.14"
 KONG_GW_CONFIG_NAME="kong-config"
 
-: "${VKDR_ENV_KONG_GW_IMAGE_NAME:=$KONG_GW_DEFAULT_IMAGE_NAME}"
-: "${VKDR_ENV_KONG_GW_IMAGE_TAG:=$KONG_GW_DEFAULT_IMAGE_TAG}"
+# Image profiles: shortcuts for the image name/tag pairs we support. Keep in sync
+# with the table in _meta/docs.md. "default" sets nothing, so the formula default
+# applies. Kong Gateway 3.15 needs a license to keep serving traffic.
+resolveProfile() {
+  PROFILE_IMAGE_NAME=""
+  PROFILE_IMAGE_TAG=""
+  case "$1" in
+    kong)
+      PROFILE_IMAGE_NAME="kong/kong-gateway"; PROFILE_IMAGE_TAG="3.15.0.4" ;;
+    kong-distroless)
+      PROFILE_IMAGE_NAME="kong/kong-gateway"; PROFILE_IMAGE_TAG="3.15-distroless" ;;
+    oss)
+      PROFILE_IMAGE_NAME="kong"; PROFILE_IMAGE_TAG="3.9.3" ;;
+    apip)
+      PROFILE_IMAGE_NAME="veecode/kong"; PROFILE_IMAGE_TAG="3.10.0-veecode.10" ;;
+    apip-distroless)
+      PROFILE_IMAGE_NAME="veecode/kong"; PROFILE_IMAGE_TAG="3.10.0-veecode.10-distroless" ;;
+    default|"")
+      ;;
+    *)
+      boldWarn "Unknown profile '$1', falling back to the default image" ;;
+  esac
+}
+
+# Precedence: explicit --image/--tag, then --profile, then the formula default
+resolveProfile "$VKDR_ENV_KONG_GW_PROFILE"
+: "${VKDR_ENV_KONG_GW_IMAGE_NAME:=${PROFILE_IMAGE_NAME:-$KONG_GW_DEFAULT_IMAGE_NAME}}"
+: "${VKDR_ENV_KONG_GW_IMAGE_TAG:=${PROFILE_IMAGE_TAG:-$KONG_GW_DEFAULT_IMAGE_TAG}}"
 KONG_GW_IMAGE="$VKDR_ENV_KONG_GW_IMAGE_NAME:$VKDR_ENV_KONG_GW_IMAGE_TAG"
 
 startInfos() {
   boldInfo "Kong Gateway Operator Install"
   bold "=============================="
+  if [ -n "$VKDR_ENV_KONG_GW_PROFILE" ]; then
+    boldNotice "Profile: $VKDR_ENV_KONG_GW_PROFILE"
+  fi
   boldNotice "Data plane image: $KONG_GW_IMAGE"
   if [ -n "$VKDR_ENV_KONG_GW_NODE_PORTS" ]; then
     boldNotice "Node ports: $VKDR_ENV_KONG_GW_NODE_PORTS"

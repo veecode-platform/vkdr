@@ -32,6 +32,29 @@ The data plane image is pinned by the formula, like every other vkdr formula:
 | --- | --- |
 | `VKDR_ENV_KONG_GW_IMAGE_NAME` (`--image`) | `kong/kong-gateway` |
 | `VKDR_ENV_KONG_GW_IMAGE_TAG` (`--tag`) | `3.14` |
+| `VKDR_ENV_KONG_GW_PROFILE` (`--profile`) | `default` |
+
+### Profiles
+
+`resolveProfile` in `install/formula.sh` owns this table; the enum in
+`VkdrKongGwInstallCommand` only validates the accepted values. Keep both in sync with
+`_meta/docs.md`.
+
+| Profile | Image | Tag |
+| --- | --- | --- |
+| `default` | (unset - formula default applies) | (unset) |
+| `kong` | `kong/kong-gateway` | `3.15.0.4` |
+| `kong-distroless` | `kong/kong-gateway` | `3.15-distroless` |
+| `oss` | `kong` | `3.9.3` |
+| `apip` | `veecode/kong` | `3.10.0-veecode.10` |
+| `apip-distroless` | `veecode/kong` | `3.10.0-veecode.10-distroless` |
+
+Resolution order is per field: explicit `--image`/`--tag`, then the profile, then the
+formula default. `--image`/`--tag` therefore default to empty in the Java command - that
+is how the formula tells "user asked for this" from "nobody set it".
+
+Note the `kong` profiles are 3.15, which requires a license to keep serving traffic;
+`default` stays on 3.14 deliberately.
 
 `3.14` is the last release whose enterprise image keeps serving traffic without a
 license, which is why it is the default rather than a newer tag. Passing `--image kong`
