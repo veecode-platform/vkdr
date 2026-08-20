@@ -1,6 +1,9 @@
 # VKDR Changelog
 
 
+## v2.0.30 (2026-08-20)
+* feat(kong): support distroless images with --distroless (63ee078)
+
 ## v2.0.29 (2026-08-20)
 * fix(whoami): let Kong serve the ingress over plain HTTP (c90546a)
 * feat(kong-gw): enable Ingress alongside Gateway API (de35415)
