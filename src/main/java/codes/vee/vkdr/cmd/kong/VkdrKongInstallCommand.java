@@ -116,6 +116,14 @@ public class VkdrKongInstallCommand implements Callable<Integer> {
                 "All entries will become 'KONG_[key]=[value]', with 'key' in uppercase as per helm chart behaviour."})
     private Map<String,String> environment = new HashMap<String,String>();
 
+    @CommandLine.Option(names = {"--distroless"},
+        defaultValue = "false",
+        description = {
+            "Adapt values for distroless Kong images (default: false)",
+            "Points the 'clear-stale-pid' init container at busybox and disables the 'wait-for-db' init container, neither of which can run on an image without a shell.",
+            "Enabled automatically when the image name or tag contains 'distroless'."})
+    private boolean distroless;
+
     @CommandLine.Option(names = {"--label"}, 
         description = {
                 "Custom labels for Kong deployments and services, can be used many times in the form '--label key=value'. ",
@@ -127,6 +135,6 @@ public class VkdrKongInstallCommand implements Callable<Integer> {
         Gson gson = new Gson();
         String envJson = gson.toJson(environment);
         String labelsJson = gson.toJson(labels);
-        return ShellExecutor.executeCommand("kong/install", domainSecure.domain, String.valueOf(domainSecure.enable_https), String.valueOf(kong_mode), String.valueOf(enable_enterprise), license, image_name, image_tag, admin_password, String.valueOf(api_ingress), String.valueOf(default_ingress_controller), String.valueOf(use_nodeport), String.valueOf(admin_oidc), log_level, String.valueOf(enable_acme), acme_server, proxy_tls_secret, envJson, labelsJson);
+        return ShellExecutor.executeCommand("kong/install", domainSecure.domain, String.valueOf(domainSecure.enable_https), String.valueOf(kong_mode), String.valueOf(enable_enterprise), license, image_name, image_tag, admin_password, String.valueOf(api_ingress), String.valueOf(default_ingress_controller), String.valueOf(use_nodeport), String.valueOf(admin_oidc), log_level, String.valueOf(enable_acme), acme_server, proxy_tls_secret, envJson, labelsJson, String.valueOf(distroless));
     }
 }

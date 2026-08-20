@@ -1,0 +1,36 @@
+# -----------------------------------------------------------------------------
+# Kong distroless parameters
+# -----------------------------------------------------------------------------
+# Distroless Kong images ship no shell and no coreutils, which breaks the two
+# auxiliary containers the chart builds on top of ".Values.image".
+# -----------------------------------------------------------------------------
+deployment:
+  kong:
+    initContainers:
+      # The clear-stale-pid init container runs `rm -vrf $(KONG_PREFIX)/pids`.
+      # Without this override it uses .Values.image, where `rm` does not exist.
+      # Pointing only this container at busybox is enough: `$(KONG_PREFIX)` is
+      # expanded by Kubernetes from the envs the chart injects into the
+      # container spec, so no shell is involved (keep the `$(...)` syntax, not
+      # `${...}`). Both the command and the image below repeat the chart's own
+      # defaults, so behaviour is unchanged apart from the image.
+      clearStalePid:
+        enabled: true
+        image:
+          repository: busybox
+          tag: "1.36"
+          pullPolicy: IfNotPresent
+        command:
+          - "rm"
+          - "-vrf"
+          - "$(KONG_PREFIX)/pids"
+# The wait-for-db init container (standard mode) runs
+# `/bin/bash -c "... until kong start; ..."` with .Values.image hardcoded in the
+# template and accepts no image override: `waitImage.repository` is only read by
+# the kong.wait-for-postgres helper, used when the postgresql subchart is
+# enabled - vkdr always uses an external database, so nothing else here depends
+# on it. On distroless the only way out is to disable it, which means Kong
+# retries the database connection itself instead of waiting in an init
+# container.
+waitImage:
+  enabled: false

@@ -18,6 +18,7 @@ VKDR_ENV_KONG_ACME_SERVER=${15}
 VKDR_ENV_KONG_PROXY_TLS_SECRET=${16}
 VKDR_ENV_KONG_ENV=${17}
 VKDR_ENV_KONG_LABELS=${18}
+VKDR_ENV_KONG_DISTROLESS=${19}
 
 # V2 paths: relative to formulas/kong/install/
 FORMULA_DIR="$(dirname "$0")"
@@ -54,6 +55,11 @@ startInfos() {
   boldNotice "Proxy TLS Secret: $VKDR_ENV_KONG_PROXY_TLS_SECRET"
   boldNotice "Environment: $VKDR_ENV_KONG_ENV"
   boldNotice "Labels: $VKDR_ENV_KONG_LABELS"
+  if isDistroless; then
+    boldNotice "Distroless: true (flag: $VKDR_ENV_KONG_DISTROLESS)"
+  else
+    boldNotice "Distroless: false"
+  fi
   bold "=============================="
   boldNotice "Cluster LB HTTP port: $VKDR_HTTP_PORT"
   boldNotice "Cluster LB HTTPS port: $VKDR_HTTPS_PORT"
@@ -168,6 +174,33 @@ configProxyTLSSecret() {
   debug "configProxyTLSSecret: patched proxy tls secret into $VKDR_KONG_VALUES"
 }
 
+# Distroless images are used either explicitly ('--distroless') or implicitly,
+# when the image name or tag says so - both the VeeCode build and Kong Gateway
+# publish them as "X.Y-distroless".
+isDistroless() {
+  if [ "true" = "$VKDR_ENV_KONG_DISTROLESS" ]; then
+    return 0
+  fi
+  case "$VKDR_ENV_KONG_IMAGE_NAME:$VKDR_ENV_KONG_IMAGE_TAG" in
+    *distroless*) return 0 ;;
+  esac
+  return 1
+}
+
+# Distroless images ship no shell and no coreutils, so the chart's auxiliary
+# containers must not reuse the Kong image. See _meta/values/delta-kong-distroless.yaml.
+configDistroless() {
+  if ! isDistroless; then
+    debug "configDistroless: not a distroless image, skipping"
+    return
+  fi
+  debug "configDistroless: '$VKDR_ENV_KONG_IMAGE_NAME:$VKDR_ENV_KONG_IMAGE_TAG' is distroless, merging delta-kong-distroless.yaml"
+  VKDR_KONG_DISTROLESS_VALUES="$META_DIR/values/delta-kong-distroless.yaml"
+  YAML_TMP_FILE_DISTROLESS=/tmp/kong-distroless.yaml
+  $VKDR_YQ eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' "$VKDR_KONG_VALUES" "$VKDR_KONG_DISTROLESS_VALUES" > "$YAML_TMP_FILE_DISTROLESS"
+  VKDR_KONG_VALUES=$YAML_TMP_FILE_DISTROLESS
+}
+
 settingKong() {
   case $VKDR_ENV_KONG_MODE in
     dbless)
@@ -217,6 +250,7 @@ settingKong() {
       exit 1
       ;;
     esac
+    configDistroless
     # change image name/tag if set
     if [ -n "$VKDR_ENV_KONG_IMAGE_NAME" ]; then
       $VKDR_YQ eval ".image.repository = \"$VKDR_ENV_KONG_IMAGE_NAME\"" -i $VKDR_KONG_VALUES

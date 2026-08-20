@@ -200,3 +200,55 @@ teardown_file() {
   run $VKDR_KUBECTL get ingressclass kong -o jsonpath='{.spec.controller}'
   assert_output "ingress-controllers.konghq.com/kong"
 }
+
+# ============================================================================
+# Distroless Image Tests (DB-less mode)
+# ============================================================================
+# Distroless images carry no shell and no coreutils, so the chart's auxiliary
+# containers must not reuse the Kong image. Tested against the VeeCode build,
+# which needs no license; 'kong/kong-gateway' distroless tags work the same way.
+
+# @doc: Install Kong with a distroless image (overlay auto-detected from the tag)
+# @example: vkdr kong install -i veecode/kong -t 3.10.0-veecode.10-distroless
+@test "kong install: distroless overlay auto-detected from image tag" {
+  # Clean previous install
+  helm_delete_if_exists "vkdr" "kong" || true
+  sleep 5
+
+  run vkdr kong install -i veecode/kong -t 3.10.0-veecode.10-distroless
+  assert_success
+
+  # Wait for deployment - would crashloop on 'clear-stale-pid' without the overlay
+  run wait_for_deployment "vkdr" "kong-kong" 180
+  assert_success
+
+  # The clear-stale-pid init container runs from busybox, not from the Kong image
+  run $VKDR_KUBECTL get deployment kong-kong -n vkdr \
+    -o jsonpath='{.spec.template.spec.initContainers[?(@.name=="clear-stale-pid")].image}'
+  assert_output "busybox:1.36"
+
+  # The wait-for-db init container is disabled
+  run bash -c "$VKDR_HELM get values kong -n vkdr -o json | $VKDR_JQ -r '.waitImage.enabled'"
+  assert_output "false"
+}
+
+# @doc: Install Kong forcing the distroless overlay on an image that does not say so
+# @example: vkdr kong install --distroless
+@test "kong install: distroless overlay forced by --distroless" {
+  # Clean previous install
+  helm_delete_if_exists "vkdr" "kong" || true
+  sleep 5
+
+  run vkdr kong install --distroless
+  assert_success
+
+  run wait_for_deployment "vkdr" "kong-kong" 180
+  assert_success
+
+  run $VKDR_KUBECTL get deployment kong-kong -n vkdr \
+    -o jsonpath='{.spec.template.spec.initContainers[?(@.name=="clear-stale-pid")].image}'
+  assert_output "busybox:1.36"
+
+  run bash -c "$VKDR_HELM get values kong -n vkdr -o json | $VKDR_JQ -r '.waitImage.enabled'"
+  assert_output "false"
+}

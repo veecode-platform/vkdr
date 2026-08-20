@@ -67,6 +67,33 @@ Kong Enterprise requires multiple secrets:
 3. **Session Config**: `kong-session-config` - Cookie settings for Admin UI
 4. **OIDC Config**: `kong-admin-oidc` - Keycloak integration settings
 
+### Distroless Images
+
+Distroless Kong images (`veecode/kong:X.Y-distroless`,
+`kong/kong-gateway:X.Y-distroless`) contain no shell and no coreutils. Two
+chart constructs reuse `.Values.image` and break on them:
+
+- **`clear-stale-pid`** (`templates/deployment.yaml:102-121`): runs
+  `rm -vrf $(KONG_PREFIX)/pids`. Chart >= 3.4.1 accepts
+  `deployment.kong.initContainers.clearStalePid.image`, so it is pointed at
+  `busybox` and keeps the chart's own default `command`. `$(KONG_PREFIX)` is
+  Kubernetes env expansion in the container spec (from `env.prefix`, injected by
+  the `kong.env` helper), not shell expansion - it must stay `$(...)`, never
+  `${...}`.
+- **`wait-for-db`** (helper `kong.wait-for-db`, rendered by
+  `templates/deployment.yaml:125` when `env.database != "off"`): runs
+  `/bin/bash -c "... until kong start; ..."` with `.Values.image` hardcoded and
+  no override hook. `waitImage.repository` is read only by the
+  `kong.wait-for-postgres` helper, which needs the `postgresql` subchart -
+  never enabled here, since vkdr always uses an external CNPG database. The only
+  option is `waitImage.enabled: false`; Kong then retries the database
+  connection itself, at the cost of a few pod restarts while PostgreSQL boots.
+
+Both live in `delta-kong-distroless.yaml`, merged by `configDistroless()`. The
+overlay is applied when `--distroless` is passed **or** when the image name/tag
+contains `distroless` (`isDistroless()`), so the official tags need no flag. It
+is harmless in `dbless` mode, where `wait-for-db` is not rendered anyway.
+
 ### ACME Plugin
 
 When `--acme` is enabled:
@@ -84,13 +111,14 @@ When `--acme` is enabled:
 | `_meta/values/kong-dbless.yaml` | Helm values for DBless mode |
 | `_meta/values/kong-standard.yaml` | Helm values for Standard mode |
 | `_meta/values/delta-kong-enterprise.yaml` | Enterprise overlay values |
+| `_meta/values/delta-kong-distroless.yaml` | Distroless overlay values |
 | `_meta/values/delta-kong-std-dbsecrets.yaml` | External database config |
 | `_meta/values/acme-*.yaml` | ACME plugin configurations |
 | `_meta/values/admin_gui_auth_conf` | OIDC configuration template |
 
 ## Parameters
 
-### Install (18 parameters!)
+### Install (19 parameters!)
 
 | Parameter | Variable | Description |
 |-----------|----------|-------------|
@@ -112,6 +140,7 @@ When `--acme` is enabled:
 | `--proxy-tls-secret` | `$16` | Default proxy TLS secret |
 | `--env` | `$17` | JSON of extra env vars |
 | `--label` | `$18` | JSON of extra labels |
+| `--distroless` | `$19` | Adapt values for distroless images |
 
 ## Functions
 
@@ -120,6 +149,8 @@ When `--acme` is enabled:
 | Function | Purpose |
 |----------|---------|
 | `settingKong` | Select values file, merge enterprise overlay |
+| `isDistroless` | Tell whether the distroless overlay applies |
+| `configDistroless` | Merge distroless overlay |
 | `ensurePostgresDatabase` | Auto-install postgres for standard mode |
 | `createKongLicenseSecret` | Create license secret for enterprise |
 | `createKongAdminSecret` | Create admin password secret |
@@ -143,6 +174,8 @@ dbless + false    → kong-dbless.yaml
 dbless + true     → kong-dbless.yaml + delta-kong-enterprise.yaml
 standard + false  → kong-standard.yaml + delta-kong-std-dbsecrets.yaml
 standard + true   → kong-standard.yaml + delta-kong-enterprise.yaml + delta-kong-std-dbsecrets.yaml
+
+Any of the above + distroless → ... + delta-kong-distroless.yaml
 ```
 
 ## OIDC Integration
@@ -158,7 +191,7 @@ When `--oidc` is enabled, Kong Admin UI uses Keycloak for authentication:
 
 1. **Hybrid Mode**: Not implemented (`error "hybrid not yet implemented"`)
 2. **Remove Not Idempotent**: `helm delete` fails if not installed
-3. **Many Parameters**: 18 positional parameters is unwieldy
+3. **Many Parameters**: 19 positional parameters is unwieldy
 4. **Database Credentials Hardcoded**: `kong/kong1234`
 
 ## Remove Idempotency (Bug)

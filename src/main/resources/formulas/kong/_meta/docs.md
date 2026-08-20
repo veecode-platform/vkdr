@@ -9,8 +9,8 @@ Kong Gateway is a powerful API gateway that can be used as an ingress controller
 Install Kong Gateway in your cluster.
 
 ```bash
-vkdr kong install [-es] [--acme] [--api] [--default-ic] [--oidc] \
-  [--use-nodeport] [--acme-server=<acme_server>] [-d=<domain>] \
+vkdr kong install [-es] [--acme] [--api] [--default-ic] [--distroless] \
+  [--oidc] [--use-nodeport] [--acme-server=<acme_server>] [-d=<domain>] \
   [-i=<image_name>] [-l=<license>] [--log-level=<log_level>] \
   [-m=<kong_mode>] [-p=<admin_password>] [--proxy-tls-secret=<proxy_tls_secret>] \
   [-t=<image_tag>] [--env=<String=String>]... [--label=<String=String>]...
@@ -33,6 +33,7 @@ vkdr kong install [-es] [--acme] [--api] [--default-ic] [--oidc] \
 | `--use-nodeport` | | Use NodePort instead of LoadBalancer | `false` |
 | `--image` | `-i` | Kong image name | (chart default) |
 | `--tag` | `-t` | Kong image tag | (chart default) |
+| `--distroless` | | Adapt values for a distroless Kong image | `false` (auto) |
 | `--license` | `-l` | Kong license file (for enterprise) | (none) |
 | `--proxy-tls-secret` | | Secret with default TLS certificate for proxy | (none) |
 | `--log-level` | | Kong log level | (default) |
@@ -264,6 +265,43 @@ vkdr kong install -e -l /path/license.json -m standard -p mypassword --default-i
 ```
 
 Kong is the default ingress controller with RBAC enabled.
+
+### Kong with a distroless image
+
+```sh
+vkdr infra up
+vkdr kong install -i veecode/kong -t 3.10.0-veecode.10-distroless
+```
+
+Distroless variants come from the VeeCode `veecode/kong` build and from
+`kong/kong-gateway` (the image `-e` selects by default); the official OSS `kong`
+image publishes none. Kong Gateway 3.15 onwards needs a license to keep serving
+traffic, so `-e -t 3.14-distroless` is the last enterprise release usable in
+free mode:
+
+```sh
+vkdr kong install -e -t 3.14-distroless
+```
+
+Distroless images ship no shell and no coreutils, which breaks two auxiliary
+containers the Helm chart builds on top of the Kong image:
+
+| Init container | Problem | Fix applied |
+| --- | --- | --- |
+| `clear-stale-pid` | Runs `rm`, absent from the image | Runs from `busybox` |
+| `wait-for-db` (`standard`) | Runs `/bin/bash`, no image override | Disabled |
+
+`--distroless` is enabled automatically when the image name or tag contains
+`distroless`, so the flag is only needed for a custom image that is distroless
+without saying so in its name:
+
+```sh
+vkdr kong install -i mycorp/kong-slim -t 3.9.1 --distroless
+```
+
+In `standard` mode, dropping `wait-for-db` means Kong no longer blocks on the
+database in an init container. Kong retries the connection on its own, so the
+first pod may restart a few times if PostgreSQL is still starting up.
 
 ### Kong with custom image (custom plugins)
 
