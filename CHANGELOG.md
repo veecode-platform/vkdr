@@ -1,6 +1,13 @@
 # VKDR Changelog
 
 
+## v2.0.28 (2026-08-20)
+* feat(kong-gw): add --profile shortcut for data plane images (3c4cdc3)
+* fix(kong-gw): wait on the real data plane pod label during remove (a889719)
+* feat(kong-gw): pin the data plane image, add --image and --tag (3728a2d)
+* refactor(kong-gw,nginx-gw)!: vendor pinned Gateway API CRDs (38f54ed)
+* ci: move actions off the deprecated Node 20 runtime (6ef3af5)
+
 ## v2.0.27 (2026-08-19)
 * chore(formulas): update pinned charts and operators (60b6b92)
 
