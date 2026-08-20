@@ -14,13 +14,13 @@ Installs Kong Gateway as an API gateway and ingress controller using the officia
 
 ## Architecture
 
-```
+```pre
 ┌─────────────────────────────────────────────────────────────┐
 │                      Kong Gateway                           │
 │                     namespace: vkdr                         │
 │  Modes:                                                     │
-│  - dbless: declarative config, no database                 │
-│  - standard: PostgreSQL database, dynamic config           │
+│  - dbless: declarative config, no database                  │
+│  - standard: PostgreSQL database, dynamic config            │
 └─────────────────────────────────────────────────────────────┘
            │                               │
            ▼                               ▼
@@ -41,12 +41,14 @@ Installs Kong Gateway as an API gateway and ingress controller using the officia
 ### Why Two Modes (DBless vs Standard)
 
 **DBless Mode** (default):
+
 - No database required
 - Configuration via declarative YAML/Kubernetes CRDs
 - Simpler, faster startup
 - Best for: development, GitOps workflows
 
 **Standard Mode**:
+
 - PostgreSQL database required
 - Dynamic configuration via Admin API
 - Supports clustering and state persistence
@@ -59,6 +61,7 @@ Like Keycloak, Kong in standard mode requires PostgreSQL. Rather than fail, we a
 ### Enterprise Secrets
 
 Kong Enterprise requires multiple secrets:
+
 1. **License**: `kong-enterprise-license` - License JSON or empty
 2. **Admin Password**: `kong-enterprise-superuser-password` - For RBAC
 3. **Session Config**: `kong-session-config` - Cookie settings for Admin UI
@@ -67,6 +70,7 @@ Kong Enterprise requires multiple secrets:
 ### ACME Plugin
 
 When `--acme` is enabled:
+
 - Global KongPlugin resource for ACME is created
 - A "dummy" ingress is created to trigger certificate generation
 - Works with Let's Encrypt staging or production
@@ -132,7 +136,7 @@ When `--acme` is enabled:
 
 ## Values File Selection
 
-```
+```pre
 Mode + Enterprise → Values File
 ─────────────────────────────────
 dbless + false    → kong-dbless.yaml

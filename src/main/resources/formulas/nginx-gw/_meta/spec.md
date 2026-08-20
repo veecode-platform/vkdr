@@ -152,9 +152,16 @@ The `gateway-tools.sh` library:
 Version is pinned in `install/formula.sh`. To update:
 1. Check latest release at https://github.com/nginx/nginx-gateway-fabric/releases
 2. Update `NGF_VERSION` in formula
-3. Verify CRD kustomize URL still works with new version
-4. Run tests - Gateway API CRDs may have breaking changes (2.6.x pulls Gateway API
+3. Check which Gateway API bundle the release targets:
+   `config/crd/gateway-api/standard/kustomization.yaml` in the NGF repo. If it moved,
+   vendor the new bundle next to the current one and update `GWAPI_CRDS_YAML`:
+   `kubectl kustomize "https://github.com/kubernetes-sigs/gateway-api/config/crd?ref=v<ver>"`
+4. Run tests - Gateway API CRDs may have breaking changes (2.6.x targets Gateway API
    v1.5.1, which adds the `listenersets` CRD and the `safe-upgrades` admission policy)
+
+Gateway API CRDs are installed from `_shared/operators/gateway-api/`, pinned and
+shared with `kong-gw` so both gateways agree on one bundle. Bump it in both formulas
+at once.
 
 See `_meta/update.yaml` for automation config.
 

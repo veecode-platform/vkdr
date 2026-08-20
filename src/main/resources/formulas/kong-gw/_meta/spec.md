@@ -32,12 +32,27 @@ All resources are created in `kong-system` namespace.
 This formula uses `helm-pinned` update type. To update:
 
 1. Check for new versions: `helm search repo kong/kong-operator --versions`
-2. Update `KGO_IMAGE_TAG` in `install/formula.sh`
+2. Update `KGO_CHART_VERSION` and `KGO_IMAGE_TAG` in `install/formula.sh`
+   (the chart's `appVersion` is the operator release the chart was cut for; the
+   image tag may run ahead of it)
 3. Update `version` in `_meta/update.yaml`
-4. Run tests: `make test-formula formula=kong-gw`
+4. Check the chart's Gateway API dependency version in `Chart.yaml`. If it moved past
+   the vendored bundle, vendor the new one and update `GWAPI_CRDS_YAML` in both this
+   formula and `nginx-gw`
+5. Run tests: `make test-formula formula=kong-gw`
 
-Note: the chart's CRD bundle includes the Gateway API `safe-upgrades`
-ValidatingAdmissionPolicy (Gateway API >= 1.5). `nginx-gw` installs the same object
-with `kubectl apply`, and Helm refuses to adopt objects it did not create, so
-`installOperator` drops a non-Helm copy before installing (`releaseGatewayAPIPolicy`).
-Without it, installing `kong-gw` after `nginx-gw` in the same cluster fails.
+### CRDs
+
+Per Kong's [upgrade docs](https://developer.konghq.com/operator/dataplanes/upgrade/operator/),
+Helm installs CRDs on first install but never updates them. The chart splits them up:
+
+| Subchart | Contents | How vkdr handles it |
+| --- | --- | --- |
+| `ko-crds` | Kong operator CRDs, as templates | Left to the chart - templated CRDs *are* upgraded |
+| `gwapi-standard-crds` | Gateway API CRDs, as `crds/` (install-only) | Disabled; installed from `_shared/operators/gateway-api/` |
+| `gwapi-experimental-crds` | Experimental Gateway API CRDs | Disabled by the chart default |
+
+Gateway API CRDs are installed from the pinned shared copy so that a `kong-gw` bump
+actually updates them, and so `nginx-gw` and `kong-gw` cannot fight over the
+`safe-upgrades` ValidatingAdmissionPolicy that the bundle contains - Helm cannot adopt
+an object it did not create, which used to break installing `kong-gw` after `nginx-gw`.

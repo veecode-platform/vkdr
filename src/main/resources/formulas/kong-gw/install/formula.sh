@@ -11,8 +11,12 @@ source "$SHARED_DIR/lib/tools-versions.sh"
 source "$SHARED_DIR/lib/tools-paths.sh"
 source "$SHARED_DIR/lib/log.sh"
 
-# Kong Gateway Operator image tag
+# Kong Gateway Operator chart and image
+KGO_CHART_VERSION="1.3.1"
 KGO_IMAGE_TAG="2.2.3"
+# Gateway API bundle the chart ships at this version - installed from the shared
+# copy instead, so nginx-gw and kong-gw agree on one pinned bundle
+GWAPI_CRDS_YAML="$SHARED_DIR/operators/gateway-api/gateway-api-standard-1.5.1.yaml"
 
 startInfos() {
   boldInfo "Kong Gateway Operator Install"
@@ -65,35 +69,25 @@ createSelfSignedCert() {
   boldNotice "Self-signed TLS certificate created"
 }
 
-# Gateway API >= 1.5 ships a "safe-upgrades" ValidatingAdmissionPolicy that both
-# nginx-gw (kubectl apply) and the Kong operator chart (helm CRD install) provide.
-# Helm cannot take ownership of an object it did not create, so drop any copy left
-# behind by another formula - the chart recreates it from the same upstream bundle.
-releaseGatewayAPIPolicy() {
-  local policy=safe-upgrades.gateway.networking.k8s.io
-  if $VKDR_KUBECTL get validatingadmissionpolicy "$policy" &>/dev/null; then
-    if ! $VKDR_KUBECTL get validatingadmissionpolicy "$policy" \
-      -o jsonpath='{.metadata.annotations.meta\.helm\.sh/release-name}' 2>/dev/null | grep -q .; then
-      debug "releaseGatewayAPIPolicy: removing non-helm '$policy' policy"
-      $VKDR_KUBECTL delete validatingadmissionpolicybinding "$policy" --ignore-not-found
-      $VKDR_KUBECTL delete validatingadmissionpolicy "$policy" --ignore-not-found
-    fi
-  fi
+installGatewayAPICRDs() {
+  debug "installGatewayAPICRDs: installing Gateway API CRDs"
+  $VKDR_KUBECTL apply -f "$GWAPI_CRDS_YAML"
 }
 
 installOperator() {
   debug "installOperator: installing Kong Gateway Operator"
 
   createSelfSignedCert
-  releaseGatewayAPIPolicy
+  installGatewayAPICRDs
 
-  $VKDR_HELM repo add kong https://charts.konghq.com 2>/dev/null || true
-  $VKDR_HELM repo update kong
-
-  # Helm chart includes all CRDs (Gateway API + Kong CRDs)
-  $VKDR_HELM upgrade --install kong-operator kong/kong-operator \
+  # Kong CRDs come from the chart's ko-crds subchart (templated, so helm upgrades
+  # them); Gateway API CRDs are installed above from the pinned shared copy.
+  $VKDR_HELM upgrade --install kong-operator kong-operator \
+    --repo https://charts.konghq.com \
+    --version "$KGO_CHART_VERSION" \
     --create-namespace \
     --namespace kong-system \
+    --set gwapi-standard-crds.enabled=false \
     --set image.tag="$KGO_IMAGE_TAG"
 }
 

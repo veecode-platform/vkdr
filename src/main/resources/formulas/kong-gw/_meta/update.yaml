@@ -1,10 +1,14 @@
 # Update configuration for automated dependency updates
-# Note: We use image.tag override instead of chart version for access to newer features
-type: helm-latest
+# Note: image.tag is overridden on top of the pinned chart for access to newer
+# operator releases, so both versions are tracked here
+type: helm-pinned
 helm:
   repo: https://charts.konghq.com
   chart: kong-operator
+  version: "1.3.1"
   version_file: install/formula.sh
   values_file: null
-# Image tag is tracked separately: KGO_IMAGE_TAG in formula.sh
+# Tracked separately in install/formula.sh:
+#   KGO_IMAGE_TAG - operator image (github.com/Kong/kong-operator releases)
+#   GWAPI_CRDS_YAML - pinned Gateway API bundle, shared with nginx-gw
 test: make test-formula formula=kong-gw

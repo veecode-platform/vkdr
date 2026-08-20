@@ -13,6 +13,8 @@ source "$SHARED_DIR/lib/log.sh"
 
 # NGINX Gateway Fabric version
 NGF_VERSION="2.6.7"
+# Gateway API bundle shipped with this NGF release (see _meta/spec.md)
+GWAPI_CRDS_YAML="$SHARED_DIR/operators/gateway-api/gateway-api-standard-1.5.1.yaml"
 
 startInfos() {
   boldInfo "NGINX Gateway Fabric Install"
@@ -23,7 +25,7 @@ startInfos() {
 
 installGatewayAPICRDs() {
   debug "installGatewayAPICRDs: installing Gateway API CRDs"
-  $VKDR_KUBECTL kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/gateway-api/standard?ref=v$NGF_VERSION" | $VKDR_KUBECTL apply -f -
+  $VKDR_KUBECTL apply -f "$GWAPI_CRDS_YAML"
 }
 
 isControlPlaneInstalled() {

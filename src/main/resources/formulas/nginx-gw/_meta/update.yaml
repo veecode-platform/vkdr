@@ -6,4 +6,6 @@ helm:
   version: "2.6.7"
   version_file: install/formula.sh
   values_file: null
+# Gateway API CRDs are pinned separately in install/formula.sh (GWAPI_CRDS_YAML),
+# shared with kong-gw - bump it together with the chart
 test: make test-formula formula=nginx-gw
