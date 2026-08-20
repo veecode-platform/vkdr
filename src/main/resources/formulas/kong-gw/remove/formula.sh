@@ -42,6 +42,11 @@ removeGatewayClass() {
   $VKDR_KUBECTL delete gatewayclass kong --ignore-not-found
 }
 
+removeIngressClass() {
+  debug "removeIngressClass: deleting IngressClass"
+  $VKDR_KUBECTL delete ingressclass kong --ignore-not-found
+}
+
 removeOperator() {
   debug "removeOperator: uninstalling kong-operator helm release"
   if $VKDR_HELM list -n kong-system -q 2>/dev/null | grep -q "kong-operator"; then
@@ -62,6 +67,7 @@ runFormula() {
   removeGatewayConfiguration
   if [ "$VKDR_ENV_DELETE_OPERATOR" = "true" ]; then
     removeGatewayClass
+    removeIngressClass
     removeOperator
     removeNamespace
   fi

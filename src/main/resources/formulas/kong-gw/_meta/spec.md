@@ -78,6 +78,27 @@ modes differ only by the `network` block, rendered by `gatewayNetworkBlock`. It 
 always named `kong-config`; the NodePort path used to name it `kong-nodeport-config`,
 which `remove` never deleted.
 
+## Ingress support
+
+The control plane the operator creates is Kong Ingress Controller, so one data plane
+serves Gateway API and Ingress at the same time. Per
+[handle ingress](https://developer.konghq.com/operator/dataplanes/how-to/handle-ingress/),
+Ingress is off unless an ingress class is set — the CRD says as much:
+"If omitted, Ingress resources will not be supported by the ControlPlane."
+
+| Piece | Value | Why |
+| --- | --- | --- |
+| `spec.controlPlaneOptions.ingressClass` | `kong` | Without it the control plane ignores every Ingress (verified: 404) |
+| `IngressClass` object | `kong`, controller `ingress-controllers.konghq.com/kong` | Makes `ingressClassName: kong` resolve, and carries the default-class annotation |
+| `ingressclass.kubernetes.io/is-default-class` | `--default-ic` (default `false`) | Claims Ingress objects that set no class |
+
+The annotation is always written, `"true"` or `"false"`, so re-running `install` without
+`--default-ic` releases the default instead of leaving a stale `"true"` behind.
+
+Note Kong builds Ingress-derived routes as HTTPS-only: plain HTTP gets `426 Upgrade
+Required` until the Ingress carries `konghq.com/protocols: http,https`. Gateway API
+listeners are unaffected.
+
 ## Namespace
 
 All resources are created in `kong-system` namespace.

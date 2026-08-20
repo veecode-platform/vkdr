@@ -34,4 +34,8 @@ teardown_file() {
   # GatewayClass deleted
   run $VKDR_KUBECTL get gatewayclass kong 2>&1
   assert_failure
+
+  # IngressClass deleted
+  run $VKDR_KUBECTL get ingressclass kong 2>&1
+  assert_failure
 }

@@ -65,9 +65,16 @@ public class VkdrKongGwInstallCommand implements Callable<Integer> {
                     "Overrides the image tag set by '--profile'."})
     private String image_tag;
 
+    @CommandLine.Option(names = {"--default-ic","--default_ingress_controller"},
+            defaultValue = "false",
+            description = {
+                    "Makes Kong the cluster's default ingress controller (default: false)",
+                    "This affects ingress objects without an 'ingressClassName' field."})
+    private boolean default_ingress_controller;
+
     @Override
     public Integer call() throws IOException, InterruptedException {
         return ShellExecutor.executeCommand("kong-gw/install", node_ports, image_name, image_tag,
-                String.valueOf(profile));
+                String.valueOf(profile), String.valueOf(default_ingress_controller));
     }
 }

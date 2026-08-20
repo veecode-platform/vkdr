@@ -76,6 +76,43 @@ teardown_file() {
   assert_output "kong/kong-gateway:3.14"
 }
 
+@test "kong-gw install: ingress support is enabled" {
+  run $VKDR_KUBECTL get gatewayconfiguration kong-config -n kong-system \
+    -o jsonpath='{.spec.controlPlaneOptions.ingressClass}'
+  assert_success
+  assert_output "kong"
+
+  run $VKDR_KUBECTL get ingressclass kong -o jsonpath='{.spec.controller}'
+  assert_success
+  assert_output "ingress-controllers.konghq.com/kong"
+}
+
+@test "kong-gw install: is not the default ingress controller unless asked" {
+  run $VKDR_KUBECTL get ingressclass kong \
+    -o jsonpath='{.metadata.annotations.ingressclass\.kubernetes\.io/is-default-class}'
+  assert_success
+  assert_output "false"
+}
+
+@test "kong-gw install: --default-ic claims class-less ingresses" {
+  run vkdr kong-gw install --default-ic
+  assert_success
+
+  run $VKDR_KUBECTL get ingressclass kong \
+    -o jsonpath='{.metadata.annotations.ingressclass\.kubernetes\.io/is-default-class}'
+  assert_success
+  assert_output "true"
+
+  # re-running without the flag must hand the default back
+  run vkdr kong-gw install
+  assert_success
+
+  run $VKDR_KUBECTL get ingressclass kong \
+    -o jsonpath='{.metadata.annotations.ingressclass\.kubernetes\.io/is-default-class}'
+  assert_success
+  assert_output "false"
+}
+
 @test "kong-gw install: gateway is programmed" {
   # Wait for Gateway to be programmed
   local max_wait=120

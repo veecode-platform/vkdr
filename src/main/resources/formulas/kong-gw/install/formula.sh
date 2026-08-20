@@ -4,6 +4,7 @@ VKDR_ENV_KONG_GW_NODE_PORTS=$1
 VKDR_ENV_KONG_GW_IMAGE_NAME=$2
 VKDR_ENV_KONG_GW_IMAGE_TAG=$3
 VKDR_ENV_KONG_GW_PROFILE=$4
+VKDR_ENV_KONG_GW_DEFAULT_IC=$5
 
 # V2 paths: relative to formulas/kong-gw/install/
 FORMULA_DIR="$(dirname "$0")"
@@ -25,6 +26,10 @@ GWAPI_CRDS_YAML="$SHARED_DIR/operators/gateway-api/gateway-api-standard-1.5.1.ya
 KONG_GW_DEFAULT_IMAGE_NAME="kong/kong-gateway"
 KONG_GW_DEFAULT_IMAGE_TAG="3.14"
 KONG_GW_CONFIG_NAME="kong-config"
+# Ingress support: the control plane only reconciles Ingress objects when an
+# ingress class is set, and KIC claims the ones whose ingressClassName matches.
+KONG_GW_INGRESS_CLASS="kong"
+KONG_GW_INGRESS_CONTROLLER="ingress-controllers.konghq.com/kong"
 
 # Image profiles: shortcuts for the image name/tag pairs we support. Keep in sync
 # with the table in _meta/docs.md. "default" sets nothing, so the formula default
@@ -63,6 +68,10 @@ startInfos() {
     boldNotice "Profile: $VKDR_ENV_KONG_GW_PROFILE"
   fi
   boldNotice "Data plane image: $KONG_GW_IMAGE"
+  boldNotice "Ingress class: $KONG_GW_INGRESS_CLASS"
+  if [ "true" = "$VKDR_ENV_KONG_GW_DEFAULT_IC" ]; then
+    boldNotice "Default ingress controller: yes"
+  fi
   if [ -n "$VKDR_ENV_KONG_GW_NODE_PORTS" ]; then
     boldNotice "Node ports: $VKDR_ENV_KONG_GW_NODE_PORTS"
   fi
@@ -133,6 +142,25 @@ installOperator() {
     --set image.tag="$KGO_IMAGE_TAG"
 }
 
+# The IngressClass object is what makes "ingressClassName: kong" resolve, and
+# carries the is-default-class annotation. The value is always written so that
+# re-running install without --default-ic actually gives the default back up.
+createIngressClass() {
+  debug "createIngressClass: creating IngressClass $KONG_GW_INGRESS_CLASS (default=$VKDR_ENV_KONG_GW_DEFAULT_IC)"
+  local is_default="false"
+  [ "true" = "$VKDR_ENV_KONG_GW_DEFAULT_IC" ] && is_default="true"
+  $VKDR_KUBECTL apply -f - <<EOF
+apiVersion: networking.k8s.io/v1
+kind: IngressClass
+metadata:
+  name: $KONG_GW_INGRESS_CLASS
+  annotations:
+    ingressclass.kubernetes.io/is-default-class: "$is_default"
+spec:
+  controller: $KONG_GW_INGRESS_CONTROLLER
+EOF
+}
+
 createGateway() {
   debug "createGateway: creating Gateway resource"
   if [ -z "$VKDR_ENV_KONG_GW_NODE_PORTS" ]; then
@@ -192,6 +220,8 @@ metadata:
   name: $KONG_GW_CONFIG_NAME
   namespace: kong-system
 spec:
+  controlPlaneOptions:
+    ingressClass: $KONG_GW_INGRESS_CLASS
   dataPlaneOptions:
     deployment:
       podTemplateSpec:
@@ -309,6 +339,7 @@ runFormula() {
     waitForOperator
   fi
   createGateway
+  createIngressClass
 }
 
 runFormula

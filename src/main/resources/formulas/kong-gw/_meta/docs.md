@@ -26,6 +26,7 @@ vkdr kong-gw install [--node-ports=<node_ports>] [--profile=<profile>] [--image=
 |------|-------------|---------|
 | `--node-ports` | NodePorts for http/https (e.g., `30000,30001` or `*`) | (none) |
 | `--profile` | Image profile: `default`, `kong`, `kong-distroless`, `oss`, `apip`, `apip-distroless` | `default` |
+| `--default-ic` | Makes Kong the cluster's default ingress controller | `false` |
 | `-i`, `--image` | Kong data plane image name | `kong/kong-gateway` |
 | `-t`, `--tag` | Kong data plane image tag | `3.14` |
 
@@ -157,6 +158,53 @@ vkdr kong-gw install --node-ports '*'
 # Access via http://localhost:9000 and https://localhost:9001
 ```
 
+### Ingress Support
+
+The operator-managed data plane serves **both** Gateway API and the older Ingress API at
+the same time — the control plane is Kong Ingress Controller, so an `HTTPRoute` and an
+`Ingress` can point at the same gateway simultaneously.
+
+Ingress support is enabled by `install`: the `kong-config` GatewayConfiguration sets
+`controlPlaneOptions.ingressClass: kong`, and an `IngressClass` object named `kong` is
+created. Without the ingress class the control plane ignores Ingress objects entirely.
+
+Two ways to have Kong pick up an Ingress:
+
+```bash
+# 1. the Ingress names the class explicitly
+kubectl patch ingress myapp -p '{"spec":{"ingressClassName":"kong"}}'
+
+# 2. or make Kong the default, so class-less Ingresses are claimed
+vkdr kong-gw install --default-ic
+```
+
+`--default-ic` is written on every install, so re-running without it hands the default
+back (useful when traefik or nginx should own class-less Ingresses instead).
+
+**Ingress routes are HTTPS-only by default.** Kong answers plain HTTP with
+`426 Upgrade Required` on routes built from an Ingress. To serve plaintext as well:
+
+```bash
+kubectl annotate ingress myapp konghq.com/protocols=http,https
+```
+
+Gateway API routes are not affected — the Gateway's HTTP listener serves plaintext
+directly.
+
+### Examples: both APIs at once
+
+```bash
+vkdr kong-gw install --default-ic
+
+# Gateway API
+vkdr whoami install --gateway kong
+curl http://whoami.localhost:8000
+
+# Ingress (whoami's default install creates one)
+vkdr whoami install
+curl -k https://whoami.localhost:8001
+```
+
 ## vkdr kong-gw remove
 
 Remove Kong Gateway from your cluster.
@@ -180,7 +228,7 @@ vkdr kong-gw remove [--delete-operator]
 
 **With `--delete-operator`**:
 - Removes the Gateway and GatewayConfiguration (as above)
-- Removes the GatewayClass
+- Removes the GatewayClass and the `kong` IngressClass
 - Uninstalls the Kong Gateway Operator helm release
 - Deletes the entire `kong-system` namespace (including TLS secret)
 - Gateway API CRDs remain installed
