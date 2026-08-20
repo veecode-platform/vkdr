@@ -1,6 +1,10 @@
 # VKDR Changelog
 
 
+## v2.0.29 (2026-08-20)
+* fix(whoami): let Kong serve the ingress over plain HTTP (c90546a)
+* feat(kong-gw): enable Ingress alongside Gateway API (de35415)
+
 ## v2.0.28 (2026-08-20)
 * feat(kong-gw): add --profile shortcut for data plane images (3c4cdc3)
 * fix(kong-gw): wait on the real data plane pod label during remove (a889719)
