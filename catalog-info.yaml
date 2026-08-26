@@ -1,0 +1,17 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: vkdr
+  description: >-
+    VeeCode CLI for local/dev platform installs. Its devportal formulas
+    install the chart from the next-charts Helm index.
+  annotations:
+    github.com/project-slug: veecode-platform/vkdr
+  tags: [cli, installer]
+spec:
+  type: tooling
+  lifecycle: production
+  owner: group:default/veecode-platform
+  system: veecode-devportal
+  dependsOn:
+    - component:default/next-charts
