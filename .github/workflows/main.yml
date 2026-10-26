@@ -34,6 +34,25 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           native-image-job-reports: 'true'
 
+      # Native Image copies the build JDK's cacerts into the binary at build time, so a newer
+      # JDK does not fix an existing binary. Remove the two aliases the GraalVM Native Image
+      # advisory names for CVE-2026-114820 (2026-10-23) before native:compile. Delete this step
+      # once the build JDK no longer contains them.
+      - name: Remove eMudhra and AAA roots from the build JDK
+        run: |
+          keytool="$JAVA_HOME/bin/keytool"
+          listing=$("$keytool" -list -cacerts -storepass changeit)
+          for alias in 'emsigneccrootcag3 [jdk]' 'comodoaaaca [jdk]'; do
+            if grep -qF "$alias," <<<"$listing"; then
+              "$keytool" -delete -cacerts -storepass changeit -alias "$alias"
+            fi
+          done
+          listing=$("$keytool" -list -cacerts -storepass changeit)
+          if grep -E -q 'emsigneccrootcag3|comodoaaaca' <<<"$listing"; then
+            echo "::error::eMudhra or AAA root still present in the build JDK cacerts"
+            exit 1
+          fi
+
       - name: Build native binary and run VKDR CLI
         run: |
           ./mvnw -Pnative native:compile
