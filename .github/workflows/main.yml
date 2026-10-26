@@ -40,12 +40,15 @@ jobs:
       # once the build JDK no longer contains them.
       - name: Remove eMudhra and AAA roots from the build JDK
         run: |
+          keytool="$JAVA_HOME/bin/keytool"
+          listing=$("$keytool" -list -cacerts -storepass changeit)
           for alias in 'emsigneccrootcag3 [jdk]' 'comodoaaaca [jdk]'; do
-            if "$JAVA_HOME/bin/keytool" -list -cacerts -storepass changeit | grep -qF "$alias,"; then
-              "$JAVA_HOME/bin/keytool" -delete -cacerts -storepass changeit -alias "$alias"
+            if grep -qF "$alias," <<<"$listing"; then
+              "$keytool" -delete -cacerts -storepass changeit -alias "$alias"
             fi
           done
-          if "$JAVA_HOME/bin/keytool" -list -cacerts -storepass changeit | grep -E -q 'emsigneccrootcag3|comodoaaaca'; then
+          listing=$("$keytool" -list -cacerts -storepass changeit)
+          if grep -E -q 'emsigneccrootcag3|comodoaaaca' <<<"$listing"; then
             echo "::error::eMudhra or AAA root still present in the build JDK cacerts"
             exit 1
           fi
