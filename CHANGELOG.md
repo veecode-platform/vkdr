@@ -1,6 +1,10 @@
 # VKDR Changelog
 
 
+## v2.0.31 (2026-10-26)
+* fix(build): remove eMudhra roots before native build; bump Keycloak to 26.8.1 (#51) (59eeec0)
+* feat: catalog-info for the DevPortal product topology (M18 E1) (ccf95cb)
+
 ## v2.0.30 (2026-08-20)
 * feat(kong): support distroless images with --distroless (63ee078)
 
